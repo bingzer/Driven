@@ -19,6 +19,10 @@ import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Ricky on 5/3/2014.
@@ -32,14 +36,11 @@ public class DriveFile {
     private String title;
     private String type;
     private File fileModel;
+    private boolean hasDetails;
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public DriveFile(File file){
-        fileModel = file;
-
-        id = fileModel.getId();
-        title = fileModel.getTitle();
-        type = fileModel.getMimeType();
+    protected DriveFile(File file, boolean hasDetails){
+        init(file, hasDetails);
     }
 
     public String getId() {
@@ -62,22 +63,21 @@ public class DriveFile {
         return fileModel;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
-    public boolean loadDetails(){
-        DriveFile file = Driven.getDriven().getDetails(this);
-        if(file != null && file.fileModel != null){
-            fileModel = file.fileModel;
-            return true;
-        }
-
-        return false;
+    public boolean hasDetails(){
+        return hasDetails;
     }
 
-    public void loadDetailsAsync(Task<Boolean> result){
-        Driven.getDriven().doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return loadDetails();
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public File getDetails(){
+        consume(Driven.getDriven().getDetails(this));
+        return fileModel;
+    }
+
+    public void loadDetailsAsync(Task<File> result){
+        Driven.getDriven().doAsync(result, new Delegate<File>() {
+            @Override public File invoke() {
+                return getDetails();
             }
         });
     }
@@ -106,27 +106,53 @@ public class DriveFile {
         });
     }
 
-    public DriveFile upload(FileContent content) {
-        return Driven.getDriven().update(this, content);
+    public boolean upload(FileContent content) {
+        return consume(Driven.getDriven().update(this, content));
     }
 
-    public void uploadAsync(final FileContent content, Task<DriveFile> result) {
-        Driven.getDriven().doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void uploadAsync(final FileContent content, Task<Boolean> result) {
+        Driven.getDriven().doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
                 return upload(content);
             }
         });
     }
 
-    public DriveFile share(String... users){
+    public boolean share(String... users){
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public void shareAsync(Task<DriveFile> result, final String... users){
-        Driven.getDriven().doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void shareAsync(Task<Boolean> result, final String... users){
+        Driven.getDriven().doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
                 return share(users);
             }
         });
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private boolean init(File file, boolean details){
+        fileModel = file;
+        id = fileModel.getId();
+        title = fileModel.getTitle();
+        type = fileModel.getMimeType();
+        hasDetails = details;
+        return true;
+    }
+
+    private boolean consume(DriveFile other){
+        return other != null && other.fileModel != null && init(other.fileModel, other.hasDetails);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static Iterable<DriveFile> from(FileList fileList){
+        List<DriveFile> list = new ArrayList<DriveFile>();
+        for(int i = 0; i < fileList.size(); i++){
+            list.add(new DriveFile(fileList.getItems().get(i), false));
+        }
+
+        return list;
     }
 }

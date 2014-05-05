@@ -29,8 +29,7 @@ class TestUsage {
             }
         });
 
-        
-
-
+        driven.query("title = 'BabyCare'");
+        driven.first("title = 'babyCare'");
     }
 }

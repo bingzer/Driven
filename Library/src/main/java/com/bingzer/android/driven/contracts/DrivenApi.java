@@ -23,7 +23,7 @@ import java.io.File;
 /**
  * Created by Ricky on 5/3/2014.
  */
-public interface IDrivenApi {
+public interface DrivenApi {
 
     public static interface Get {
 
@@ -31,17 +31,25 @@ public interface IDrivenApi {
 
         void getAsync(String id, Task<DriveFile> result);
 
+        public static interface ByTitle {
+
+            DriveFile getByTitle(DriveFile parent, String title);
+
+            DriveFile getByTitle(String title);
+
+            void getByTitleAsync(DriveFile parent, String title, Task<DriveFile> result);
+
+            void getByTitleAsync(String title, Task<DriveFile> result);
+        }
+
     }
 
     public static interface Details {
 
         DriveFile getDetails(DriveFile driveFile);
 
-        Iterable<DriveFile> getDetails(Iterable<DriveFile> driveFiles);
-
         void getDetailsAsync(DriveFile driveFile, Task<DriveFile> result);
 
-        void getDetailsAsync(Iterable<DriveFile> driveFiles, Task<Iterable<DriveFile>> result);
     }
 
     public static interface List {
@@ -54,9 +62,26 @@ public interface IDrivenApi {
 
     public static interface Post {
 
+        /**
+         * Creates on the root
+         * @param name
+         * @return
+         */
+        DriveFile create(String name);
+
+        DriveFile create(String name, FileContent content);
+
+        DriveFile create(DriveFile parent, String name);
+
         DriveFile create(DriveFile parent, String name, FileContent content);
 
         void createAsync(DriveFile parent, String name, FileContent content, Task<DriveFile> result);
+
+        void createAsync(DriveFile parent, String name, Task<DriveFile> result);
+
+        void createAsync(String name, Task<DriveFile> result);
+
+        void createAsync(String name, FileContent content, Task<DriveFile> result);
 
     }
 
@@ -76,6 +101,10 @@ public interface IDrivenApi {
     }
 
     public static interface Query {
+
+        DriveFile first(String query);
+
+        void firstAsync(String query, Task<DriveFile> result);
 
         Iterable<DriveFile> query(String query);
 
