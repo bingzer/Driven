@@ -31,5 +31,6 @@ class TestUsage {
 
         driven.query("title = 'BabyCare'");
         driven.first("title = 'babyCare'");
+        DriveFile driveFile = driven.title("BabyCare");
     }
 }

@@ -23,6 +23,7 @@ import java.io.File;
 /**
  * Created by Ricky on 5/3/2014.
  */
+@SuppressWarnings("unused")
 public interface DrivenApi {
 
     public static interface Get {
@@ -33,13 +34,13 @@ public interface DrivenApi {
 
         public static interface ByTitle {
 
-            DriveFile getByTitle(DriveFile parent, String title);
+            DriveFile title(DriveFile parent, String title);
 
-            DriveFile getByTitle(String title);
+            DriveFile title(String title);
 
-            void getByTitleAsync(DriveFile parent, String title, Task<DriveFile> result);
+            void titleAsync(DriveFile parent, String title, Task<DriveFile> result);
 
-            void getByTitleAsync(String title, Task<DriveFile> result);
+            void titleAsync(String title, Task<DriveFile> result);
         }
 
     }
@@ -54,9 +55,13 @@ public interface DrivenApi {
 
     public static interface List {
 
+        Iterable<DriveFile> list();
+
         Iterable<DriveFile> list(DriveFile folder);
 
         void listAsync(DriveFile folder, Task<Iterable<DriveFile>> result);
+
+        void list(Task<Iterable<DriveFile>> result);
 
     }
 

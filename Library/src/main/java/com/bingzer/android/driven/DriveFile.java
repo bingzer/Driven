@@ -21,6 +21,8 @@ import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import static com.bingzer.android.driven.Driven.doAsync;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +77,7 @@ public class DriveFile {
     }
 
     public void loadDetailsAsync(Task<File> result){
-        Driven.getDriven().doAsync(result, new Delegate<File>() {
+        doAsync(result, new Delegate<File>() {
             @Override public File invoke() {
                 return getDetails();
             }
@@ -87,7 +89,7 @@ public class DriveFile {
     }
 
     public void listAsync(Task<Iterable<DriveFile>> result) {
-        Driven.getDriven().doAsync(result, new Delegate<Iterable<DriveFile>>() {
+        doAsync(result, new Delegate<Iterable<DriveFile>>() {
             @Override public Iterable<DriveFile> invoke() {
                 return list();
             }
@@ -99,7 +101,7 @@ public class DriveFile {
     }
 
     public void downloadAsync(final java.io.File local, Task<java.io.File> result) {
-        Driven.getDriven().doAsync(result, new Delegate<java.io.File>() {
+        doAsync(result, new Delegate<java.io.File>() {
             @Override public java.io.File invoke() {
                 return download(local);
             }
@@ -111,7 +113,7 @@ public class DriveFile {
     }
 
     public void uploadAsync(final FileContent content, Task<Boolean> result) {
-        Driven.getDriven().doAsync(result, new Delegate<Boolean>() {
+        doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return upload(content);
             }
@@ -123,9 +125,21 @@ public class DriveFile {
     }
 
     public void shareAsync(Task<Boolean> result, final String... users){
-        Driven.getDriven().doAsync(result, new Delegate<Boolean>() {
+        doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return share(users);
+            }
+        });
+    }
+
+    public boolean delete(){
+        return Driven.getDriven().delete(getId());
+    }
+
+    public void deleteAsync(Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return delete();
             }
         });
     }

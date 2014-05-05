@@ -23,7 +23,10 @@ import com.bingzer.android.driven.contracts.DrivenApi;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.IOUtils;
-
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -53,6 +56,7 @@ public final class Driven
     private static final String TAG = "Driven";
 
     private Drive service;
+    private DriveUser driveUser;
     private final SharedWithMe sharedWithMe = new SharedWithMeImpl();
 
     public static Driven getDriven(){
@@ -65,9 +69,23 @@ public final class Driven
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void authenticate(Drive service) throws DrivenException {
-        // throw not implemented
-        this.service = service;
+    public GoogleAccountCredential authenticate(GoogleAccountCredential credential) throws DrivenException {
+        try {
+            service = getGoogleDriveService(credential);
+            driveUser = new DriveUser(service.about().get().setFields("name,user").execute());
+        }
+        catch (UserRecoverableAuthIOException e){
+            throw new DrivenException(e);
+        }
+        catch (IOException e){
+            throw new DrivenException(e);
+        }
+
+        return credential;
+    }
+
+    public static Drive getGoogleDriveService(GoogleAccountCredential credential) {
+        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), credential).build();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,29 +110,29 @@ public final class Driven
     }
 
     @Override
-    public DriveFile getByTitle(DriveFile parent, String title) {
+    public DriveFile title(DriveFile parent, String title) {
         return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
     }
 
     @Override
-    public DriveFile getByTitle(String title) {
+    public DriveFile title(String title) {
         return first("'title = '" + title + "'");
     }
 
     @Override
-    public void getByTitleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
+    public void titleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
         doAsync(result, new Delegate<DriveFile>() {
             @Override public DriveFile invoke() {
-                return getByTitle(parent, title);
+                return title(parent, title);
             }
         });
     }
 
     @Override
-    public void getByTitleAsync(final String title, Task<DriveFile> result) {
+    public void titleAsync(final String title, Task<DriveFile> result) {
         doAsync(result, new Delegate<DriveFile>() {
             @Override public DriveFile invoke() {
-                return getByTitle(title);
+                return title(title);
             }
         });
     }
@@ -275,6 +293,17 @@ public final class Driven
     }
 
     @Override
+    public Iterable<DriveFile> list() {
+        try {
+            FileList fileList = list(null, defaultFields, false);
+            return DriveFile.from(fileList);
+        }
+        catch (IOException e){
+            return null;
+        }
+    }
+
+    @Override
     public Iterable<DriveFile> list(DriveFile folder) {
         try {
             FileList fileList = list("'" + folder.getId() + "' in parents", defaultFields, false);
@@ -290,6 +319,15 @@ public final class Driven
         doAsync(result, new Delegate<Iterable<DriveFile>>() {
             @Override public Iterable<DriveFile> invoke() {
                 return list(folder);
+            }
+        });
+    }
+
+    @Override
+    public void list(Task<Iterable<DriveFile>> result) {
+        doAsync(result, new Delegate<Iterable<DriveFile>>() {
+            @Override public Iterable<DriveFile> invoke() {
+                return list();
             }
         });
     }
@@ -373,14 +411,20 @@ public final class Driven
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
-        return service.files().list()
-                .setFields(fields)
-                .setQ(query + (includeTrashed ? "" : " AND trashed = false"))
-                .execute();
+        Drive.Files.List list = service.files().list();
+
+        String includeTrashQuery = (includeTrashed ? null : " AND trashed = false");
+
+        if(query != null) list.setQ(query + includeTrashQuery);
+        else if(includeTrashQuery != null) list.setQ(includeTrashQuery);
+
+        if(fields != null) list.setFields(fields);
+
+        return list.execute();
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> void doAsync(final Task<T> task, final Delegate<T> action){
+    protected static <T> void doAsync(final Task<T> task, final Delegate<T> action){
         new AsyncTask<Void, Void, T>(){
 
             @Override protected T doInBackground(Void... params) {
