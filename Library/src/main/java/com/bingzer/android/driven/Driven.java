@@ -91,6 +91,8 @@ public final class Driven
 
     public Result<DrivenException> authenticate(GoogleAccountCredential credential) throws DrivenException {
         Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
+        if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
+
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
             driveService = DriveUtils.createGoogleDriveService(credential);
@@ -100,7 +102,7 @@ public final class Driven
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
         }
         catch (IOException e){
-            Log.i(TAG, "Driven API cannot authenticate");
+            Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getSelectedAccountName());
             result.setException(new DrivenException(e));
         }
 
