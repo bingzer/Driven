@@ -21,7 +21,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.bingzer.android.driven.app.DrivenActivity" android:exported="true"/>
 
         <!-- Google Play Service MetaData -->
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />

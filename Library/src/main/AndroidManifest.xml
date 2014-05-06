@@ -1,5 +1,8 @@
 <manifest
     package="com.bingzer.android.driven"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:allowBackup="true"/>
+    <application android:allowBackup="true">
+        <activity android:name="com.bingzer.android.driven.app.DrivenActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+    </application>
+
 </manifest>

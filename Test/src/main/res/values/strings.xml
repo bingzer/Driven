@@ -4,6 +4,6 @@
     <string name="app_name">Driven Test</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="login">Login</string>
+    <string name="login">Login to GoogleDrive</string>
 
 </resources>

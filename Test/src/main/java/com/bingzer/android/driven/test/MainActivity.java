@@ -7,13 +7,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.app.DrivenActivity;
 
 
 public class MainActivity extends ActionBarActivity {
-
-    public static int REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +49,10 @@ public class MainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == DrivenActivity.REQUEST_LOGIN){
             if(resultCode == RESULT_OK){
-
+                Toast.makeText(this, "Successfully authenticate\n" + Driven.getDriven().getDriveUser(), Toast.LENGTH_SHORT).show();
             }
             else{
-
+                Toast.makeText(this, "Failed to authenticate", Toast.LENGTH_SHORT).show();
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
