@@ -42,4 +42,13 @@ public class DriveUser {
     public String getEmailAddress() {
         return emailAddress;
     }
+
+    @Override
+    public String toString() {
+        return "DriveUser{" +
+                "name='" + name + '\'' +
+                ", displayName='" + displayName + '\'' +
+                ", emailAddress='" + emailAddress + '\'' +
+                '}';
+    }
 }

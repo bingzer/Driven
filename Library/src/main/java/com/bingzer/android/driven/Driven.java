@@ -20,13 +20,13 @@ import android.util.Log;
 
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.DrivenApi;
+import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -52,15 +52,17 @@ public final class Driven
                     DrivenApi.List, DrivenApi.Details,
                     DrivenApi.Download, DrivenApi.Share{
 
+    private static final Driven driven = new Driven();
     private static final String defaultFields = "items(id,mimeType,title,downloadUrl)";
     private static final String TAG = "Driven";
 
     private Drive service;
     private DriveUser driveUser;
     private final SharedWithMe sharedWithMe = new SharedWithMeImpl();
+    private boolean isAuthenticated = false;
 
     public static Driven getDriven(){
-        return null;
+        return driven;
     }
 
     private Driven(){
@@ -69,23 +71,41 @@ public final class Driven
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    public GoogleAccountCredential authenticate(GoogleAccountCredential credential) throws DrivenException {
+    public boolean isAuthenticated(){
+        return isAuthenticated;
+    }
+
+    public DriveUser getDriveUser(){
+        return driveUser;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Result<DrivenException> authenticate(GoogleAccountCredential credential) throws DrivenException {
+        Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
             service = getGoogleDriveService(credential);
             driveUser = new DriveUser(service.about().get().setFields("name,user").execute());
-        }
-        catch (UserRecoverableAuthIOException e){
-            throw new DrivenException(e);
+
+            result.setSuccess(true);
+            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
+            isAuthenticated = true;
         }
         catch (IOException e){
-            throw new DrivenException(e);
+            Log.i(TAG, "Driven API cannot authenticate");
+            result.setException(new DrivenException(e));
         }
 
-        return credential;
+        return result;
     }
 
-    public static Drive getGoogleDriveService(GoogleAccountCredential credential) {
-        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), credential).build();
+    public void authenticateAsync(final GoogleAccountCredential credential, Task<Result<DrivenException>> result){
+        doAsync(result, new Delegate<Result<DrivenException>>() {
+            @Override public Result<DrivenException> invoke() {
+                return authenticate(credential);
+            }
+        });
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +441,10 @@ public final class Driven
         if(fields != null) list.setFields(fields);
 
         return list.execute();
+    }
+
+    private static Drive getGoogleDriveService(GoogleAccountCredential credential) {
+        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), credential).build();
     }
 
     @SuppressWarnings("unchecked")

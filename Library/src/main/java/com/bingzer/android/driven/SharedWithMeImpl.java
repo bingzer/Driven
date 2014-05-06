@@ -19,6 +19,8 @@ import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
 
+import static com.bingzer.android.driven.Driven.doAsync;
+
 /**
  * Created by Ricky on 5/5/2014.
  */
@@ -38,8 +40,9 @@ class SharedWithMeImpl implements SharedWithMe {
 
     @Override
     public void titleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
-        driven.doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+        doAsync(result, new Delegate<DriveFile>() {
+            @Override
+            public DriveFile invoke() {
                 return title(parent, title);
             }
         });
@@ -47,8 +50,9 @@ class SharedWithMeImpl implements SharedWithMe {
 
     @Override
     public void titleAsync(final String title, Task<DriveFile> result) {
-        driven.doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+        doAsync(result, new Delegate<DriveFile>() {
+            @Override
+            public DriveFile invoke() {
                 return title(title);
             }
         });

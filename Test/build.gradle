@@ -17,6 +17,7 @@ android {
 dependencies {
     compile 'com.android.support:appcompat-v7:19.+'
     // --- Google Drive
+    compile 'com.google.android.gms:play-services:4.3.23'
     compile 'com.google.apis:google-api-services-drive:v2-rev123-1.18.0-rc'
     compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
     // --- Library
