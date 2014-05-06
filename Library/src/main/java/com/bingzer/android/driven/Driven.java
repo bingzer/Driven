@@ -94,7 +94,7 @@ public final class Driven
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
             driveService = DriveUtils.createGoogleDriveService(credential);
-            driveUser = new DriveUser(getDriveService().about().get().setFields("name,user").execute());
+            driveUser = new DriveUser(driveService.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
