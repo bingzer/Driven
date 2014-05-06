@@ -143,7 +143,7 @@ public final class Driven
 
     @Override
     public DriveFile title(String title) {
-        return first("'title = '" + title + "'");
+        return first("title = '" + title + "'");
     }
 
     @Override
