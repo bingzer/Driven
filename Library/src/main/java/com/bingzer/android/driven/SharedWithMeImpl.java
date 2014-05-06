@@ -26,7 +26,11 @@ import static com.bingzer.android.driven.Driven.doAsync;
  */
 class SharedWithMeImpl implements SharedWithMe {
 
-    private Driven driven = Driven.getDriven();
+    private Driven driven;
+
+    protected SharedWithMeImpl(Driven driven){
+        this.driven = driven;
+    }
 
     @Override
     public DriveFile title(DriveFile parent, String title) {

@@ -59,7 +59,7 @@ public final class Driven
 
     private Drive service;
     private DriveUser driveUser;
-    private final SharedWithMe sharedWithMe = new SharedWithMeImpl();
+    private final SharedWithMe sharedWithMe;
     private boolean isAuthenticated = false;
 
     public static Driven getDriven(){
@@ -67,7 +67,7 @@ public final class Driven
     }
 
     private Driven(){
-        // nothing
+        sharedWithMe = new SharedWithMeImpl(this);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
