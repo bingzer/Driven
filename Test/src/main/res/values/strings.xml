@@ -5,5 +5,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="login">Login to GoogleDrive</string>
+    <string name="test_goes_here">Ready to test...</string>
 
 </resources>

@@ -76,7 +76,7 @@ public class DriveFile {
         return fileModel;
     }
 
-    public void loadDetailsAsync(Task<File> result){
+    public void getDetailsAsync(Task<File> result){
         doAsync(result, new Delegate<File>() {
             @Override public File invoke() {
                 return getDetails();

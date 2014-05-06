@@ -15,11 +15,14 @@
         android:id="@+id/login_button"
         android:onClick="login"/>
 
-    <ListView
-        android:id="@+id/list_view"
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/login_button"
+        android:textSize="20sp"
+        android:text="@string/test_goes_here"
+        android:padding="10dp"
         android:visibility="gone"/>
 
 </RelativeLayout>

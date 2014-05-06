@@ -53,7 +53,8 @@ public final class Driven
                     DrivenApi.Download, DrivenApi.Share{
 
     private static final Driven driven = new Driven();
-    private static final String defaultFields = "items(id,mimeType,title,downloadUrl)";
+    private static final String defaultFields      = "id,mimeType,title,downloadUrl";
+    private static final String defaultFieldsItems = "items(" + defaultFields + ")";
     private static final String TAG = "Driven";
 
     private Drive service;
@@ -200,7 +201,7 @@ public final class Driven
     @Override
     public DriveFile first(String query) {
         try{
-            FileList fileList = list(query, defaultFields, true);
+            FileList fileList = list(query, defaultFieldsItems, true);
             return new DriveFile(fileList.getItems().get(0), false);
         }
         catch (IOException e){
@@ -220,7 +221,7 @@ public final class Driven
     @Override
     public Iterable<DriveFile> query(String query) {
         try{
-            FileList fileList = list(query, defaultFields, true);
+            FileList fileList = list(query, defaultFieldsItems, true);
             return DriveFile.from(fileList);
         }
         catch (IOException e){
@@ -315,7 +316,7 @@ public final class Driven
     @Override
     public Iterable<DriveFile> list() {
         try {
-            FileList fileList = list(null, defaultFields, false);
+            FileList fileList = list(null, defaultFieldsItems, false);
             return DriveFile.from(fileList);
         }
         catch (IOException e){
@@ -326,7 +327,7 @@ public final class Driven
     @Override
     public Iterable<DriveFile> list(DriveFile folder) {
         try {
-            FileList fileList = list("'" + folder.getId() + "' in parents", defaultFields, false);
+            FileList fileList = list("'" + folder.getId() + "' in parents", defaultFieldsItems, false);
             return DriveFile.from(fileList);
         }
         catch (IOException e){
@@ -344,7 +345,7 @@ public final class Driven
     }
 
     @Override
-    public void list(Task<Iterable<DriveFile>> result) {
+    public void listAsync(Task<Iterable<DriveFile>> result) {
         doAsync(result, new Delegate<Iterable<DriveFile>>() {
             @Override public Iterable<DriveFile> invoke() {
                 return list();

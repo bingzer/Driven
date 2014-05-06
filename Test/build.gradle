@@ -24,7 +24,9 @@ dependencies {
     compile 'com.google.apis:google-api-services-drive:v2-rev123-1.18.0-rc'
     compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
     // -- Mockito
-    compile 'org.mockito:mockito-all:1.9.5'
+    androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
     // --- Library
     compile project(':Library')
 }

@@ -6,19 +6,32 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bingzer.android.driven.DriveFile;
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.app.DrivenActivity;
+import com.google.android.gms.drive.DriveFolder;
+
+import java.util.Objects;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 
 public class MainActivity extends ActionBarActivity {
+
+    private TextView textView;
+    private Thread testThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        textView = (TextView) findViewById(R.id.textView);
+        testThread = new Thread(new TestRunnable());
     }
 
 
@@ -50,11 +63,66 @@ public class MainActivity extends ActionBarActivity {
         if(requestCode == DrivenActivity.REQUEST_LOGIN){
             if(resultCode == RESULT_OK){
                 Toast.makeText(this, "Successfully authenticate\n" + Driven.getDriven().getDriveUser(), Toast.LENGTH_SHORT).show();
+                textView.setVisibility(View.VISIBLE);
+                testThread.start();
             }
             else{
                 Toast.makeText(this, "Failed to authenticate", Toast.LENGTH_SHORT).show();
+                textView.setVisibility(View.GONE);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void setText(final CharSequence text){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(text);
+            }
+        });
+    }
+
+    private void appendText(final CharSequence text){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.append(text);
+            }
+        });
+    }
+
+    private void appendTextLine(final CharSequence text){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                appendText("\n" + text);
+            }
+        });
+    }
+
+    class TestRunnable implements Runnable{
+        @Override public void run() {
+            Driven driven = Driven.getDriven();
+            setText("Running test...");
+
+            // -------------------------------------------------------------------//
+            // create folder
+            appendTextLine("Preparing your Google Drive for testing...");
+
+            appendTextLine("driven.create(String name)");
+            DriveFile root;
+            if((root = driven.title("DrivenTest")) == null) {
+                root = driven.create("DrivenTest");
+                assertTrue(root.isDirectory());
+            }
+            appendText("... [OK]");
+
+            appendTextLine("driven.create(DriveFile parent, String name)");
+            assertNotNull(driven.create(root, "Folder 1"));
+            appendText("... [OK]");
+        }
     }
 }

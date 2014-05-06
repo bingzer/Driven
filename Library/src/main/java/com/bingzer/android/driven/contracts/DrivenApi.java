@@ -61,7 +61,7 @@ public interface DrivenApi {
 
         void listAsync(DriveFile folder, Task<Iterable<DriveFile>> result);
 
-        void list(Task<Iterable<DriveFile>> result);
+        void listAsync(Task<Iterable<DriveFile>> result);
 
     }
 
