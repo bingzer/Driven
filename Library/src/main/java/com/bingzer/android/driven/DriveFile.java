@@ -21,10 +21,10 @@ import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-import static com.bingzer.android.driven.Driven.doAsync;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
 /**
  * Created by Ricky on 5/3/2014.

@@ -19,6 +19,10 @@ package com.bingzer.android.driven;
  * Created by Ricky on 5/3/2014.
  */
 public class DrivenException extends Error {
+    public DrivenException(String message) {
+        super(message);
+    }
+
     public DrivenException(Exception base){
         super(base);
     }

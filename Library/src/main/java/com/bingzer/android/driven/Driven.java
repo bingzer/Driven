@@ -15,7 +15,6 @@
  */
 package com.bingzer.android.driven;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.bingzer.android.driven.contracts.Delegate;
@@ -23,9 +22,8 @@ import com.bingzer.android.driven.contracts.DrivenApi;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.utils.DriveUtils;
 import com.bingzer.android.driven.utils.IOUtils;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
@@ -40,6 +38,8 @@ import com.google.api.services.drive.model.Permission;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+
+import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
 /**
  * Driven
@@ -57,14 +57,15 @@ public final class Driven
     private static final String defaultFieldsItems = "items(" + defaultFields + ")";
     private static final String TAG = "Driven";
 
-    private Drive service;
-    private DriveUser driveUser;
-    private final SharedWithMe sharedWithMe;
-    private boolean isAuthenticated = false;
-
     public static Driven getDriven(){
         return driven;
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Drive driveService;
+    private DriveUser driveUser;
+    private final SharedWithMe sharedWithMe;
 
     private Driven(){
         sharedWithMe = new SharedWithMeImpl(this);
@@ -73,14 +74,18 @@ public final class Driven
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean isAuthenticated(){
-        return isAuthenticated;
+        return driveService != null && driveUser != null;
     }
 
-    public DriveUser getDriveUser(){
+    public DriveUser getDriveUser() throws DrivenException{
+        if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return driveUser;
     }
 
-    public Drive getDriveService(){ return service; }
+    public Drive getDriveService() throws DrivenException{
+        if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
+        return driveService;
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -88,12 +93,11 @@ public final class Driven
         Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
-            service = getGoogleDriveService(credential);
-            driveUser = new DriveUser(service.about().get().setFields("name,user").execute());
+            driveService = DriveUtils.createGoogleDriveService(credential);
+            driveUser = new DriveUser(getDriveService().about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
-            isAuthenticated = true;
         }
         catch (IOException e){
             Log.i(TAG, "Driven API cannot authenticate");
@@ -116,7 +120,7 @@ public final class Driven
     @Override
     public DriveFile get(String id) {
         try{
-            return new DriveFile(service.files().get(id).setFields(defaultFields).execute(), false);
+            return new DriveFile(getDriveService().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -163,7 +167,7 @@ public final class Driven
     @Override
     public DriveFile update(DriveFile driveFile, FileContent content) {
         try{
-            return new DriveFile(service.files().update(driveFile.getId(), driveFile.getModel()).execute(), driveFile.hasDetails());
+            return new DriveFile(getDriveService().files().update(driveFile.getId(), driveFile.getModel()).execute(), driveFile.hasDetails());
         }
         catch (IOException e){
             return null;
@@ -182,7 +186,7 @@ public final class Driven
     @Override
     public boolean delete(String id) {
         try {
-            Void v = service.files().delete(id)
+            Void v = getDriveService().files().delete(id)
                     .execute();
             return v != null;
         }
@@ -268,9 +272,9 @@ public final class Driven
 
             /////////////////////////////////////
             if(content != null)
-                file = service.files().insert(file, content).execute();
+                file = getDriveService().files().insert(file, content).execute();
             else
-                file = service.files().insert(file).execute();
+                file = getDriveService().files().insert(file).execute();
 
             return get(file.getId());
         }
@@ -358,7 +362,7 @@ public final class Driven
     @Override
     public DriveFile getDetails(DriveFile driveFile) {
         try{
-            return new DriveFile(service.files().get(driveFile.getId()).execute(), true);
+            return new DriveFile(getDriveService().files().get(driveFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
@@ -378,7 +382,7 @@ public final class Driven
     public File download(DriveFile driveFile, File local) {
         try{
             GenericUrl url = new GenericUrl(driveFile.getModel().getDownloadUrl());
-            HttpRequestFactory factory = service.getRequestFactory();
+            HttpRequestFactory factory = getDriveService().getRequestFactory();
             HttpRequest request = factory.buildGetRequest(url);
             HttpResponse response = request.execute();
 
@@ -408,7 +412,7 @@ public final class Driven
             newPermission.setType("user");
             newPermission.setRole("writer");
 
-            service.permissions().insert(driveFile.getId(), newPermission).execute();
+            getDriveService().permissions().insert(driveFile.getId(), newPermission).execute();
             return true;
         }
         catch (IOException e){
@@ -434,7 +438,7 @@ public final class Driven
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
-        Drive.Files.List list = service.files().list();
+        Drive.Files.List list = getDriveService().files().list();
 
         String includeTrashQuery = (includeTrashed ? null : " AND trashed = false");
 
@@ -444,40 +448,6 @@ public final class Driven
         if(fields != null) list.setFields(fields);
 
         return list.execute();
-    }
-
-    private static Drive getGoogleDriveService(GoogleAccountCredential credential) {
-        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), credential).build();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static <T> void doAsync(final Task<T> task, final Delegate<T> action){
-        new AsyncTask<Void, Void, T>(){
-
-            @Override protected T doInBackground(Void... params) {
-                try {
-                    return action.invoke();
-                }
-                catch (Throwable e){
-                    reportError(e);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(T result) {
-                task.onCompleted(result);
-            }
-
-            void reportError(Throwable error){
-                if(task instanceof Task.WithErrorReporting) {
-                    ((Task.WithErrorReporting) task).onError(error);
-                }
-                else
-                    Log.e(TAG, "Error occurred in AsyncTask", error);
-            }
-        }.execute();
     }
 
 }

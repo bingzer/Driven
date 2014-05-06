@@ -29,12 +29,6 @@ import java.util.Locale;
 @SuppressWarnings("UnusedDeclaration")
 public final class IOUtils {
 
-    private IOUtils(){
-        // nothing
-    }
-
-    //////////////////////////////////////////////////////////////////////
-
     /**
      * Delete dir and its children
      */
@@ -155,5 +149,11 @@ public final class IOUtils {
                 size += getDirectorySize(file);
         }
         return size;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private IOUtils(){
+        // nothing
     }
 }
