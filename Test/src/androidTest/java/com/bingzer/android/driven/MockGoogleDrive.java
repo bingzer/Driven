@@ -14,6 +14,10 @@ public class MockGoogleDrive {
     public FileList folder2List = new FileList();
 
     public MockGoogleDrive(){
+        rootList.setItems(new ArrayList<File>());
+        folder1List.setItems(new ArrayList<File>());
+        folder2List.setItems(new ArrayList<File>());
+
         // -- ROOT
         File root = new File().setId("0").setMimeType(DriveFile.MIME_TYPE_FOLDER).setDownloadUrl("download0").setTitle("title0").setEtag("etag0").setDescription("description0");
         rootList.getItems().add(new File().setId("0-1").setMimeType("Mime0-1").setDownloadUrl("download0-1").setTitle("title0-1").setEtag("etag0-1").setDescription("description0-1").setParents(folder(root)));
