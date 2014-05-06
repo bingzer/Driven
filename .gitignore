@@ -7,6 +7,7 @@ gradlew.bat
 *.iml
 gradle
 gen/
+.idea/
 
 
 #################
