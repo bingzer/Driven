@@ -72,7 +72,7 @@ public class DriveFile {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public File getDetails(){
-        consume(Driven.getDriven().getDetails(this));
+        if(!hasDetails) consume(Driven.getDriven().getDetails(this));
         return fileModel;
     }
 

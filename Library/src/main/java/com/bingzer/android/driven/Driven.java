@@ -80,6 +80,8 @@ public final class Driven
         return driveUser;
     }
 
+    public Drive getDriveService(){ return service; }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public Result<DrivenException> authenticate(GoogleAccountCredential credential) throws DrivenException {
