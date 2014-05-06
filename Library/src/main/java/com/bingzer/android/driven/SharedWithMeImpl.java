@@ -19,7 +19,7 @@ import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
 
-import static com.bingzer.android.driven.Driven.doAsync;
+import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
 /**
  * Created by Ricky on 5/5/2014.
