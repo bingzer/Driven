@@ -103,10 +103,13 @@ public class DrivenActivity extends Activity {
     }
 
     public static void launch(Activity activity, int requestCode){
+        activity.startActivityForResult(createLoginIntent(activity), requestCode);
+    }
+
+    public static Intent createLoginIntent(Activity activity){
         Intent intent = new Intent(activity, DrivenActivity.class);
         intent.putExtra(BUNDLE_KEY_LOGIN, REQUEST_LOGIN);
-
-        activity.startActivityForResult(intent, requestCode);
+        return intent;
     }
 
 }
