@@ -94,7 +94,7 @@ public final class Driven implements DrivenApi.Auth,
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public Result<DrivenException> authenticate(GoogleAccountCredential credential)  {
-        return authenticate(credential, false);
+        return authenticate(credential, true);
     }
 
     @Override
@@ -116,7 +116,9 @@ public final class Driven implements DrivenApi.Auth,
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
 
-            if(saveCredential) saveCredentials(credential);
+            // only save when it's not null
+            if(saveCredential && credential.getSelectedAccountName() != null)
+                saveCredentials(credential);
         }
         catch (IOException e){
             Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getSelectedAccountName());
