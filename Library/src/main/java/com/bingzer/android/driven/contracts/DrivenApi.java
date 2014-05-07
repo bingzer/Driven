@@ -16,6 +16,8 @@
 package com.bingzer.android.driven.contracts;
 
 import com.bingzer.android.driven.DriveFile;
+import com.bingzer.android.driven.DrivenException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
 
 import java.io.File;
@@ -25,6 +27,17 @@ import java.io.File;
  */
 @SuppressWarnings("unused")
 public interface DrivenApi {
+
+    public static interface Auth {
+
+        Result<DrivenException> authenticate(GoogleAccountCredential credential);
+
+        Result<DrivenException> authenticate(GoogleAccountCredential credential, boolean saveCredential);
+
+        void authenticateAsync(GoogleAccountCredential credential, Task<Result<DrivenException>> result);
+
+        void authenticateAsync(GoogleAccountCredential credential, boolean saveCredential, Task<Result<DrivenException>> result);
+    }
 
     public static interface Get {
 
@@ -101,7 +114,7 @@ public interface DrivenApi {
 
         boolean delete(String id);
 
-        void delete(String id, Task<Boolean> result);
+        void deleteAsync(String id, Task<Boolean> result);
 
     }
 
@@ -113,7 +126,7 @@ public interface DrivenApi {
 
         Iterable<DriveFile> query(String query);
 
-        void query(String query, Task<Iterable<DriveFile>> result);
+        void queryAsync(String query, Task<Iterable<DriveFile>> result);
 
     }
 

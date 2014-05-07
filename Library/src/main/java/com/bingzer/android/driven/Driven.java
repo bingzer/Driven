@@ -15,6 +15,7 @@
  */
 package com.bingzer.android.driven;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.bingzer.android.driven.contracts.Delegate;
@@ -35,7 +36,10 @@ import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.drive.model.Permission;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -45,8 +49,8 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  * Driven
  */
 @SuppressWarnings("unused")
-public final class Driven
-        implements DrivenApi.Get, DrivenApi.Get.ByTitle,
+public final class Driven implements DrivenApi.Auth,
+                    DrivenApi.Get, DrivenApi.Get.ByTitle,
                     DrivenApi.Post, DrivenApi.Put,
                     DrivenApi.Delete, DrivenApi.Query,
                     DrivenApi.List, DrivenApi.Details,
@@ -90,17 +94,29 @@ public final class Driven
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public Result<DrivenException> authenticate(GoogleAccountCredential credential)  {
+        return authenticate(credential, false);
+    }
+
+    @Override
+    public Result<DrivenException> authenticate(GoogleAccountCredential credential, boolean saveCredential) {
         Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
 
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
+            String accountName = readSavedCredentials(credential.getContext());
+            if (credential.getSelectedAccountName() == null && accountName != null) {
+                credential.setSelectedAccountName(accountName);
+            }
+
             driveService = DriveUtils.createGoogleDriveService(credential);
             driveUser = new DriveUser(driveService.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
+
+            if(saveCredential) saveCredentials(credential);
         }
         catch (IOException e){
             Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getSelectedAccountName());
@@ -114,6 +130,15 @@ public final class Driven
         doAsync(result, new Delegate<Result<DrivenException>>() {
             @Override public Result<DrivenException> invoke() {
                 return authenticate(credential);
+            }
+        });
+    }
+
+    @Override
+    public void authenticateAsync(final GoogleAccountCredential credential, final boolean saveCredential, Task<Result<DrivenException>> result) {
+        doAsync(result, new Delegate<Result<DrivenException>>() {
+            @Override public Result<DrivenException> invoke() {
+                return authenticate(credential, saveCredential);
             }
         });
     }
@@ -140,22 +165,8 @@ public final class Driven
     }
 
     @Override
-    public DriveFile title(DriveFile parent, String title) {
-        return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
-    }
-
-    @Override
     public DriveFile title(String title) {
         return first("title = '" + title + "'");
-    }
-
-    @Override
-    public void titleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
-                return title(parent, title);
-            }
-        });
     }
 
     @Override
@@ -163,6 +174,20 @@ public final class Driven
         doAsync(result, new Delegate<DriveFile>() {
             @Override public DriveFile invoke() {
                 return title(title);
+            }
+        });
+    }
+
+    @Override
+    public DriveFile title(DriveFile parent, String title) {
+        return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
+    }
+
+    @Override
+    public void titleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
+        doAsync(result, new Delegate<DriveFile>() {
+            @Override public DriveFile invoke() {
+                return title(parent, title);
             }
         });
     }
@@ -199,7 +224,7 @@ public final class Driven
     }
 
     @Override
-    public void delete(final String id, Task<Boolean> result) {
+    public void deleteAsync(final String id, Task<Boolean> result) {
         doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return delete(id);
@@ -239,7 +264,7 @@ public final class Driven
     }
 
     @Override
-    public void query(final String query, Task<Iterable<DriveFile>> result) {
+    public void queryAsync(final String query, Task<Iterable<DriveFile>> result) {
         doAsync(result, new Delegate<Iterable<DriveFile>>() {
             @Override public Iterable<DriveFile> invoke() {
                 return query(query);
@@ -451,6 +476,48 @@ public final class Driven
         if(fields != null) list.setFields(fields);
 
         return list.execute();
+    }
+
+    private File getCredentialFile(Context context){
+        File dir = context.getFilesDir();
+        return new File(dir, "credential");
+    }
+
+    private void saveCredentials(GoogleAccountCredential credential) throws IOException{
+        FileWriter writer = null;
+        try{
+            writer = new FileWriter(getCredentialFile(credential.getContext()));
+            writer.write(credential.getSelectedAccountName());
+            writer.flush();
+            writer.close();
+        }
+        catch (IOException e){
+            Log.e(TAG, "Failed to save credentials to file", e);
+        }
+        finally {
+            if(writer != null) writer.close();
+        }
+    }
+
+    private String readSavedCredentials(Context context) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(getCredentialFile(context)));
+            return reader.readLine().trim();
+        }
+        catch (IOException e){
+            return null;
+        }
+        finally {
+            if(reader != null){
+                try{
+                    reader.close();
+                }
+                catch (IOException e){
+                    Log.wtf(TAG, "Failed when attempting to close");
+                }
+            }
+        }
     }
 
 }
