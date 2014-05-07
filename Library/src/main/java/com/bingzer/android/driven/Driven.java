@@ -470,12 +470,9 @@ public final class Driven implements DrivenApi.Auth,
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
         Drive.Files.List list = getDriveService().files().list();
 
-        String includeTrashQuery = (includeTrashed ? null : " AND trashed = false");
-
-        if(query != null) list.setQ(query + includeTrashQuery);
-        else if(includeTrashQuery != null) list.setQ(includeTrashQuery);
-
+        if(query != null) list.setQ(query);
         if(fields != null) list.setFields(fields);
+        if(includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
 
         return list.execute();
     }
