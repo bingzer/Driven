@@ -243,6 +243,10 @@ public final class Driven implements DrivenApi.Auth,
         catch (IOException e){
             return null;
         }
+        catch (IndexOutOfBoundsException e){
+            // not found
+            return null;
+        }
     }
 
     @Override
