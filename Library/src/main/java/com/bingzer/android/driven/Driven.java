@@ -20,10 +20,10 @@ import android.util.Log;
 
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.DrivenApi;
+import com.bingzer.android.driven.contracts.DrivenServiceProvider;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
-import com.bingzer.android.driven.utils.DriveUtils;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
@@ -42,6 +42,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+
+import javax.inject.Inject;
 
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
@@ -67,18 +69,20 @@ public final class Driven implements DrivenApi.Auth,
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Drive driveService;
+    private Drive drivenService;
     private DrivenUser drivenUser;
     private final SharedWithMe sharedWithMe;
+    @Inject
+    DrivenServiceProvider serviceProvider;
 
-    private Driven(){
+    Driven(){
         sharedWithMe = new SharedWithMeImpl(this);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean isAuthenticated(){
-        return driveService != null && drivenUser != null;
+        return drivenService != null && drivenUser != null;
     }
 
     public DrivenUser getDrivenUser() throws DrivenException{
@@ -86,9 +90,18 @@ public final class Driven implements DrivenApi.Auth,
         return drivenUser;
     }
 
-    public Drive getDriveService() throws DrivenException{
+    public Drive getDrivenService() throws DrivenException{
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
-        return driveService;
+        return drivenService;
+    }
+
+    public DrivenServiceProvider getServiceProvider(){
+        // if it's not injected.. create the default one
+        if(serviceProvider == null) {
+            serviceProvider = new GoogleDriveServiceProvider();
+        }
+
+        return serviceProvider;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +113,8 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public Result<DrivenException> authenticate(GoogleAccountCredential credential, boolean saveCredential) {
         Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
+        drivenService = null;
+        drivenUser = null;
 
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
@@ -110,8 +125,8 @@ public final class Driven implements DrivenApi.Auth,
                 credential.setSelectedAccountName(accountName);
             }
 
-            driveService = DriveUtils.createGoogleDriveService(credential);
-            drivenUser = new DrivenUser(driveService.about().get().setFields("name,user").execute());
+            drivenService = getServiceProvider().createGoogleDriveService(credential);
+            drivenUser = new DrivenUser(drivenService.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + drivenUser);
@@ -150,7 +165,7 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public DrivenFile get(String id) {
         try{
-            return new DrivenFile(getDriveService().files().get(id).setFields(defaultFields).execute(), false);
+            return new DrivenFile(getDrivenService().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -197,7 +212,7 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public DrivenFile update(DrivenFile drivenFile, FileContent content) {
         try{
-            return new DrivenFile(getDriveService().files().update(drivenFile.getId(), drivenFile.getModel()).execute(), drivenFile.hasDetails());
+            return new DrivenFile(getDrivenService().files().update(drivenFile.getId(), drivenFile.getModel()).execute(), drivenFile.hasDetails());
         }
         catch (IOException e){
             return null;
@@ -216,7 +231,7 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public boolean delete(String id) {
         try {
-            Void v = getDriveService().files().delete(id)
+            Void v = getDrivenService().files().delete(id)
                     .execute();
             return v != null;
         }
@@ -306,9 +321,9 @@ public final class Driven implements DrivenApi.Auth,
 
             /////////////////////////////////////
             if(content != null)
-                file = getDriveService().files().insert(file, content).execute();
+                file = getDrivenService().files().insert(file, content).execute();
             else
-                file = getDriveService().files().insert(file).execute();
+                file = getDrivenService().files().insert(file).execute();
 
             return get(file.getId());
         }
@@ -396,7 +411,7 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public DrivenFile getDetails(DrivenFile drivenFile) {
         try{
-            return new DrivenFile(getDriveService().files().get(drivenFile.getId()).execute(), true);
+            return new DrivenFile(getDrivenService().files().get(drivenFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
@@ -416,7 +431,7 @@ public final class Driven implements DrivenApi.Auth,
     public File download(DrivenFile drivenFile, File local) {
         try{
             GenericUrl url = new GenericUrl(drivenFile.getModel().getDownloadUrl());
-            HttpRequestFactory factory = getDriveService().getRequestFactory();
+            HttpRequestFactory factory = getDrivenService().getRequestFactory();
             HttpRequest request = factory.buildGetRequest(url);
             HttpResponse response = request.execute();
 
@@ -446,7 +461,7 @@ public final class Driven implements DrivenApi.Auth,
             newPermission.setType("user");
             newPermission.setRole("writer");
 
-            getDriveService().permissions().insert(drivenFile.getId(), newPermission).execute();
+            getDrivenService().permissions().insert(drivenFile.getId(), newPermission).execute();
             return true;
         }
         catch (IOException e){
@@ -472,7 +487,7 @@ public final class Driven implements DrivenApi.Auth,
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
-        Drive.Files.List list = getDriveService().files().list();
+        Drive.Files.List list = getDrivenService().files().list();
 
         if(query != null) list.setQ(query);
         if(fields != null) list.setFields(fields);
