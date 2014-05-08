@@ -38,7 +38,7 @@ before_install:
 
   # list packages for debug purpose
   - android list sdk -a -e -u
-  - echo yes | android update sdk -t tools,platform-tools,extra-android-support,extra-android-m2repository,extra-google-m2repository,extra-google-google_play_services,android-19,build-tools-19.0.3 --force --no-ui
+  - echo yes | android update sdk -t tools,platform-tools,extra-android-support,extra-android-m2repository,extra-google-m2repository,extra-google-google_play_services,android-19,build-tools-19.0.3,sysimg-19 --force --no-ui
 
   # Create and start emulator
   - echo no | android create avd --force -n test -t android-19 --abi armeabi-v7a
