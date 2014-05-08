@@ -120,14 +120,14 @@ public class DriveFile {
         });
     }
 
-    public boolean share(String... users){
-        throw new UnsupportedOperationException("Not implemented");
+    public boolean share(String user){
+        return Driven.getDriven().share(this, user);
     }
 
-    public void shareAsync(Task<Boolean> result, final String... users){
+    public void shareAsync(Task<Boolean> result, final String user){
         doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
-                return share(users);
+                return share(user);
             }
         });
     }
