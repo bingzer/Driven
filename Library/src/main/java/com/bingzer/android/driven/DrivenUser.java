@@ -20,12 +20,12 @@ import com.google.api.services.drive.model.About;
 /**
  * Created by Ricky on 5/5/2014.
  */
-public class DriveUser {
+public class DrivenUser {
     private String name;
     private String displayName;
     private String emailAddress;
 
-    protected DriveUser(About about){
+    protected DrivenUser(About about){
         name = about.getName();
         displayName = about.getUser().getDisplayName();
         emailAddress = about.getUser().getEmailAddress();

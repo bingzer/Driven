@@ -30,7 +30,7 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  * Created by Ricky on 5/3/2014.
  */
 @SuppressWarnings("unused")
-public class DriveFile {
+public class DrivenFile {
     public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ public class DriveFile {
     private boolean hasDetails;
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    protected DriveFile(File file, boolean hasDetails){
+    protected DrivenFile(File file, boolean hasDetails){
         init(file, hasDetails);
     }
 
@@ -84,13 +84,13 @@ public class DriveFile {
         });
     }
 
-    public Iterable<DriveFile> list() {
+    public Iterable<DrivenFile> list() {
         return Driven.getDriven().list(this);
     }
 
-    public void listAsync(Task<Iterable<DriveFile>> result) {
-        doAsync(result, new Delegate<Iterable<DriveFile>>() {
-            @Override public Iterable<DriveFile> invoke() {
+    public void listAsync(Task<Iterable<DrivenFile>> result) {
+        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+            @Override public Iterable<DrivenFile> invoke() {
                 return list();
             }
         });
@@ -155,16 +155,16 @@ public class DriveFile {
         return true;
     }
 
-    private boolean consume(DriveFile other){
+    private boolean consume(DrivenFile other){
         return other != null && other.fileModel != null && init(other.fileModel, other.hasDetails);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static Iterable<DriveFile> from(FileList fileList){
-        List<DriveFile> list = new ArrayList<DriveFile>();
+    public static Iterable<DrivenFile> from(FileList fileList){
+        List<DrivenFile> list = new ArrayList<DrivenFile>();
         for(int i = 0; i < fileList.size(); i++){
-            list.add(new DriveFile(fileList.getItems().get(i), false));
+            list.add(new DrivenFile(fileList.getItems().get(i), false));
         }
 
         return list;

@@ -68,7 +68,7 @@ public final class Driven implements DrivenApi.Auth,
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     private Drive driveService;
-    private DriveUser driveUser;
+    private DrivenUser drivenUser;
     private final SharedWithMe sharedWithMe;
 
     private Driven(){
@@ -78,12 +78,12 @@ public final class Driven implements DrivenApi.Auth,
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean isAuthenticated(){
-        return driveService != null && driveUser != null;
+        return driveService != null && drivenUser != null;
     }
 
-    public DriveUser getDriveUser() throws DrivenException{
+    public DrivenUser getDrivenUser() throws DrivenException{
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
-        return driveUser;
+        return drivenUser;
     }
 
     public Drive getDriveService() throws DrivenException{
@@ -111,10 +111,10 @@ public final class Driven implements DrivenApi.Auth,
             }
 
             driveService = DriveUtils.createGoogleDriveService(credential);
-            driveUser = new DriveUser(driveService.about().get().setFields("name,user").execute());
+            drivenUser = new DrivenUser(driveService.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
-            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + driveUser);
+            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + drivenUser);
 
             // only save when it's not null
             if(saveCredential && credential.getSelectedAccountName() != null)
@@ -148,9 +148,9 @@ public final class Driven implements DrivenApi.Auth,
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public DriveFile get(String id) {
+    public DrivenFile get(String id) {
         try{
-            return new DriveFile(getDriveService().files().get(id).setFields(defaultFields).execute(), false);
+            return new DrivenFile(getDriveService().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -158,46 +158,46 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void getAsync(final String id, final Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void getAsync(final String id, final Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return get(id);
             }
         });
     }
 
     @Override
-    public DriveFile title(String title) {
+    public DrivenFile title(String title) {
         return first("title = '" + title + "'");
     }
 
     @Override
-    public void titleAsync(final String title, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void titleAsync(final String title, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return title(title);
             }
         });
     }
 
     @Override
-    public DriveFile title(DriveFile parent, String title) {
+    public DrivenFile title(DrivenFile parent, String title) {
         return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
     }
 
     @Override
-    public void titleAsync(final DriveFile parent, final String title, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void titleAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return title(parent, title);
             }
         });
     }
 
     @Override
-    public DriveFile update(DriveFile driveFile, FileContent content) {
+    public DrivenFile update(DrivenFile drivenFile, FileContent content) {
         try{
-            return new DriveFile(getDriveService().files().update(driveFile.getId(), driveFile.getModel()).execute(), driveFile.hasDetails());
+            return new DrivenFile(getDriveService().files().update(drivenFile.getId(), drivenFile.getModel()).execute(), drivenFile.hasDetails());
         }
         catch (IOException e){
             return null;
@@ -205,10 +205,10 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void updateAsync(final DriveFile driveFile, final FileContent content, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
-                return update(driveFile, content);
+    public void updateAsync(final DrivenFile drivenFile, final FileContent content, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
+                return update(drivenFile, content);
             }
         });
     }
@@ -235,10 +235,10 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public DriveFile first(String query) {
+    public DrivenFile first(String query) {
         try{
             FileList fileList = list(query, defaultFieldsItems, true);
-            return new DriveFile(fileList.getItems().get(0), false);
+            return new DrivenFile(fileList.getItems().get(0), false);
         }
         catch (IOException e){
             return null;
@@ -250,19 +250,19 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void firstAsync(final String query, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void firstAsync(final String query, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return first(query);
             }
         });
     }
 
     @Override
-    public Iterable<DriveFile> query(String query) {
+    public Iterable<DrivenFile> query(String query) {
         try{
             FileList fileList = list(query, defaultFieldsItems, true);
-            return DriveFile.from(fileList);
+            return DrivenFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -270,37 +270,37 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void queryAsync(final String query, Task<Iterable<DriveFile>> result) {
-        doAsync(result, new Delegate<Iterable<DriveFile>>() {
-            @Override public Iterable<DriveFile> invoke() {
+    public void queryAsync(final String query, Task<Iterable<DrivenFile>> result) {
+        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+            @Override public Iterable<DrivenFile> invoke() {
                 return query(query);
             }
         });
     }
 
     @Override
-    public DriveFile create(String name) {
+    public DrivenFile create(String name) {
         return create(name, null);
     }
 
     @Override
-    public DriveFile create(String name, FileContent content) {
+    public DrivenFile create(String name, FileContent content) {
         return create(null, name, content);
     }
 
     @Override
-    public DriveFile create(DriveFile parent, String name) {
+    public DrivenFile create(DrivenFile parent, String name) {
         return create(parent, name, null);
     }
 
     @Override
-    public DriveFile create(DriveFile parent, String name, FileContent content) {
+    public DrivenFile create(DrivenFile parent, String name, FileContent content) {
         try{
             com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
             file.setTitle(name);
 
             if (content == null)
-                file.setMimeType(DriveFile.MIME_TYPE_FOLDER);
+                file.setMimeType(DrivenFile.MIME_TYPE_FOLDER);
             if (parent != null)
                 file.setParents(Arrays.asList(new ParentReference().setId(parent.getId())));
 
@@ -318,46 +318,46 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void createAsync(final DriveFile parent, final String name, final FileContent content, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>(){
-            @Override public DriveFile invoke() {
+    public void createAsync(final DrivenFile parent, final String name, final FileContent content, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>(){
+            @Override public DrivenFile invoke() {
                 return create(parent, name, content);
             }
         });
     }
 
     @Override
-    public void createAsync(final DriveFile parent, final String name, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void createAsync(final DrivenFile parent, final String name, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return create(parent, name);
             }
         });
     }
 
     @Override
-    public void createAsync(final String name, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void createAsync(final String name, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return create(name);
             }
         });
     }
 
     @Override
-    public void createAsync(final String name, final FileContent content, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
+    public void createAsync(final String name, final FileContent content, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
                 return create(name, content);
             }
         });
     }
 
     @Override
-    public Iterable<DriveFile> list() {
+    public Iterable<DrivenFile> list() {
         try {
             FileList fileList = list(null, defaultFieldsItems, false);
-            return DriveFile.from(fileList);
+            return DrivenFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -365,10 +365,10 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public Iterable<DriveFile> list(DriveFile folder) {
+    public Iterable<DrivenFile> list(DrivenFile folder) {
         try {
             FileList fileList = list("'" + folder.getId() + "' in parents", defaultFieldsItems, false);
-            return DriveFile.from(fileList);
+            return DrivenFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -376,27 +376,27 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void listAsync(final DriveFile folder, Task<Iterable<DriveFile>> result) {
-        doAsync(result, new Delegate<Iterable<DriveFile>>() {
-            @Override public Iterable<DriveFile> invoke() {
+    public void listAsync(final DrivenFile folder, Task<Iterable<DrivenFile>> result) {
+        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+            @Override public Iterable<DrivenFile> invoke() {
                 return list(folder);
             }
         });
     }
 
     @Override
-    public void listAsync(Task<Iterable<DriveFile>> result) {
-        doAsync(result, new Delegate<Iterable<DriveFile>>() {
-            @Override public Iterable<DriveFile> invoke() {
+    public void listAsync(Task<Iterable<DrivenFile>> result) {
+        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+            @Override public Iterable<DrivenFile> invoke() {
                 return list();
             }
         });
     }
 
     @Override
-    public DriveFile getDetails(DriveFile driveFile) {
+    public DrivenFile getDetails(DrivenFile drivenFile) {
         try{
-            return new DriveFile(getDriveService().files().get(driveFile.getId()).execute(), true);
+            return new DrivenFile(getDriveService().files().get(drivenFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
@@ -404,18 +404,18 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void getDetailsAsync(final DriveFile driveFile, Task<DriveFile> result) {
-        doAsync(result, new Delegate<DriveFile>() {
-            @Override public DriveFile invoke() {
-                return getDetails(driveFile);
+    public void getDetailsAsync(final DrivenFile drivenFile, Task<DrivenFile> result) {
+        doAsync(result, new Delegate<DrivenFile>() {
+            @Override public DrivenFile invoke() {
+                return getDetails(drivenFile);
             }
         });
     }
 
     @Override
-    public File download(DriveFile driveFile, File local) {
+    public File download(DrivenFile drivenFile, File local) {
         try{
-            GenericUrl url = new GenericUrl(driveFile.getModel().getDownloadUrl());
+            GenericUrl url = new GenericUrl(drivenFile.getModel().getDownloadUrl());
             HttpRequestFactory factory = getDriveService().getRequestFactory();
             HttpRequest request = factory.buildGetRequest(url);
             HttpResponse response = request.execute();
@@ -429,16 +429,16 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void downloadAsync(final DriveFile driveFile, final File local, Task<File> result) {
+    public void downloadAsync(final DrivenFile drivenFile, final File local, Task<File> result) {
         doAsync(result, new Delegate<File>() {
             @Override public File invoke() {
-                return download(driveFile, local);
+                return download(drivenFile, local);
             }
         });
     }
 
     @Override
-    public boolean share(DriveFile driveFile, String user) {
+    public boolean share(DrivenFile drivenFile, String user) {
         try{
             Permission newPermission = new Permission();
 
@@ -446,7 +446,7 @@ public final class Driven implements DrivenApi.Auth,
             newPermission.setType("user");
             newPermission.setRole("writer");
 
-            getDriveService().permissions().insert(driveFile.getId(), newPermission).execute();
+            getDriveService().permissions().insert(drivenFile.getId(), newPermission).execute();
             return true;
         }
         catch (IOException e){
@@ -455,10 +455,10 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void shareAsync(final DriveFile driveFile, final String user, Task<Boolean> result) {
+    public void shareAsync(final DrivenFile drivenFile, final String user, Task<Boolean> result) {
         doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
-                return share(driveFile, user);
+                return share(drivenFile, user);
             }
         });
     }

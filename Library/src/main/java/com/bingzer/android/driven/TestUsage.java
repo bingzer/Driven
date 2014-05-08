@@ -11,26 +11,26 @@ class TestUsage {
         final Driven driven = Driven.getDriven();
 
 
-        driven.getAsync("", new Task<DriveFile>() {
+        driven.getAsync("", new Task<DrivenFile>() {
             @Override
-            public void onCompleted(DriveFile result) {
+            public void onCompleted(DrivenFile result) {
             }
         });
 
-        driven.getAsync("", new Task.WithErrorReporting<DriveFile>() {
+        driven.getAsync("", new Task.WithErrorReporting<DrivenFile>() {
             @Override
             public void onError(Throwable error) {
 
             }
 
             @Override
-            public void onCompleted(DriveFile result) {
+            public void onCompleted(DrivenFile result) {
 
             }
         });
 
         driven.query("title = 'BabyCare'");
         driven.first("title = 'babyCare'");
-        DriveFile driveFile = driven.title("BabyCare");
+        DrivenFile drivenFile = driven.title("BabyCare");
     }
 }

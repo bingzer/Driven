@@ -9,12 +9,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bingzer.android.driven.DriveFile;
+import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.app.DrivenActivity;
-import com.google.android.gms.drive.DriveFolder;
-
-import java.util.Objects;
 
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -62,7 +59,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == DrivenActivity.REQUEST_LOGIN){
             if(resultCode == RESULT_OK){
-                Toast.makeText(this, "Successfully authenticate\n" + Driven.getDriven().getDriveUser(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Successfully authenticate\n" + Driven.getDriven().getDrivenUser(), Toast.LENGTH_SHORT).show();
                 textView.setVisibility(View.VISIBLE);
                 testThread.start();
             }
@@ -113,7 +110,7 @@ public class MainActivity extends ActionBarActivity {
             appendTextLine("Preparing your Google Drive for testing...");
 
             appendTextLine("driven.create(String name)");
-            DriveFile root;
+            DrivenFile root;
             if((root = driven.title("DrivenTest")) == null) {
                 root = driven.create("DrivenTest");
                 assertTrue(root.isDirectory());

@@ -15,7 +15,7 @@
  */
 package com.bingzer.android.driven.contracts;
 
-import com.bingzer.android.driven.DriveFile;
+import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
@@ -41,40 +41,40 @@ public interface DrivenApi {
 
     public static interface Get {
 
-        DriveFile get(String id);
+        DrivenFile get(String id);
 
-        void getAsync(String id, Task<DriveFile> result);
+        void getAsync(String id, Task<DrivenFile> result);
 
         public static interface ByTitle {
 
-            DriveFile title(DriveFile parent, String title);
+            DrivenFile title(DrivenFile parent, String title);
 
-            DriveFile title(String title);
+            DrivenFile title(String title);
 
-            void titleAsync(DriveFile parent, String title, Task<DriveFile> result);
+            void titleAsync(DrivenFile parent, String title, Task<DrivenFile> result);
 
-            void titleAsync(String title, Task<DriveFile> result);
+            void titleAsync(String title, Task<DrivenFile> result);
         }
 
     }
 
     public static interface Details {
 
-        DriveFile getDetails(DriveFile driveFile);
+        DrivenFile getDetails(DrivenFile drivenFile);
 
-        void getDetailsAsync(DriveFile driveFile, Task<DriveFile> result);
+        void getDetailsAsync(DrivenFile drivenFile, Task<DrivenFile> result);
 
     }
 
     public static interface List {
 
-        Iterable<DriveFile> list();
+        Iterable<DrivenFile> list();
 
-        Iterable<DriveFile> list(DriveFile folder);
+        Iterable<DrivenFile> list(DrivenFile folder);
 
-        void listAsync(DriveFile folder, Task<Iterable<DriveFile>> result);
+        void listAsync(DrivenFile folder, Task<Iterable<DrivenFile>> result);
 
-        void listAsync(Task<Iterable<DriveFile>> result);
+        void listAsync(Task<Iterable<DrivenFile>> result);
 
     }
 
@@ -85,29 +85,29 @@ public interface DrivenApi {
          * @param name
          * @return
          */
-        DriveFile create(String name);
+        DrivenFile create(String name);
 
-        DriveFile create(String name, FileContent content);
+        DrivenFile create(String name, FileContent content);
 
-        DriveFile create(DriveFile parent, String name);
+        DrivenFile create(DrivenFile parent, String name);
 
-        DriveFile create(DriveFile parent, String name, FileContent content);
+        DrivenFile create(DrivenFile parent, String name, FileContent content);
 
-        void createAsync(DriveFile parent, String name, FileContent content, Task<DriveFile> result);
+        void createAsync(DrivenFile parent, String name, FileContent content, Task<DrivenFile> result);
 
-        void createAsync(DriveFile parent, String name, Task<DriveFile> result);
+        void createAsync(DrivenFile parent, String name, Task<DrivenFile> result);
 
-        void createAsync(String name, Task<DriveFile> result);
+        void createAsync(String name, Task<DrivenFile> result);
 
-        void createAsync(String name, FileContent content, Task<DriveFile> result);
+        void createAsync(String name, FileContent content, Task<DrivenFile> result);
 
     }
 
     public static interface Put {
 
-        DriveFile update(DriveFile driveFile, FileContent content);
+        DrivenFile update(DrivenFile drivenFile, FileContent content);
 
-        void updateAsync(DriveFile driveFile, FileContent content, Task<DriveFile> result);
+        void updateAsync(DrivenFile drivenFile, FileContent content, Task<DrivenFile> result);
     }
 
     public static interface Delete {
@@ -120,29 +120,29 @@ public interface DrivenApi {
 
     public static interface Query {
 
-        DriveFile first(String query);
+        DrivenFile first(String query);
 
-        void firstAsync(String query, Task<DriveFile> result);
+        void firstAsync(String query, Task<DrivenFile> result);
 
-        Iterable<DriveFile> query(String query);
+        Iterable<DrivenFile> query(String query);
 
-        void queryAsync(String query, Task<Iterable<DriveFile>> result);
+        void queryAsync(String query, Task<Iterable<DrivenFile>> result);
 
     }
 
     public static interface Download {
 
-        File download(DriveFile driveFile, File local);
+        File download(DrivenFile drivenFile, File local);
 
-        void downloadAsync(DriveFile driveFile, File local, Task<File> result);
+        void downloadAsync(DrivenFile drivenFile, File local, Task<File> result);
 
     }
 
     public static interface Share {
 
-        boolean share(DriveFile driveFile, String user);
+        boolean share(DrivenFile drivenFile, String user);
 
-        void shareAsync(DriveFile driveFile, String user, Task<Boolean> result);
+        void shareAsync(DrivenFile drivenFile, String user, Task<Boolean> result);
 
     }
 
