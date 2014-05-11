@@ -2,24 +2,16 @@ package com.bingzer.android.driven;
 
 import android.test.AndroidTestCase;
 
-import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.DriveUtils;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.StubServiceProvider;
-import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.google.api.services.drive.model.User;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import dagger.ObjectGraph;
 
@@ -152,15 +144,23 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_get() throws Exception{
         driven.authenticate(credential);
-        Drive mockDrive = driven.getDrivenService();
-        when(mockDrive.files().get(anyString()).setFields(anyString()).execute())
-                .thenReturn(new File().setId("Id").setTitle("Title")
-                        .setMimeType("MimeType").setDownloadUrl("DownloadUrl").setDescription("Description")
-                        .setEtag("Etag"));
         DrivenFile drivenFile = driven.get("01");
 
-        testDrivenFile(drivenFile);
+        assertNotNull(drivenFile);
+        assertEquals("Id01", drivenFile.getId());
+        assertEquals("Title01", drivenFile.getTitle());
+        assertEquals("MimeType01", drivenFile.getType());
+        assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
+        assertFalse(drivenFile.hasDetails());
+
+        // check raw model
+        assertEquals("Id01", drivenFile.getModel().getId());
+        assertEquals("Description01", drivenFile.getModel().getDescription());
+        assertEquals("MimeType01", drivenFile.getModel().getMimeType());
+        assertEquals("DownloadUrl01", drivenFile.getModel().getDownloadUrl());
     }
+
+    /*
 
     public void test_getAsync() throws Exception {
         driven.authenticate(credential);
@@ -232,4 +232,6 @@ public class DrivenTest extends AndroidTestCase{
         assertEquals("MimeType", drivenFile.getModel().getMimeType());
         assertEquals("DownloadUrl", drivenFile.getModel().getDownloadUrl());
     }
+    */
+
 }

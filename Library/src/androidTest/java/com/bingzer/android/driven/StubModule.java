@@ -1,7 +1,6 @@
 package com.bingzer.android.driven;
 
 import com.bingzer.android.driven.contracts.DrivenServiceProvider;
-import com.google.api.services.drive.StubServiceProvider;
 
 import javax.inject.Singleton;
 

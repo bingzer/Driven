@@ -20,6 +20,7 @@ import android.util.Log;
 
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.DrivenApi;
+import com.bingzer.android.driven.contracts.DrivenService;
 import com.bingzer.android.driven.contracts.DrivenServiceProvider;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
@@ -69,11 +70,11 @@ public final class Driven implements DrivenApi.Auth,
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Drive drivenService;
+    private DrivenService drivenService;
     private DrivenUser drivenUser;
     private final SharedWithMe sharedWithMe;
-    @Inject
-    DrivenServiceProvider serviceProvider;
+    @Inject DrivenServiceProvider serviceProvider;
+
 
     Driven(){
         sharedWithMe = new SharedWithMeImpl(this);
@@ -90,7 +91,7 @@ public final class Driven implements DrivenApi.Auth,
         return drivenUser;
     }
 
-    public Drive getDrivenService() throws DrivenException{
+    public DrivenService getDrivenService() throws DrivenException{
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return drivenService;
     }

@@ -1,5 +1,7 @@
-package com.google.api.services.drive;
+package com.bingzer.android.driven;
 
+import com.bingzer.android.driven.MockDrivenService;
+import com.bingzer.android.driven.contracts.DrivenService;
 import com.bingzer.android.driven.contracts.DrivenServiceProvider;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.services.drive.model.About;
@@ -19,22 +21,8 @@ import static org.mockito.Mockito.when;
 public class StubServiceProvider implements DrivenServiceProvider {
 
     @Override
-    public Drive createGoogleDriveService(GoogleAccountCredential credential) {
-        return mockDrive;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
-    private Drive mockDrive;
-
-    public StubServiceProvider() {
-        mockDrive = mock(Drive.class, RETURNS_DEEP_STUBS);
-        try {
-            when(mockDrive.about().get().setFields("name,user").execute())
-                    .thenReturn(new About().setName("Name").setUser(new User().setDisplayName("DisplayName").setEmailAddress("EmailAddress")));
-        } catch (IOException e) {
-            fail("Exception: " + e);
-        }
+    public DrivenService createGoogleDriveService(GoogleAccountCredential credential) {
+        return new MockDrivenService();
     }
 
 }

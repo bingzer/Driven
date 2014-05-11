@@ -15,17 +15,17 @@
  */
 package com.bingzer.android.driven;
 
+import com.bingzer.android.driven.contracts.DrivenService;
 import com.bingzer.android.driven.contracts.DrivenServiceProvider;
 import com.bingzer.android.driven.utils.DriveUtils;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.services.drive.Drive;
 
 /**
  * Default implementation for DrivenServiceProvider
  */
 public class GoogleDriveServiceProvider implements DrivenServiceProvider {
     @Override
-    public Drive createGoogleDriveService(GoogleAccountCredential credential) {
-        return DriveUtils.createGoogleDriveService(credential);
+    public DrivenService createGoogleDriveService(GoogleAccountCredential credential) {
+        return new DrivenServiceProxy(DriveUtils.createGoogleDriveService(credential));
     }
 }
