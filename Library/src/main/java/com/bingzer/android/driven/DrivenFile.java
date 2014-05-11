@@ -37,6 +37,7 @@ public class DrivenFile {
     private String id;
     private String title;
     private String type;
+    private String downloadUrl;
     private File fileModel;
     private boolean hasDetails;
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +60,10 @@ public class DrivenFile {
 
     public String getType(){
         return type;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
     }
 
     public File getModel(){
@@ -151,6 +156,7 @@ public class DrivenFile {
         id = fileModel.getId();
         title = fileModel.getTitle();
         type = fileModel.getMimeType();
+        downloadUrl = fileModel.getDownloadUrl();
         hasDetails = details;
         return true;
     }

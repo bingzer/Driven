@@ -15,6 +15,8 @@
  */
 package com.bingzer.android.driven.contracts;
 
+import android.content.Context;
+
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -37,6 +39,10 @@ public interface DrivenApi {
         void authenticateAsync(GoogleAccountCredential credential, Task<Result<DrivenException>> result);
 
         void authenticateAsync(GoogleAccountCredential credential, boolean saveCredential, Task<Result<DrivenException>> result);
+
+        Result<DrivenException> deauthenticate(Context context);
+
+        void deauthenticateAsync(Context context, Task<Result<DrivenException>> result);
     }
 
     public static interface Get {

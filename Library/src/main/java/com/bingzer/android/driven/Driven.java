@@ -160,6 +160,24 @@ public final class Driven implements DrivenApi.Auth,
         });
     }
 
+    @Override
+    public Result<DrivenException> deauthenticate(Context context) {
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        drivenService = null;
+        drivenUser = null;
+        return result;
+    }
+
+    @Override
+    public void deauthenticateAsync(final Context context, Task<Result<DrivenException>> result) {
+        doAsync(result, new Delegate<Result<DrivenException>>() {
+            @Override
+            public Result<DrivenException> invoke() {
+                return deauthenticate(context);
+            }
+        });
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -430,7 +448,7 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public File download(DrivenFile drivenFile, File local) {
         try{
-            GenericUrl url = new GenericUrl(drivenFile.getModel().getDownloadUrl());
+            GenericUrl url = new GenericUrl(drivenFile.getDownloadUrl());
             HttpRequestFactory factory = getDrivenService().getRequestFactory();
             HttpRequest request = factory.buildGetRequest(url);
             HttpResponse response = request.execute();
@@ -489,8 +507,8 @@ public final class Driven implements DrivenApi.Auth,
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
         Drive.Files.List list = getDrivenService().files().list();
 
-        if(query != null) list.setQ(query);
         if(fields != null) list.setFields(fields);
+        if(query != null) list.setQ(query);
         if(includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
 
         return list.execute();
