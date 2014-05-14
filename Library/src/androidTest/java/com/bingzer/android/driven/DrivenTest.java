@@ -418,6 +418,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_createAsync() throws Exception {
         driven.authenticate(credential);
 
+        final CountDownLatch signal = new CountDownLatch(1);
         driven.createAsync("Folder100", new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
@@ -427,8 +428,11 @@ public class DrivenTest extends AndroidTestCase{
                 result = driven.get("Folder100");
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
+
+                signal.countDown();
             }
         });
+        signal.await();
     }
 
     public void test_create_file() throws Exception {
@@ -449,6 +453,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_createAsync_file() throws Exception {
         driven.authenticate(credential);
 
+        final CountDownLatch signal = new CountDownLatch(1);
         FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
         driven.createAsync("File101", fileContent, new Task<DrivenFile>() {
             @Override
@@ -461,9 +466,12 @@ public class DrivenTest extends AndroidTestCase{
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
                 assertEquals("MimeType101", result.getType());
+
+                signal.countDown();
             }
         });
 
+        signal.await();
     }
 
     public void test_create_inParent() throws Exception {
@@ -491,6 +499,7 @@ public class DrivenTest extends AndroidTestCase{
         DrivenFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
+        final CountDownLatch signal = new CountDownLatch(1);
         driven.createAsync(parent, "Folder110", new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
@@ -502,8 +511,12 @@ public class DrivenTest extends AndroidTestCase{
                 // therefore the parent references should be populated
                 // without having to have to call drivenFile.getDetails()
                 assertEquals("Folder100", result.getModel().getParents().get(0).getId());
+
+                signal.countDown();
             }
         });
+
+        signal.await();
     }
 
     public void test_create_fileInParent() throws Exception {
@@ -530,6 +543,7 @@ public class DrivenTest extends AndroidTestCase{
         assertNotNull(parent);
 
         FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
+        final CountDownLatch signal = new CountDownLatch(1);
         driven.createAsync(parent, "File101", fileContent, new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
@@ -537,8 +551,12 @@ public class DrivenTest extends AndroidTestCase{
                 assertFalse(result.isDirectory());
                 assertEquals(result.getType(), "MimeType101");
                 assertEquals("Folder100", result.getModel().getParents().get(0).getId());
+
+                signal.countDown();
             }
         });
+
+        signal.await();
     }
 
     public void test_list() throws Exception {
@@ -558,6 +576,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_listAsync() throws Exception {
         driven.authenticate(credential);
 
+        final CountDownLatch signal = new CountDownLatch(1);
         driven.listAsync(new Task<Iterable<DrivenFile>>() {
             @Override
             public void onCompleted(Iterable<DrivenFile> result) {
@@ -569,9 +588,13 @@ public class DrivenTest extends AndroidTestCase{
                     assertEquals("DownloadUrl0" + counter, drivenFile.getDownloadUrl());
 
                     counter++;
+
+                    signal.countDown();
                 }
             }
         });
+
+        signal.await();
     }
 
     public void test_list_Parent() throws Exception {
@@ -596,6 +619,7 @@ public class DrivenTest extends AndroidTestCase{
         driven.create(parent, "Folder120");
         driven.create(parent, "Folder130");
 
+        final CountDownLatch signal = new CountDownLatch(1);
         driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
             @Override
             public void onCompleted(Iterable<DrivenFile> result) {
@@ -603,8 +627,43 @@ public class DrivenTest extends AndroidTestCase{
                 for(DrivenFile drivenFile : result){
                     assertEquals("Folder1" + counter + "0", drivenFile.getTitle());
                 }
+
+                signal.countDown();
             }
         });
+
+        signal.await();
+    }
+
+    public void test_getDetails() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.get("Id01");
+        assertFalse(drivenFile.hasDetails());
+
+        drivenFile = driven.getDetails(drivenFile);
+        assertNotNull(drivenFile);
+        assertTrue(drivenFile.hasDetails());
+    }
+
+    public void test_getDetailsAsync() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.get("Id01");
+        assertFalse(drivenFile.hasDetails());
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.getDetailsAsync(drivenFile, new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+                assertTrue(result.hasDetails());
+
+                signal.countDown();
+            }
+        });
+
+        signal.await();
     }
 
 }

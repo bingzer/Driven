@@ -71,6 +71,7 @@ public class MockDrivenService implements DrivenService {
 
             for(File file : fileList0.getItems()){
                 when(files.get(file.getId()).setFields(anyString()).execute()).thenReturn(file);
+                when(files.get(file.getId()).execute()).thenReturn(file);
             }
             /*
             when(files.get("Id01").setFields(anyString()).execute()).thenReturn(file01);
