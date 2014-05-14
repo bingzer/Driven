@@ -1,6 +1,7 @@
 package com.bingzer.android.driven;
 
 import com.bingzer.android.driven.contracts.DrivenService;
+import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.services.drive.Drive;
@@ -19,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static junit.framework.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -163,9 +165,27 @@ public class MockDrivenService implements DrivenService {
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
                     insertFile = (File) invocation.getArguments()[0];
+                    insertFile.setId(insertFile.getTitle()); // let's just make id the same as the title
+                    fileList0.getItems().add(insertFile);
 
-                    if(insertFile.getParents() == null || insertFile.getParents().size() == 0)
-                        fileList0.getItems().add(insertFile);
+                    when(files.get(insertFile.getId()).setFields(anyString()).execute()).thenReturn(insertFile);
+
+                    return insert;
+                }
+            });
+            when(files.insert((File) anyObject(), (AbstractInputStreamContent) anyObject())).then(new Answer<Object>() {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable {
+                    insertFile = (File) invocation.getArguments()[0];
+                    insertFile.setId(insertFile.getTitle()); // let's just make id the same as the title
+
+                    FileContent content = (FileContent) invocation.getArguments()[1];
+                    insertFile.setMimeType(content.getType());
+
+                    fileList0.getItems().add(insertFile);
+
+                    when(files.get(insertFile.getId()).setFields(anyString()).execute()).thenReturn(insertFile);
+
                     return insert;
                 }
             });

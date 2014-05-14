@@ -403,4 +403,141 @@ public class DrivenTest extends AndroidTestCase{
         signal.await();
     }
 
+    public void test_create() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.create("Folder100");
+        assertNotNull(drivenFile);
+        assertTrue(drivenFile.isDirectory());
+
+        drivenFile = driven.get("Folder100");
+        assertNotNull(drivenFile);
+        assertTrue(drivenFile.isDirectory());
+    }
+
+    public void test_createAsync() throws Exception {
+        driven.authenticate(credential);
+
+        driven.createAsync("Folder100", new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+                assertTrue(result.isDirectory());
+
+                result = driven.get("Folder100");
+                assertNotNull(result);
+                assertTrue(result.isDirectory());
+            }
+        });
+    }
+
+    public void test_createFile() throws Exception {
+        driven.authenticate(credential);
+
+        FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
+        DrivenFile drivenFile = driven.create("File101", fileContent);
+        assertNotNull(drivenFile);
+        assertFalse(drivenFile.isDirectory());
+        assertEquals("MimeType101", drivenFile.getType());
+
+        drivenFile = driven.get("File101");
+        assertNotNull(drivenFile);
+        assertFalse(drivenFile.isDirectory());
+        assertEquals("MimeType101", drivenFile.getType());
+    }
+
+    public void test_createFileAsync() throws Exception {
+        driven.authenticate(credential);
+
+        FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
+        driven.createAsync("File101", fileContent, new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+                assertFalse(result.isDirectory());
+                assertEquals("MimeType101", result.getType());
+
+                result = driven.get("File101");
+                assertNotNull(result);
+                assertFalse(result.isDirectory());
+                assertEquals("MimeType101", result.getType());
+            }
+        });
+
+    }
+
+    public void test_create_InParent() throws Exception {
+        // we're going to create a folder within a parent
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        assertNotNull(parent);
+
+        DrivenFile drivenFile = driven.create(parent, "Folder110");
+        assertNotNull(drivenFile);
+        assertTrue(drivenFile.isDirectory());
+
+        // check parent
+        // since we're mocking the fields requested are ignored
+        // therefore the parent references should be populated
+        // without having to have to call drivenFile.getDetails()
+        assertEquals("Folder100", drivenFile.getModel().getParents().get(0).getId());
+    }
+
+    public void test_create_InParentAsync() throws Exception {
+        // we're going to create a folder within a parent
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        assertNotNull(parent);
+
+        driven.createAsync(parent, "Folder110", new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+                assertTrue(result.isDirectory());
+
+                // check parent
+                // since we're mocking the fields requested are ignored
+                // therefore the parent references should be populated
+                // without having to have to call drivenFile.getDetails()
+                assertEquals("Folder100", result.getModel().getParents().get(0).getId());
+            }
+        });
+    }
+
+    public void test_createFile_InParent() throws Exception {
+        // we're going to create a file within a parent
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        assertNotNull(parent);
+
+        FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
+        DrivenFile drivenFile = driven.create(parent, "File101", fileContent);
+
+        assertNotNull(drivenFile);
+        assertFalse(drivenFile.isDirectory());
+        assertEquals(drivenFile.getType(), "MimeType101");
+        assertEquals("Folder100", drivenFile.getModel().getParents().get(0).getId());
+    }
+
+    public void test_createFile_InParentAsync() throws Exception {
+        // we're going to create a file within a parent
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        assertNotNull(parent);
+
+        FileContent fileContent = new FileContent("MimeType101", new java.io.File(""));
+        driven.createAsync(parent, "File101", fileContent, new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+                assertFalse(result.isDirectory());
+                assertEquals(result.getType(), "MimeType101");
+                assertEquals("Folder100", result.getModel().getParents().get(0).getId());
+            }
+        });
+    }
 }
