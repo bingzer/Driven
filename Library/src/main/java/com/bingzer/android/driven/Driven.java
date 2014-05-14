@@ -99,7 +99,7 @@ public final class Driven implements DrivenApi.Auth,
     public DrivenServiceProvider getServiceProvider(){
         // if it's not injected.. create the default one
         if(serviceProvider == null) {
-            serviceProvider = new GoogleDriveServiceProvider();
+            serviceProvider = new GoogleDriveProvider();
         }
 
         return serviceProvider;
@@ -126,7 +126,7 @@ public final class Driven implements DrivenApi.Auth,
                 credential.setSelectedAccountName(accountName);
             }
 
-            drivenService = getServiceProvider().createGoogleDriveService(credential);
+            drivenService = getServiceProvider().createService(credential);
             drivenUser = new DrivenUser(drivenService.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);

@@ -5,6 +5,7 @@ import com.bingzer.android.driven.contracts.Task;
 /**
  * Created by Ricky on 5/3/2014.
  */
+@SuppressWarnings("ALL")
 class TestUsage {
 
     void test(){
@@ -29,8 +30,8 @@ class TestUsage {
             }
         });
 
-        driven.query("title = 'BabyCare'");
-        driven.first("title = 'babyCare'");
-        DrivenFile drivenFile = driven.title("BabyCare");
+        driven.query("title = 'DocumentTitle'");
+        driven.first("title = 'What'");
+        DrivenFile drivenFile = driven.title("MyTitle");
     }
 }

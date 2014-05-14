@@ -16,9 +16,10 @@
 package com.bingzer.android.driven;
 
 /**
- * Created by Ricky on 5/3/2014.
+ * A generic exception for DrivenAPI
  */
-public class DrivenException extends Error {
+public class DrivenException extends RuntimeException {
+
     public DrivenException(String message) {
         super(message);
     }

@@ -21,26 +21,22 @@ package com.bingzer.android.driven.contracts;
 public interface Task<T> {
 
     /**
-     * On finished
+     * Called when a task is completed
      * @param result result
      */
     void onCompleted(T result);
 
+    /**
+     * Extension if you need some kind of explanation
+     * what a task failed to complete
+     * @param <T>
+     */
     public static interface WithErrorReporting<T> extends Task<T> {
 
+        /**
+         * Called when there's an error during the invocation
+         */
         void onError(Throwable error);
 
     }
-
-    /*
-    public static interface WithProgressReporting<T> extends Task<T> {
-
-        void onProgress(Progress progress);
-
-    }
-
-    public static interface WithTracking<T> extends WithErrorReporting<T>, WithProgressReporting<T> {
-
-    }
-    */
 }

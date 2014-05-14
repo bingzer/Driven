@@ -27,7 +27,7 @@ import java.util.List;
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
 /**
- * Created by Ricky on 5/3/2014.
+ * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
 public class DrivenFile {

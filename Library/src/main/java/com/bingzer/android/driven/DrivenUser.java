@@ -18,7 +18,8 @@ package com.bingzer.android.driven;
 import com.google.api.services.drive.model.About;
 
 /**
- * Created by Ricky on 5/5/2014.
+ * Simple wrapper for user that has authenticate
+ * DrivenAPI to their GoogleDrive API
  */
 public class DrivenUser {
     private String name;

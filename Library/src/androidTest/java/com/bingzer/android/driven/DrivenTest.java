@@ -7,20 +7,10 @@ import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.DriveUtils;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
-import com.google.api.services.drive.model.Permission;
 
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import dagger.ObjectGraph;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DrivenTest extends AndroidTestCase{
 
@@ -46,7 +36,7 @@ public class DrivenTest extends AndroidTestCase{
      */
     public void test_DrivenAccessForPublic(){
         Driven driven = Driven.getDriven();
-        assertTrue(driven.getServiceProvider() instanceof GoogleDriveServiceProvider);
+        assertTrue(driven.getServiceProvider() instanceof GoogleDriveProvider);
     }
 
     public void test_DrivenAccessForTest(){
