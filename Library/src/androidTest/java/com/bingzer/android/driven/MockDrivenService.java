@@ -56,6 +56,7 @@ public class MockDrivenService implements DrivenService {
     private String updateFileId;
     private String deleteFileId;
     private FileContent updateFileContent;
+    private File insertFile;
 
     @Override
     public Drive.Files files() {
@@ -65,11 +66,16 @@ public class MockDrivenService implements DrivenService {
             // get()
             /////////////////////////////////////////////////////////////////////////////////////
 
+            for(File file : fileList0.getItems()){
+                when(files.get(file.getId()).setFields(anyString()).execute()).thenReturn(file);
+            }
+            /*
             when(files.get("Id01").setFields(anyString()).execute()).thenReturn(file01);
             when(files.get("Id02").setFields(anyString()).execute()).thenReturn(file02);
             when(files.get("Id03").setFields(anyString()).execute()).thenReturn(file03);
             when(files.get("Id04").setFields(anyString()).execute()).thenReturn(file04);
             when(files.get("Id05").setFields(anyString()).execute()).thenReturn(file05);
+            */
 
             // list()
             /////////////////////////////////////////////////////////////////////////////////////
@@ -147,6 +153,26 @@ public class MockDrivenService implements DrivenService {
                         }
                     }
                     return null;
+                }
+            });
+
+            // insert()
+            /////////////////////////////////////////////////////////////////////////////////////
+            final Drive.Files.Insert insert = mock(Drive.Files.Insert.class, RETURNS_DEEP_STUBS);
+            when(files.insert((File) anyObject())).then(new Answer<Object>() {
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable {
+                    insertFile = (File) invocation.getArguments()[0];
+
+                    if(insertFile.getParents() == null || insertFile.getParents().size() == 0)
+                        fileList0.getItems().add(insertFile);
+                    return insert;
+                }
+            });
+            when(insert.execute()).then(new Answer<File>() {
+                @Override
+                public File answer(InvocationOnMock invocation) throws Throwable {
+                    return insertFile;
                 }
             });
 
