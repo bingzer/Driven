@@ -8,6 +8,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.drive.model.User;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -94,15 +95,44 @@ public class MockDrivenService implements DrivenService {
             when(list.execute()).then(new Answer<FileList>() {
                 @Override
                 public FileList answer(InvocationOnMock invocation) throws Throwable {
-                    // TODO: use regex to evaluate (ex: "title = ? AND trashed = false)
-                    Pattern pattern = Pattern.compile("(title = '(.*)')");
-                    Matcher matcher = pattern.matcher(query);
-                    if(matcher.find()) {
-                        String title = matcher.group(2);
-                        for (File file : fileList0.getItems()) {
-                            if (file.getTitle().equals(title))
-                                return new FileList().setItems(Arrays.asList(file));
+                    if(query != null){
+                        if(query.indexOf("in parents") > 0){
+                            // there's parent
+                            Pattern pattern = Pattern.compile("('(.*)' in parents)");
+                            Matcher matcher = pattern.matcher(query);
+                            if(matcher.find()) {
+                                String parentId = matcher.group(2);
+                                FileList list = new FileList();
+                                list.setItems(new ArrayList<File>());
+
+                                for (File file : fileList0.getItems()) {
+                                    if (file.getParents() != null && file.getParents().size() > 0){
+                                        for(ParentReference reference : file.getParents()){
+                                            if(reference.getId().equals(parentId)){
+                                                list.getItems().add(file);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                return list;
+                            }
                         }
+                        else{
+                            // TODO: use regex to evaluate (ex: "title = ? AND trashed = false)
+                            Pattern pattern = Pattern.compile("(title = '(.*)')");
+                            Matcher matcher = pattern.matcher(query);
+                            if(matcher.find()) {
+                                String title = matcher.group(2);
+                                for (File file : fileList0.getItems()) {
+                                    if (file.getTitle().equals(title))
+                                        return new FileList().setItems(Arrays.asList(file));
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        return fileList0;
                     }
 
                     return null;
