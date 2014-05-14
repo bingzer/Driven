@@ -59,19 +59,19 @@ public interface DrivenApi {
 
     public static interface Get {
 
-        DrivenFile get(String id);
+        DrivenFile get(DrivenFile parent, String title);
 
-        void getAsync(String id, Task<DrivenFile> result);
+        DrivenFile get(String title);
 
-        public static interface ByTitle {
+        void getAsync(DrivenFile parent, String title, Task<DrivenFile> result);
 
-            DrivenFile title(DrivenFile parent, String title);
+        void getAsync(String title, Task<DrivenFile> result);
 
-            DrivenFile title(String title);
+        public static interface ById {
 
-            void titleAsync(DrivenFile parent, String title, Task<DrivenFile> result);
+            DrivenFile id(String id);
 
-            void titleAsync(String title, Task<DrivenFile> result);
+            void idAsync(String id, Task<DrivenFile> result);
         }
 
     }

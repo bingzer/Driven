@@ -54,7 +54,7 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 @SuppressWarnings("unused")
 public final class Driven implements DrivenApi.Auth,
         DrivenApi.Exists,
-                    DrivenApi.Get, DrivenApi.Get.ByTitle,
+                    DrivenApi.Get, DrivenApi.Get.ById,
                     DrivenApi.Post, DrivenApi.Put,
                     DrivenApi.Delete, DrivenApi.Query,
                     DrivenApi.List, DrivenApi.Details,
@@ -221,7 +221,7 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public DrivenFile get(String id) {
+    public DrivenFile id(String id) {
         try{
             return new DrivenFile(getDrivenService().files().get(id).setFields(defaultFields).execute(), false);
         }
@@ -231,38 +231,38 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     @Override
-    public void getAsync(final String id, final Task<DrivenFile> result) {
+    public void idAsync(final String id, final Task<DrivenFile> result) {
         doAsync(result, new Delegate<DrivenFile>() {
             @Override public DrivenFile invoke() {
-                return get(id);
+                return id(id);
             }
         });
     }
 
     @Override
-    public DrivenFile title(String title) {
+    public DrivenFile get(String title) {
         return first("title = '" + title + "'");
     }
 
     @Override
-    public void titleAsync(final String title, Task<DrivenFile> result) {
+    public void getAsync(final String title, Task<DrivenFile> result) {
         doAsync(result, new Delegate<DrivenFile>() {
             @Override public DrivenFile invoke() {
-                return title(title);
+                return get(title);
             }
         });
     }
 
     @Override
-    public DrivenFile title(DrivenFile parent, String title) {
+    public DrivenFile get(DrivenFile parent, String title) {
         return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
     }
 
     @Override
-    public void titleAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
+    public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
         doAsync(result, new Delegate<DrivenFile>() {
             @Override public DrivenFile invoke() {
-                return title(parent, title);
+                return get(parent, title);
             }
         });
     }
@@ -387,7 +387,7 @@ public final class Driven implements DrivenApi.Auth,
             else
                 file = getDrivenService().files().insert(file).execute();
 
-            return get(file.getId());
+            return id(file.getId());
         }
         catch (IOException e){
             return null;

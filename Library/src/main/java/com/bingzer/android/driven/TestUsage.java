@@ -12,13 +12,13 @@ class TestUsage {
         final Driven driven = Driven.getDriven();
 
 
-        driven.getAsync("", new Task<DrivenFile>() {
+        driven.idAsync("", new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
             }
         });
 
-        driven.getAsync("", new Task.WithErrorReporting<DrivenFile>() {
+        driven.idAsync("", new Task.WithErrorReporting<DrivenFile>() {
             @Override
             public void onError(Throwable error) {
 
@@ -32,6 +32,6 @@ class TestUsage {
 
         driven.query("title = 'DocumentTitle'");
         driven.first("title = 'What'");
-        DrivenFile drivenFile = driven.title("MyTitle");
+        DrivenFile drivenFile = driven.get("MyTitle");
     }
 }

@@ -129,7 +129,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_async_fail() throws Exception {
         // we don't authenticate now it should throw error
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.titleAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
                 fail("Should throw error");
@@ -146,7 +146,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_get_notAuthenticated() {
         try {
-            driven.get("Id01");
+            driven.id("Id01");
             fail("Should throw exception");
         } catch (DrivenException e) {
             // -- ignore
@@ -215,7 +215,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_get() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
 
         assertNotNull(drivenFile);
         assertEquals("Id01", drivenFile.getId());
@@ -234,7 +234,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_getAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getAsync("Id03", new Task<DrivenFile>() {
+        driven.idAsync("Id03", new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile drivenFile) {
                 assertNotNull(drivenFile);
@@ -257,7 +257,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_title() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.title("Title02");
+        DrivenFile drivenFile = driven.get("Title02");
 
         assertNotNull(drivenFile);
         assertEquals("Id02", drivenFile.getId());
@@ -276,7 +276,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_titleAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.titleAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
                 assertNotNull(result);
@@ -305,13 +305,13 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_update() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
         assertNotNull(drivenFile);
 
         FileContent fileContent = new FileContent("MimeTypeEdited01", new java.io.File(""));
 
         driven.update(drivenFile, fileContent);
-        drivenFile = driven.get("Id01");
+        drivenFile = driven.id("Id01");
 
         assertNotNull(drivenFile);
         assertEquals("Id01", drivenFile.getId());
@@ -329,7 +329,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_updateAsync() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Id03");
+        DrivenFile drivenFile = driven.id("Id03");
         assertNotNull(drivenFile);
 
         final FileContent fileContent = new FileContent("MimeTypeEdited03", new java.io.File(""));
@@ -363,7 +363,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_delete() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Id03");
+        DrivenFile drivenFile = driven.id("Id03");
         assertNotNull(drivenFile);
 
         assertTrue(driven.delete("Id03"));
@@ -371,7 +371,7 @@ public class DrivenTest extends AndroidTestCase{
 
     public void test_deleteAsync() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Id02");
+        DrivenFile drivenFile = driven.id("Id02");
         assertNotNull(drivenFile);
 
         final CountDownLatch signal = new CountDownLatch(1);
@@ -461,7 +461,7 @@ public class DrivenTest extends AndroidTestCase{
         assertNotNull(drivenFile);
         assertTrue(drivenFile.isDirectory());
 
-        drivenFile = driven.get("Folder100");
+        drivenFile = driven.id("Folder100");
         assertNotNull(drivenFile);
         assertTrue(drivenFile.isDirectory());
     }
@@ -476,7 +476,7 @@ public class DrivenTest extends AndroidTestCase{
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
-                result = driven.get("Folder100");
+                result = driven.id("Folder100");
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
@@ -495,7 +495,7 @@ public class DrivenTest extends AndroidTestCase{
         assertFalse(drivenFile.isDirectory());
         assertEquals("MimeType101", drivenFile.getType());
 
-        drivenFile = driven.get("File101");
+        drivenFile = driven.id("File101");
         assertNotNull(drivenFile);
         assertFalse(drivenFile.isDirectory());
         assertEquals("MimeType101", drivenFile.getType());
@@ -513,7 +513,7 @@ public class DrivenTest extends AndroidTestCase{
                 assertFalse(result.isDirectory());
                 assertEquals("MimeType101", result.getType());
 
-                result = driven.get("File101");
+                result = driven.id("File101");
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
                 assertEquals("MimeType101", result.getType());
@@ -689,7 +689,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_getDetails() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
         assertFalse(drivenFile.hasDetails());
 
         drivenFile = driven.getDetails(drivenFile);
@@ -700,7 +700,7 @@ public class DrivenTest extends AndroidTestCase{
     public void test_getDetailsAsync() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
         assertFalse(drivenFile.hasDetails());
 
         final CountDownLatch signal = new CountDownLatch(1);
@@ -730,14 +730,14 @@ public class DrivenTest extends AndroidTestCase{
     public void test_share() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
         assertTrue(driven.share(drivenFile, "other-user"));
     }
 
     public void test_shareAsync() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.get("Id01");
+        DrivenFile drivenFile = driven.id("Id01");
         final CountDownLatch signal = new CountDownLatch(1);
         driven.shareAsync(drivenFile, "other-user", new Task<Boolean>() {
             @Override

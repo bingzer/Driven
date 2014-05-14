@@ -33,31 +33,31 @@ class SharedWithMeImpl implements SharedWithMe {
     }
 
     @Override
-    public DrivenFile title(DrivenFile parent, String title) {
+    public DrivenFile get(DrivenFile parent, String title) {
         return driven.first("'" + parent.getId() + "' in parents AND title = '" + title + "' AND sharedWithMe");
     }
 
     @Override
-    public DrivenFile title(String title) {
+    public DrivenFile get(String title) {
         return driven.first("title = '" + title + "' AND sharedWithMe");
     }
 
     @Override
-    public void titleAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
+    public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
         doAsync(result, new Delegate<DrivenFile>() {
             @Override
             public DrivenFile invoke() {
-                return title(parent, title);
+                return get(parent, title);
             }
         });
     }
 
     @Override
-    public void titleAsync(final String title, Task<DrivenFile> result) {
+    public void getAsync(final String title, Task<DrivenFile> result) {
         doAsync(result, new Delegate<DrivenFile>() {
             @Override
             public DrivenFile invoke() {
-                return title(title);
+                return get(title);
             }
         });
     }

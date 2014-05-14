@@ -18,5 +18,5 @@ package com.bingzer.android.driven.contracts;
 /**
  * "SharedWithMe" contracts.
  */
-public interface SharedWithMe extends DrivenApi.Get.ByTitle {
+public interface SharedWithMe extends DrivenApi.Get {
 }
