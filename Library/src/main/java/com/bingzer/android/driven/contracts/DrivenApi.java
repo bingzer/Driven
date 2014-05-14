@@ -30,6 +30,18 @@ import java.io.File;
 @SuppressWarnings("unused")
 public interface DrivenApi {
 
+    public static interface Exists {
+
+        boolean exists(String title);
+
+        boolean exists(DrivenFile parent, String title);
+
+        void existsAsync(String title, Task<Boolean> result);
+
+        void existsAsync(DrivenFile parent, String title, Task<Boolean> result);
+
+    }
+
     public static interface Auth {
 
         Result<DrivenException> authenticate(GoogleAccountCredential credential);
@@ -86,11 +98,6 @@ public interface DrivenApi {
 
     public static interface Post {
 
-        /**
-         * Creates on the root
-         * @param name
-         * @return
-         */
         DrivenFile create(String name);
 
         DrivenFile create(String name, FileContent content);

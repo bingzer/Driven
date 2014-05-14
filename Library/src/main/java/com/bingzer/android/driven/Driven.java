@@ -53,6 +53,7 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  */
 @SuppressWarnings("unused")
 public final class Driven implements DrivenApi.Auth,
+        DrivenApi.Exists,
                     DrivenApi.Get, DrivenApi.Get.ByTitle,
                     DrivenApi.Post, DrivenApi.Put,
                     DrivenApi.Delete, DrivenApi.Query,
@@ -180,6 +181,44 @@ public final class Driven implements DrivenApi.Auth,
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public boolean exists(String title) {
+        try {
+            FileList list = list("title = '" + title + "'", "id", false);
+            return list.getItems().get(0) != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean exists(DrivenFile parent, String title) {
+        try {
+            FileList list = list("'" + parent.getId() + "' in parents AND title = '" + title + "'", "id", false);
+            return list.getItems().get(0) != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void existsAsync(final String title, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return exists(title);
+            }
+        });
+    }
+
+    @Override
+    public void existsAsync(final DrivenFile parent, final String title, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return exists(parent, title);
+            }
+        });
+    }
 
     @Override
     public DrivenFile get(String id) {
@@ -560,5 +599,4 @@ public final class Driven implements DrivenApi.Auth,
             }
         }
     }
-
 }
