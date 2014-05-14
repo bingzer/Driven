@@ -333,4 +333,74 @@ public class DrivenTest extends AndroidTestCase{
         });
         signal.await();
     }
+
+    public void test_first() throws Exception {
+        driven.authenticate(credential);
+        DrivenFile drivenFile = driven.first("title = 'Title01'");
+        assertNotNull(drivenFile);
+
+        assertEquals("Id01", drivenFile.getId());
+        assertEquals("Title01", drivenFile.getTitle());
+        assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
+        assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
+        assertFalse(drivenFile.hasDetails());
+    }
+
+    public void test_firstAsync() throws Exception {
+        driven.authenticate(credential);
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.firstAsync("title = 'Title01'", new Task<DrivenFile>() {
+            @Override
+            public void onCompleted(DrivenFile result) {
+                assertNotNull(result);
+
+                assertEquals("Id01", result.getId());
+                assertEquals("Title01", result.getTitle());
+                assertEquals("MimeType01", result.getType());  // we changed this (was MimeType03)
+                assertEquals("DownloadUrl01", result.getDownloadUrl());
+                assertFalse(result.hasDetails());
+                signal.countDown();
+            }
+        });
+        signal.await();
+    }
+
+
+    public void test_query() throws Exception {
+        driven.authenticate(credential);
+        Iterable<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
+        for(DrivenFile drivenFile : drivenFiles){
+            assertNotNull(drivenFile);
+
+            assertEquals("Id01", drivenFile.getId());
+            assertEquals("Title01", drivenFile.getTitle());
+            assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
+            assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
+            assertFalse(drivenFile.hasDetails());
+        }
+    }
+
+    public void test_queryAsync() throws Exception {
+        driven.authenticate(credential);
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.queryAsync("title = 'Title01'", new Task<Iterable<DrivenFile>>() {
+            @Override
+            public void onCompleted(Iterable<DrivenFile> result) {
+                for(DrivenFile drivenFile : result){
+                    assertNotNull(drivenFile);
+
+                    assertEquals("Id01", drivenFile.getId());
+                    assertEquals("Title01", drivenFile.getTitle());
+                    assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
+                    assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
+                    assertFalse(drivenFile.hasDetails());
+                }
+                signal.countDown();
+            }
+        });
+        signal.await();
+    }
+
 }
