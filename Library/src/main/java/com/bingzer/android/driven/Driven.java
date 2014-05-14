@@ -187,7 +187,7 @@ public final class Driven implements DrivenApi.Auth,
         try {
             FileList list = list("title = '" + title + "'", "id", false);
             return list.getItems().get(0) != null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -197,7 +197,7 @@ public final class Driven implements DrivenApi.Auth,
         try {
             FileList list = list("'" + parent.getId() + "' in parents AND title = '" + title + "'", "id", false);
             return list.getItems().get(0) != null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
     }

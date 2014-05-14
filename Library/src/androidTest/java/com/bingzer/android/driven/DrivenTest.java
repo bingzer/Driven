@@ -153,6 +153,66 @@ public class DrivenTest extends AndroidTestCase{
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void test_exists() throws Exception {
+        driven.authenticate(credential);
+
+        assertTrue(driven.exists("Title01"));
+        assertTrue(driven.exists("Title02"));
+        assertTrue(driven.exists("Title03"));
+
+        assertFalse(driven.exists("Title89"));
+        assertFalse(driven.exists("Title99"));
+    }
+
+    public void test_existsAsync() throws Exception {
+        driven.authenticate(credential);
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.existsAsync("Title01", new Task<Boolean>() {
+            @Override public void onCompleted(Boolean result) {
+                assertTrue(result);
+                signal.countDown();
+            }
+        });
+        signal.await();
+
+        final CountDownLatch signal2 = new CountDownLatch(1);
+        driven.existsAsync("Title101", new Task<Boolean>() {
+            @Override public void onCompleted(Boolean result) {
+                assertFalse(result);
+                signal2.countDown();
+            }
+        });
+        signal2.await();
+    }
+
+    public void test_exists_inParent() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        driven.create(parent, "File101");
+
+        assertTrue(driven.exists(parent, "File101"));
+    }
+
+    public void test_existsAsync_inParent() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile parent = driven.create("Folder100");
+        driven.create(parent, "File102");
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.existsAsync(parent, "File102", new Task<Boolean>() {
+            @Override public void onCompleted(Boolean result) {
+                assertTrue(result);
+                signal.countDown();
+            }
+        });
+        signal.await();
+    }
+
     public void test_get() throws Exception{
         driven.authenticate(credential);
         DrivenFile drivenFile = driven.get("Id01");
