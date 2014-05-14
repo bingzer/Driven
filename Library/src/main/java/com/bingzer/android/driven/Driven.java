@@ -231,7 +231,12 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public DrivenFile update(DrivenFile drivenFile, FileContent content) {
         try{
-            return new DrivenFile(getDrivenService().files().update(drivenFile.getId(), drivenFile.getModel()).execute(), drivenFile.hasDetails());
+            com.google.api.services.drive.model.File file =
+                    getDrivenService()
+                        .files()
+                        .update(drivenFile.getId(), drivenFile.getModel(), content)
+                        .execute();
+            return new DrivenFile(file, drivenFile.hasDetails());
         }
         catch (IOException e){
             return null;
@@ -250,9 +255,8 @@ public final class Driven implements DrivenApi.Auth,
     @Override
     public boolean delete(String id) {
         try {
-            Void v = getDrivenService().files().delete(id)
-                    .execute();
-            return v != null;
+            getDrivenService().files().delete(id).execute();
+            return true;
         }
         catch (IOException e){
             return false;

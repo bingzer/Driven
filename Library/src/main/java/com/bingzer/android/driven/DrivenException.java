@@ -23,7 +23,7 @@ public class DrivenException extends Error {
         super(message);
     }
 
-    public DrivenException(Exception base){
+    public DrivenException(Throwable base){
         super(base);
     }
 }

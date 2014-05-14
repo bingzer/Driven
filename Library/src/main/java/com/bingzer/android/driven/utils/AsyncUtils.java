@@ -15,6 +15,7 @@
  */
 package com.bingzer.android.driven.utils;
 
+import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 
@@ -39,8 +40,16 @@ public final class AsyncUtils {
         threadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                T result = action.invoke();
-                task.onCompleted(result);
+                try {
+                    T result = action.invoke();
+                    task.onCompleted(result);
+                }
+                catch (Throwable error){
+                    if(task instanceof Task.WithErrorReporting){
+                        ((Task.WithErrorReporting) task).onError(error);
+                    }
+                    else throw new DrivenException(error);
+                }
             }
         });
     }

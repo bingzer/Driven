@@ -8,6 +8,7 @@ gradlew.bat
 gradle
 gen/
 .idea/
+.idea/*.*
 
 
 #################
