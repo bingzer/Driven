@@ -33,6 +33,17 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 public class DrivenFile {
     public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
 
+    protected static Driven driven;
+    protected static void setDriven(Driven driven){
+        DrivenFile.driven = driven;
+    }
+
+    protected static Driven getDriven(){
+        if(driven == null)
+            driven = Driven.getDriven();
+        return driven;
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     private String id;
     private String title;
@@ -77,7 +88,7 @@ public class DrivenFile {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public File getDetails(){
-        if(!hasDetails) consume(Driven.getDriven().getDetails(this));
+        if(!hasDetails) consume(getDriven().getDetails(this));
         return fileModel;
     }
 
@@ -90,7 +101,7 @@ public class DrivenFile {
     }
 
     public Iterable<DrivenFile> list() {
-        return Driven.getDriven().list(this);
+        return getDriven().list(this);
     }
 
     public void listAsync(Task<Iterable<DrivenFile>> result) {
@@ -102,7 +113,7 @@ public class DrivenFile {
     }
 
     public java.io.File download(java.io.File local) {
-        return Driven.getDriven().download(this, local);
+        return getDriven().download(this, local);
     }
 
     public void downloadAsync(final java.io.File local, Task<java.io.File> result) {
@@ -114,7 +125,7 @@ public class DrivenFile {
     }
 
     public boolean upload(FileContent content) {
-        return consume(Driven.getDriven().update(this, content));
+        return consume(getDriven().update(this, content));
     }
 
     public void uploadAsync(final FileContent content, Task<Boolean> result) {
@@ -126,10 +137,10 @@ public class DrivenFile {
     }
 
     public boolean share(String user){
-        return Driven.getDriven().share(this, user);
+        return getDriven().share(this, user);
     }
 
-    public void shareAsync(Task<Boolean> result, final String user){
+    public void shareAsync(final String user, Task<Boolean> result){
         doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return share(user);
@@ -138,7 +149,7 @@ public class DrivenFile {
     }
 
     public boolean delete(){
-        return Driven.getDriven().delete(getId());
+        return getDriven().delete(getId());
     }
 
     public void deleteAsync(Task<Boolean> result) {

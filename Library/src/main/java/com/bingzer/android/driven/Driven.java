@@ -167,6 +167,7 @@ public final class Driven implements DrivenApi.Auth,
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         drivenService = null;
         drivenUser = null;
+        result.setSuccess(getCredentialFile(context).delete());
         return result;
     }
 
@@ -315,7 +316,9 @@ public final class Driven implements DrivenApi.Auth,
     public DrivenFile first(String query) {
         try{
             FileList fileList = list(query, defaultFieldsItems, true);
-            return new DrivenFile(fileList.getItems().get(0), false);
+            if(fileList != null)
+                return new DrivenFile(fileList.getItems().get(0), false);
+            return null;
         }
         catch (IOException e){
             return null;
