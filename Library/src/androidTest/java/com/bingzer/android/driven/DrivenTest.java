@@ -10,6 +10,7 @@ import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.Permission;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -659,6 +660,39 @@ public class DrivenTest extends AndroidTestCase{
                 assertNotNull(result);
                 assertTrue(result.hasDetails());
 
+                signal.countDown();
+            }
+        });
+
+        signal.await();
+    }
+
+    /*
+    public void test_download() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.get("Id01");
+        java.io.File file = driven.download(drivenFile, new java.io.File("local"));
+        assertNotNull(file);
+    }
+    */
+
+    public void test_share() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.get("Id01");
+        assertTrue(driven.share(drivenFile, "other-user"));
+    }
+
+    public void test_shareAsync() throws Exception {
+        driven.authenticate(credential);
+
+        DrivenFile drivenFile = driven.get("Id01");
+        final CountDownLatch signal = new CountDownLatch(1);
+        driven.shareAsync(drivenFile, "other-user", new Task<Boolean>() {
+            @Override
+            public void onCompleted(Boolean result) {
+                assertTrue(result);
                 signal.countDown();
             }
         });

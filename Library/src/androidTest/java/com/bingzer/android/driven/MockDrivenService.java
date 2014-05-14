@@ -9,6 +9,7 @@ import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
+import com.google.api.services.drive.model.Permission;
 import com.google.api.services.drive.model.User;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -234,9 +235,30 @@ public class MockDrivenService implements DrivenService {
         return files;
     }
 
+    private Permission permission;
     @Override
     public Drive.Permissions permissions() {
-        return null;
+        final Drive.Permissions permissions = mock(Drive.Permissions.class, RETURNS_DEEP_STUBS);
+        try {
+            final Drive.Permissions.Insert insert = mock(Drive.Permissions.Insert.class, RETURNS_DEEP_STUBS);
+            when(permissions.insert(anyString(), (Permission) anyObject())).then(new Answer<Drive.Permissions.Insert>() {
+                @Override
+                public Drive.Permissions.Insert answer(InvocationOnMock invocation) throws Throwable {
+                    permission = (Permission) invocation.getArguments()[1];
+                    return insert;
+                }
+            });
+            when(insert.execute()).then(new Answer<Permission>() {
+                @Override
+                public Permission answer(InvocationOnMock invocation) throws Throwable {
+                    return permission;
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return permissions;
     }
 
     @Override
