@@ -1,4 +1,4 @@
-package com.bingzer.android.driven.providers.gdrive;
+package com.bingzer.android.driven.gdrive;
 
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.FileContent;

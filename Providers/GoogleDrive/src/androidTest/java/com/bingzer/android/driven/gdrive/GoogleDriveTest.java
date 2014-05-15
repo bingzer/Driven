@@ -1,6 +1,5 @@
-package com.bingzer.android.driven.providers.gdrive;
+package com.bingzer.android.driven.gdrive;
 
-import android.content.Context;
 import android.test.AndroidTestCase;
 
 import com.bingzer.android.driven.DrivenContent;
@@ -30,22 +29,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
         drivenProvider = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
         //credential = DriveUtils.createGoogleAccountCredential(getContext(), "TestUserCredential");
-        credential = new DrivenCredential() {
-            @Override
-            public Context getContext() {
-                return GoogleDriveTest.this.getContext();
-            }
-
-            @Override
-            public String getAccountName() {
-                return "TestUserCredential";
-            }
-
-            @Override
-            public void setAccountName(String accountName) {
-
-            }
-        };
+        credential = new DrivenCredential(getContext(), "Test-User");
     }
 
     public void test_getProxyCreator(){
@@ -234,10 +218,10 @@ public class GoogleDriveTest extends AndroidTestCase{
         assertFalse(drivenFile.hasDetails());
 
         // check raw model
-        assertEquals("Id01", ((DrivenFileImpl)drivenFile).getModel().getId());
-        assertEquals("Description01", ((DrivenFileImpl)drivenFile).getModel().getDescription());
-        assertEquals("MimeType01", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl01", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id01", ((GoogleDriveFile)drivenFile).getModel().getId());
+        assertEquals("Description01", ((GoogleDriveFile)drivenFile).getModel().getDescription());
+        assertEquals("MimeType01", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
     }
 
     public void test_getAsync() throws Exception {
@@ -254,10 +238,10 @@ public class GoogleDriveTest extends AndroidTestCase{
                 assertFalse(drivenFile.hasDetails());
 
                 // check raw model
-                assertEquals("Id03", ((DrivenFileImpl)drivenFile).getModel().getId());
-                assertEquals("Description03", ((DrivenFileImpl)drivenFile).getModel().getDescription());
-                assertEquals("MimeType03", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
-                assertEquals("DownloadUrl03", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
+                assertEquals("Id03", ((GoogleDriveFile)drivenFile).getModel().getId());
+                assertEquals("Description03", ((GoogleDriveFile)drivenFile).getModel().getDescription());
+                assertEquals("MimeType03", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
+                assertEquals("DownloadUrl03", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
                 signal.countDown();
             }
         });
@@ -276,10 +260,10 @@ public class GoogleDriveTest extends AndroidTestCase{
         assertFalse(drivenFile.hasDetails());
 
         // check raw model
-        assertEquals("Id02", ((DrivenFileImpl)drivenFile).getModel().getId());
-        assertEquals("Description02", ((DrivenFileImpl)drivenFile).getModel().getDescription());
-        assertEquals("MimeType02", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl02", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id02", ((GoogleDriveFile)drivenFile).getModel().getId());
+        assertEquals("Description02", ((GoogleDriveFile)drivenFile).getModel().getDescription());
+        assertEquals("MimeType02", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
+        assertEquals("DownloadUrl02", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
     }
 
     public void test_titleAsync() throws Exception {
@@ -296,10 +280,10 @@ public class GoogleDriveTest extends AndroidTestCase{
                 assertFalse(result.hasDetails());
 
                 // check raw model
-                assertEquals("Id01", ((DrivenFileImpl)result).getModel().getId());
-                assertEquals("Description01", ((DrivenFileImpl)result).getModel().getDescription());
-                assertEquals("MimeType01", ((DrivenFileImpl)result).getModel().getMimeType());
-                assertEquals("DownloadUrl01", ((DrivenFileImpl)result).getModel().getDownloadUrl());
+                assertEquals("Id01", ((GoogleDriveFile)result).getModel().getId());
+                assertEquals("Description01", ((GoogleDriveFile)result).getModel().getDescription());
+                assertEquals("MimeType01", ((GoogleDriveFile)result).getModel().getMimeType());
+                assertEquals("DownloadUrl01", ((GoogleDriveFile)result).getModel().getDownloadUrl());
                 signal.countDown();
             }
 
@@ -317,7 +301,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         DrivenFile drivenFile = drivenProvider.id("Id01");
         assertNotNull(drivenFile);
 
-        drivenProvider.update(drivenFile, new DrivenContentImpl("MimeTypeEdited01", new File("")));
+        drivenProvider.update(drivenFile, new DrivenContent("MimeTypeEdited01", new File("")));
         drivenFile = drivenProvider.id("Id01");
 
         assertNotNull(drivenFile);
@@ -328,10 +312,10 @@ public class GoogleDriveTest extends AndroidTestCase{
         assertFalse(drivenFile.hasDetails());
 
         // check raw model
-        assertEquals("Id01", ((DrivenFileImpl)drivenFile).getModel().getId());
-        assertEquals("Description01", ((DrivenFileImpl)drivenFile).getModel().getDescription());
-        assertEquals("MimeTypeEdited01", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl01", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id01", ((GoogleDriveFile)drivenFile).getModel().getId());
+        assertEquals("Description01", ((GoogleDriveFile)drivenFile).getModel().getDescription());
+        assertEquals("MimeTypeEdited01", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
     }
 
     public void test_updateAsync() throws Exception{
@@ -339,7 +323,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         DrivenFile drivenFile = drivenProvider.id("Id03");
         assertNotNull(drivenFile);
 
-        final DrivenContent fileContent = new DrivenContentImpl("MimeTypeEdited03", new java.io.File(""));
+        final DrivenContent fileContent = new DrivenContent("MimeTypeEdited03", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
         drivenProvider.updateAsync(drivenFile, fileContent, new Task.WithErrorReporting<DrivenFile>() {
             @Override
@@ -352,10 +336,10 @@ public class GoogleDriveTest extends AndroidTestCase{
                 assertFalse(result.hasDetails());
 
                 // check raw model
-                assertEquals("Id03", ((DrivenFileImpl)result).getModel().getId());
-                assertEquals("Description03", ((DrivenFileImpl)result).getModel().getDescription());
-                assertEquals("MimeTypeEdited03", ((DrivenFileImpl)result).getModel().getMimeType());
-                assertEquals("DownloadUrl03", ((DrivenFileImpl)result).getModel().getDownloadUrl());
+                assertEquals("Id03", ((GoogleDriveFile)result).getModel().getId());
+                assertEquals("Description03", ((GoogleDriveFile)result).getModel().getDescription());
+                assertEquals("MimeTypeEdited03", ((GoogleDriveFile)result).getModel().getMimeType());
+                assertEquals("DownloadUrl03", ((GoogleDriveFile)result).getModel().getDownloadUrl());
                 signal.countDown();
             }
 
@@ -496,7 +480,7 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_create_file() throws Exception {
         drivenProvider.authenticate(credential);
 
-        DrivenContent fileContent = new DrivenContentImpl("MimeType101", new java.io.File(""));
+        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
         DrivenFile drivenFile = drivenProvider.create("File101", fileContent);
         assertNotNull(drivenFile);
         assertFalse(drivenFile.isDirectory());
@@ -512,7 +496,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         drivenProvider.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        DrivenContent fileContent = new DrivenContentImpl("MimeType101", new java.io.File(""));
+        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
         drivenProvider.createAsync("File101", fileContent, new Task<DrivenFile>() {
             @Override
             public void onCompleted(DrivenFile result) {
@@ -547,7 +531,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         // since we're mocking the fields requested are ignored
         // therefore the parent references should be populated
         // without having to have to call drivenFile.getDetails()
-        assertEquals("Folder100", ((DrivenFileImpl)drivenFile).getModel().getParents().get(0).getId());
+        assertEquals("Folder100", ((GoogleDriveFile)drivenFile).getModel().getParents().get(0).getId());
     }
 
     public void test_createAsync_inParent() throws Exception {
@@ -568,7 +552,7 @@ public class GoogleDriveTest extends AndroidTestCase{
                 // since we're mocking the fields requested are ignored
                 // therefore the parent references should be populated
                 // without having to have to call drivenFile.getDetails()
-                assertEquals("Folder100", ((DrivenFileImpl)result).getModel().getParents().get(0).getId());
+                assertEquals("Folder100", ((GoogleDriveFile)result).getModel().getParents().get(0).getId());
 
                 signal.countDown();
             }
@@ -584,13 +568,13 @@ public class GoogleDriveTest extends AndroidTestCase{
         DrivenFile parent = drivenProvider.create("Folder100");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContentImpl("MimeType101", new java.io.File(""));
+        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
         DrivenFile drivenFile = drivenProvider.create(parent, "File101", fileContent);
 
         assertNotNull(drivenFile);
         assertFalse(drivenFile.isDirectory());
         assertEquals(drivenFile.getType(), "MimeType101");
-        assertEquals("Folder100", ((DrivenFileImpl)drivenFile).getModel().getParents().get(0).getId());
+        assertEquals("Folder100", ((GoogleDriveFile)drivenFile).getModel().getParents().get(0).getId());
     }
 
     public void test_createAsync_fileInParent() throws Exception {
@@ -600,7 +584,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         DrivenFile parent = drivenProvider.create("Folder100");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContentImpl("MimeType101", new java.io.File(""));
+        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
         drivenProvider.createAsync(parent, "File101", fileContent, new Task<DrivenFile>() {
             @Override
@@ -608,7 +592,7 @@ public class GoogleDriveTest extends AndroidTestCase{
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
                 assertEquals(result.getType(), "MimeType101");
-                assertEquals("Folder100", ((DrivenFileImpl)result).getModel().getParents().get(0).getId());
+                assertEquals("Folder100", ((GoogleDriveFile)result).getModel().getParents().get(0).getId());
 
                 signal.countDown();
             }

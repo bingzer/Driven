@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.providers.gdrive;
+package com.bingzer.android.driven.gdrive;
 
-import com.bingzer.android.driven.Driven;
+import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.DrivenProvider;
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 import com.google.api.services.drive.model.File;
@@ -32,18 +32,18 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
-class DrivenFileImpl implements DrivenFile {
+class GoogleDriveFile implements DrivenFile {
     public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
 
-    protected static DrivenProvider drivenProvider;
-    protected static void setDrivenProvider(DrivenProvider drivenProvider){
-        DrivenFileImpl.drivenProvider = drivenProvider;
+    protected static Driven driven;
+    protected static void setDriven(Driven driven){
+        GoogleDriveFile.driven = driven;
     }
 
-    protected static DrivenProvider getDrivenProvider(){
-        if(drivenProvider == null)
-            drivenProvider = Driven.getProvider(Driven.GOOGLE_DRIVE);
-        return drivenProvider;
+    protected static Driven getDriven(){
+        if(driven == null)
+            driven = new GoogleDrive();
+        return driven;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ class DrivenFileImpl implements DrivenFile {
     private boolean hasDetails;
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    protected DrivenFileImpl(File file, boolean hasDetails){
+    protected GoogleDriveFile(File file, boolean hasDetails){
         init(file, hasDetails);
     }
 
@@ -97,7 +97,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public boolean fetchDetails(){
-        if(!hasDetails) consume(getDrivenProvider().getDetails(this));
+        if(!hasDetails) consume(getDriven().getDetails(this));
         return true;
     }
 
@@ -112,7 +112,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public Iterable<DrivenFile> list() {
-        return getDrivenProvider().list(this);
+        return getDriven().list(this);
     }
 
     @Override
@@ -126,7 +126,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public java.io.File download(java.io.File local) {
-        return getDrivenProvider().download(this, local);
+        return getDriven().download(this, local);
     }
 
     @Override
@@ -140,7 +140,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public boolean upload(String mimeType, java.io.File content) {
-        return consume(getDrivenProvider().update(this, new DrivenContentImpl(mimeType, content)));
+        return consume(getDriven().update(this, new DrivenContent(mimeType, content)));
     }
 
     @Override
@@ -154,7 +154,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public boolean share(String user){
-        return getDrivenProvider().share(this, user);
+        return getDriven().share(this, user);
     }
 
     @Override
@@ -168,7 +168,7 @@ class DrivenFileImpl implements DrivenFile {
 
     @Override
     public boolean delete(){
-        return getDrivenProvider().delete(getId());
+        return getDriven().delete(getId());
     }
 
     @Override
@@ -193,9 +193,9 @@ class DrivenFileImpl implements DrivenFile {
     }
 
     private boolean consume(DrivenFile drivenFile){
-        if(!(drivenFile instanceof DrivenFileImpl))
+        if(!(drivenFile instanceof GoogleDriveFile))
             return false;
-        DrivenFileImpl other = (DrivenFileImpl) drivenFile;
+        GoogleDriveFile other = (GoogleDriveFile) drivenFile;
         return other.fileModel != null && init(other.fileModel, other.hasDetails);
     }
 
@@ -204,7 +204,7 @@ class DrivenFileImpl implements DrivenFile {
     public static Iterable<DrivenFile> from(FileList fileList){
         List<DrivenFile> list = new ArrayList<DrivenFile>();
         for(int i = 0; i < fileList.size(); i++){
-            list.add(new DrivenFileImpl(fileList.getItems().get(i), false));
+            list.add(new GoogleDriveFile(fileList.getItems().get(i), false));
         }
 
         return list;

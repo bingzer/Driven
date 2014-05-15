@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.providers.gdrive;
+package com.bingzer.android.driven.gdrive;
 
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.contracts.Delegate;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.app;
+package com.bingzer.android.driven.gdrive.app;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -21,12 +21,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenCredential;
-import com.bingzer.android.driven.DrivenProvider;
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.gdrive.GoogleDrive;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.drive.DriveScopes;
@@ -34,14 +34,14 @@ import com.google.api.services.drive.DriveScopes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrivenActivity extends Activity {
-    public static final String BUNDLE_KEY_LOGIN = "com.bingzer.android.driven.app.login";
+public class GoogleDriveActivity extends Activity {
+    public static final String BUNDLE_KEY_LOGIN = "com.bingzer.android.driven.gdrive.app.login";
 
     public static final int REQUEST_LOGIN = 3;
     public static final int REQUEST_ACCOUNT_PICKER = 1;
     public static final int REQUEST_AUTHORIZATION = 2;
 
-    private static DrivenProvider drivenProvider = Driven.getProvider(Driven.GOOGLE_DRIVE);
+    private static Driven driven = new GoogleDrive();
     private GoogleAccountCredential credential;
 
     @Override
@@ -80,7 +80,7 @@ public class DrivenActivity extends Activity {
         final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
         if (accountName != null) {
             credential.setSelectedAccountName(accountName);
-            drivenProvider.authenticateAsync(createCredential(credential), new Task<Result<DrivenException>>() {
+            driven.authenticateAsync(new DrivenCredential(this, credential.getSelectedAccountName()), new Task<Result<DrivenException>>() {
                 @Override
                 public void onCompleted(Result<DrivenException> result) {
                     if(result.isSuccess())
@@ -113,25 +113,6 @@ public class DrivenActivity extends Activity {
         return GoogleAccountCredential.usingOAuth2(context, list);
     }
 
-    private DrivenCredential createCredential(final GoogleAccountCredential credential){
-        return new DrivenCredential() {
-            @Override
-            public Context getContext() {
-                return getBaseContext();
-            }
-
-            @Override
-            public String getAccountName() {
-                return credential.getSelectedAccountName();
-            }
-
-            @Override
-            public void setAccountName(String accountName) {
-                credential.setSelectedAccountName(accountName);
-            }
-        };
-    }
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     public static void launch(Activity activity){
@@ -143,7 +124,7 @@ public class DrivenActivity extends Activity {
     }
 
     public static Intent createLoginIntent(Activity activity){
-        Intent intent = new Intent(activity, DrivenActivity.class);
+        Intent intent = new Intent(activity, GoogleDriveActivity.class);
         intent.putExtra(BUNDLE_KEY_LOGIN, REQUEST_LOGIN);
         return intent;
     }

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.providers.gdrive;
+package com.bingzer.android.driven.gdrive;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenCredential;
-import com.bingzer.android.driven.DrivenProvider;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.DrivenFile;
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenUser;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
@@ -54,11 +54,11 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  * Driven
  */
 @SuppressWarnings("unused")
-public final class GoogleDrive implements DrivenProvider {
+public final class GoogleDrive implements Driven {
 
     private static final String defaultFields      = "id,mimeType,title,downloadUrl";
     private static final String defaultFieldsItems = "items(" + defaultFields + ")";
-    private static final String TAG = "Driven";
+    private static final String TAG = "GoogleDrive";
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -122,7 +122,7 @@ public final class GoogleDrive implements DrivenProvider {
             }
 
             proxy = getProxyCreator().createProxy(credential);
-            drivenUser = new DrivenUserImpl(proxy.about().get().setFields("name,user").execute());
+            drivenUser = new GoogleDriveUser(proxy.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + drivenUser);
@@ -219,7 +219,7 @@ public final class GoogleDrive implements DrivenProvider {
     @Override
     public DrivenFile id(String id) {
         try{
-            return new DrivenFileImpl(getProxy().files().get(id).setFields(defaultFields).execute(), false);
+            return new GoogleDriveFile(getProxy().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -266,13 +266,13 @@ public final class GoogleDrive implements DrivenProvider {
     @Override
     public DrivenFile update(DrivenFile drivenFile, DrivenContent content) {
         try{
-            DrivenFileImpl driveFile = (DrivenFileImpl) drivenFile;
+            GoogleDriveFile driveFile = (GoogleDriveFile) drivenFile;
             com.google.api.services.drive.model.File file =
                     getProxy()
                             .files()
                             .update(driveFile.getId(), driveFile.getModel(), new FileContent(content.getType(), content.getFile()))
                             .execute();
-            return new DrivenFileImpl(file, drivenFile.hasDetails());
+            return new GoogleDriveFile(file, drivenFile.hasDetails());
         }
         catch (IOException e){
             return null;
@@ -313,7 +313,7 @@ public final class GoogleDrive implements DrivenProvider {
         try{
             FileList fileList = list(query, defaultFieldsItems, true);
             if(fileList != null)
-                return new DrivenFileImpl(fileList.getItems().get(0), false);
+                return new GoogleDriveFile(fileList.getItems().get(0), false);
             return null;
         }
         catch (IOException e){
@@ -338,7 +338,7 @@ public final class GoogleDrive implements DrivenProvider {
     public Iterable<DrivenFile> query(String query) {
         try{
             FileList fileList = list(query, defaultFieldsItems, true);
-            return DrivenFileImpl.from(fileList);
+            return GoogleDriveFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -376,7 +376,7 @@ public final class GoogleDrive implements DrivenProvider {
             file.setTitle(name);
 
             if (content == null)
-                file.setMimeType(DrivenFileImpl.MIME_TYPE_FOLDER);
+                file.setMimeType(GoogleDriveFile.MIME_TYPE_FOLDER);
             if (parent != null)
                 file.setParents(Arrays.asList(new ParentReference().setId(parent.getId())));
 
@@ -433,7 +433,7 @@ public final class GoogleDrive implements DrivenProvider {
     public Iterable<DrivenFile> list() {
         try {
             FileList fileList = list(null, defaultFieldsItems, false);
-            return DrivenFileImpl.from(fileList);
+            return GoogleDriveFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -444,7 +444,7 @@ public final class GoogleDrive implements DrivenProvider {
     public Iterable<DrivenFile> list(DrivenFile folder) {
         try {
             FileList fileList = list("'" + folder.getId() + "' in parents", defaultFieldsItems, false);
-            return DrivenFileImpl.from(fileList);
+            return GoogleDriveFile.from(fileList);
         }
         catch (IOException e){
             return null;
@@ -472,7 +472,7 @@ public final class GoogleDrive implements DrivenProvider {
     @Override
     public DrivenFile getDetails(DrivenFile drivenFile) {
         try{
-            return new DrivenFileImpl(getProxy().files().get(drivenFile.getId()).execute(), true);
+            return new GoogleDriveFile(getProxy().files().get(drivenFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
