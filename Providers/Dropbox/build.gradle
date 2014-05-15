@@ -1,0 +1,23 @@
+project.ext.set("archivesBaseName", "driven-dropbox");
+
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion Integer.parseInt(project.VERSION_SDK)
+    buildToolsVersion project.VERSION_TOOLS
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(project.VERSION_SDK_MIN)
+        targetSdkVersion Integer.parseInt(project.VERSION_SDK_TARGET)
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
+    }
+}
+
+dependencies {
+    compile project(':Library')
+    // --- Drop box
+    compile files('libs/dropbox-android-sdk-1.6.1.jar')
+}
+
+apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'

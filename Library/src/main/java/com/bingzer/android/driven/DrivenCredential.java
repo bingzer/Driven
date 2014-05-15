@@ -21,14 +21,24 @@ public class DrivenCredential {
 
     private Context context;
     private String accountName;
+    private Token token;
 
     public DrivenCredential(Context context){
-        this(context, null);
+        this(context, (String) null);
     }
 
     public DrivenCredential(Context context, String accountName){
+        this(context, accountName, null);
+    }
+
+    public DrivenCredential(Context context, Token token){
+        this(context, null, token);
+    }
+
+    public DrivenCredential(Context context, String accountName, Token token){
         this.context = context;
         this.accountName = accountName;
+        this.token = token;
     }
 
     public Context getContext() {
@@ -41,5 +51,50 @@ public class DrivenCredential {
 
     public void setAccountName(String accountName) {
         this.accountName = accountName;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static class Token {
+        private String applicationKey;
+        private String applicationSecret;
+        private String accessToken;
+
+        public Token(String applicationKey, String applicationSecret){
+            this.applicationKey = applicationKey;
+            this.applicationSecret = applicationSecret;
+        }
+
+        public String getApplicationKey() {
+            return applicationKey;
+        }
+
+        public void setApplicationKey(String applicationKey) {
+            this.applicationKey = applicationKey;
+        }
+
+        public String getApplicationSecret() {
+            return applicationSecret;
+        }
+
+        public void setApplicationSecret(String applicationSecret) {
+            this.applicationSecret = applicationSecret;
+        }
+
+        public String getAccessToken() {
+            return accessToken;
+        }
+
+        public void setAccessToken(String accessToken) {
+            this.accessToken = accessToken;
+        }
     }
 }
