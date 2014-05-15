@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.contracts;
+package com.bingzer.android.driven.providers.gdrive;
 
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.bingzer.android.driven.DrivenCredential;
 
 /**
  * A provider that's responsible to generate/create
  * a DrivenService using a credential
  */
-public interface DrivenServiceProvider {
+interface ProxyCreator {
 
     /**
      * Returns DrivenService
      */
-    DrivenService createService(GoogleAccountCredential credential);
+    Proxy createProxy(DrivenCredential credential);
+
+    static class Default implements ProxyCreator {
+        @Override
+        public Proxy createProxy(DrivenCredential credential) {
+            return new Proxy.Default(DriveUtils.createGoogleDriveService(credential));
+        }
+    }
 }

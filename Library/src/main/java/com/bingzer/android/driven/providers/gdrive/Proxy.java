@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven;
+package com.bingzer.android.driven.providers.gdrive;
 
-import com.bingzer.android.driven.contracts.DrivenService;
-import com.bingzer.android.driven.contracts.DrivenServiceProvider;
-import com.bingzer.android.driven.utils.DriveUtils;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.services.drive.Drive;
 
 /**
- * Default implementation for DrivenServiceProvider
+ * Contract for a DrivenService.
+ * We're decoupling this so we can unit-test. Nothing more
  */
-class GoogleDriveProvider implements DrivenServiceProvider {
-    @Override
-    public DrivenService createService(GoogleAccountCredential credential) {
-        return new GoogleDriveProxy(DriveUtils.createGoogleDriveService(credential));
-    }
+interface Proxy {
 
-    ////////////////////////////////////////////////////////////////////////////////////////////
+    Drive getDrive();
+    Drive.About about();
+    Drive.Files files();
+    Drive.Permissions permissions();
+    HttpRequestFactory getRequestFactory();
 
-    private static class GoogleDriveProxy implements DrivenService {
+    ///////////////////////////////////////////////////////////////////////////////
+
+    static class Default implements Proxy{
 
         private Drive drive;
 
-        public GoogleDriveProxy(Drive drive){
+        Default(Drive drive){
             this.drive = drive;
         }
 
@@ -63,7 +62,7 @@ class GoogleDriveProvider implements DrivenServiceProvider {
 
         @Override
         public HttpRequestFactory getRequestFactory() {
-            return drive.getRequestFactory();
-        }
+                return drive.getRequestFactory();
+            }
     }
 }

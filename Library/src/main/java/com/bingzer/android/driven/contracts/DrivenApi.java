@@ -17,10 +17,10 @@ package com.bingzer.android.driven.contracts;
 
 import android.content.Context;
 
+import com.bingzer.android.driven.DrivenContent;
+import com.bingzer.android.driven.DrivenCredential;
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.http.FileContent;
 
 import java.io.File;
 
@@ -44,13 +44,15 @@ public interface DrivenApi {
 
     public static interface Auth {
 
-        Result<DrivenException> authenticate(GoogleAccountCredential credential);
+        boolean isAuthenticated();
 
-        Result<DrivenException> authenticate(GoogleAccountCredential credential, boolean saveCredential);
+        Result<DrivenException> authenticate(DrivenCredential credential);
 
-        void authenticateAsync(GoogleAccountCredential credential, Task<Result<DrivenException>> result);
+        Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential);
 
-        void authenticateAsync(GoogleAccountCredential credential, boolean saveCredential, Task<Result<DrivenException>> result);
+        void authenticateAsync(DrivenCredential credential, Task<Result<DrivenException>> result);
+
+        void authenticateAsync(DrivenCredential credential, boolean saveCredential, Task<Result<DrivenException>> result);
 
         Result<DrivenException> deauthenticate(Context context);
 
@@ -100,27 +102,27 @@ public interface DrivenApi {
 
         DrivenFile create(String name);
 
-        DrivenFile create(String name, FileContent content);
+        DrivenFile create(String name, DrivenContent content);
 
         DrivenFile create(DrivenFile parent, String name);
 
-        DrivenFile create(DrivenFile parent, String name, FileContent content);
+        DrivenFile create(DrivenFile parent, String name, DrivenContent content);
 
-        void createAsync(DrivenFile parent, String name, FileContent content, Task<DrivenFile> result);
+        void createAsync(DrivenFile parent, String name, DrivenContent content, Task<DrivenFile> result);
 
         void createAsync(DrivenFile parent, String name, Task<DrivenFile> result);
 
         void createAsync(String name, Task<DrivenFile> result);
 
-        void createAsync(String name, FileContent content, Task<DrivenFile> result);
+        void createAsync(String name, DrivenContent content, Task<DrivenFile> result);
 
     }
 
     public static interface Put {
 
-        DrivenFile update(DrivenFile drivenFile, FileContent content);
+        DrivenFile update(DrivenFile drivenFile, DrivenContent content);
 
-        void updateAsync(DrivenFile drivenFile, FileContent content, Task<DrivenFile> result);
+        void updateAsync(DrivenFile drivenFile, DrivenContent content, Task<DrivenFile> result);
     }
 
     public static interface Delete {

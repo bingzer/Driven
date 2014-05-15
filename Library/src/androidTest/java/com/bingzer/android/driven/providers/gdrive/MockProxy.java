@@ -1,6 +1,5 @@
-package com.bingzer.android.driven;
+package com.bingzer.android.driven.providers.gdrive;
 
-import com.bingzer.android.driven.contracts.DrivenService;
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestFactory;
@@ -21,19 +20,17 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static junit.framework.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MockDrivenService implements DrivenService {
+public class MockProxy implements Proxy {
 
     private Drive drive;
 
-    public MockDrivenService(){
+    public MockProxy(){
         drive = mock(Drive.class, RETURNS_DEEP_STUBS);
     }
 

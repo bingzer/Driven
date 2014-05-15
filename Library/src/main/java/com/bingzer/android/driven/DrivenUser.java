@@ -15,41 +15,12 @@
  */
 package com.bingzer.android.driven;
 
-import com.google.api.services.drive.model.About;
-
 /**
  * Simple wrapper for user that has authenticate
  * DrivenAPI to their GoogleDrive API
  */
-public class DrivenUser {
-    private String name;
-    private String displayName;
-    private String emailAddress;
-
-    protected DrivenUser(About about){
-        name = about.getName();
-        displayName = about.getUser().getDisplayName();
-        emailAddress = about.getUser().getEmailAddress();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    @Override
-    public String toString() {
-        return "DriveUser{" +
-                "name='" + name + '\'' +
-                ", displayName='" + displayName + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                '}';
-    }
+public interface DrivenUser {
+    String getName();
+    String getDisplayName();
+    String getEmailAddress();
 }

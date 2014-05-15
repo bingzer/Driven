@@ -15,175 +15,52 @@
  */
 package com.bingzer.android.driven;
 
-import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
-import com.google.api.client.http.FileContent;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
+import java.io.File;
 
 /**
  * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
-public class DrivenFile {
-    public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
+public interface DrivenFile {
 
-    protected static Driven driven;
-    protected static void setDriven(Driven driven){
-        DrivenFile.driven = driven;
-    }
+    public String getId();
 
-    protected static Driven getDriven(){
-        if(driven == null)
-            driven = Driven.getDriven();
-        return driven;
-    }
+    public boolean isDirectory();
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    private String id;
-    private String title;
-    private String type;
-    private String downloadUrl;
-    private File fileModel;
-    private boolean hasDetails;
-    ///////////////////////////////////////////////////////////////////////////////////////////
+    public String getTitle();
 
-    protected DrivenFile(File file, boolean hasDetails){
-        init(file, hasDetails);
-    }
+    public String getType();
 
-    public String getId() {
-        return id;
-    }
+    public String getDownloadUrl();
 
-    public boolean isDirectory() {
-        return MIME_TYPE_FOLDER.equals(fileModel.getMimeType());
-    }
-
-    public String getTitle(){
-        return title;
-    }
-
-    public String getType(){
-        return type;
-    }
-
-    public String getDownloadUrl() {
-        return downloadUrl;
-    }
-
-    public File getModel(){
-        return fileModel;
-    }
-
-    public boolean hasDetails(){
-        return hasDetails;
-    }
+    public boolean hasDetails();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public File getDetails(){
-        if(!hasDetails) consume(getDriven().getDetails(this));
-        return fileModel;
-    }
+    public boolean fetchDetails();
 
-    public void getDetailsAsync(Task<File> result){
-        doAsync(result, new Delegate<File>() {
-            @Override public File invoke() {
-                return getDetails();
-            }
-        });
-    }
+    public void fetchDetailsAsync(Task<Boolean> result);
 
-    public Iterable<DrivenFile> list() {
-        return getDriven().list(this);
-    }
+    public Iterable<DrivenFile> list();
 
-    public void listAsync(Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
-            @Override public Iterable<DrivenFile> invoke() {
-                return list();
-            }
-        });
-    }
+    public void listAsync(Task<Iterable<DrivenFile>> result);
 
-    public java.io.File download(java.io.File local) {
-        return getDriven().download(this, local);
-    }
+    public File download(File local);
 
-    public void downloadAsync(final java.io.File local, Task<java.io.File> result) {
-        doAsync(result, new Delegate<java.io.File>() {
-            @Override public java.io.File invoke() {
-                return download(local);
-            }
-        });
-    }
+    public void downloadAsync(final File local, Task<File> result);
 
-    public boolean upload(FileContent content) {
-        return consume(getDriven().update(this, content));
-    }
+    public boolean upload(String mimeType, File content);
 
-    public void uploadAsync(final FileContent content, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return upload(content);
-            }
-        });
-    }
+    public void uploadAsync(String mimeType, File content, Task<Boolean> result);
 
-    public boolean share(String user){
-        return getDriven().share(this, user);
-    }
+    public boolean share(String user);
 
-    public void shareAsync(final String user, Task<Boolean> result){
-        doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return share(user);
-            }
-        });
-    }
+    public void shareAsync(final String user, Task<Boolean> result);
 
-    public boolean delete(){
-        return getDriven().delete(getId());
-    }
+    public boolean delete();
 
-    public void deleteAsync(Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return delete();
-            }
-        });
-    }
+    public void deleteAsync(Task<Boolean> result);
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    private boolean init(File file, boolean details){
-        fileModel = file;
-        id = fileModel.getId();
-        title = fileModel.getTitle();
-        type = fileModel.getMimeType();
-        downloadUrl = fileModel.getDownloadUrl();
-        hasDetails = details;
-        return true;
-    }
-
-    private boolean consume(DrivenFile other){
-        return other != null && other.fileModel != null && init(other.fileModel, other.hasDetails);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static Iterable<DrivenFile> from(FileList fileList){
-        List<DrivenFile> list = new ArrayList<DrivenFile>();
-        for(int i = 0; i < fileList.size(); i++){
-            list.add(new DrivenFile(fileList.getItems().get(i), false));
-        }
-
-        return list;
-    }
 }

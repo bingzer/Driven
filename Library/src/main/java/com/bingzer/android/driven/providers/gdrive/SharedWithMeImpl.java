@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven;
+package com.bingzer.android.driven.providers.gdrive;
 
+import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
@@ -26,20 +27,20 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  */
 class SharedWithMeImpl implements SharedWithMe {
 
-    private Driven driven;
+    private GoogleDrive googleDrive;
 
-    protected SharedWithMeImpl(Driven driven){
-        this.driven = driven;
+    protected SharedWithMeImpl(GoogleDrive googleDrive){
+        this.googleDrive = googleDrive;
     }
 
     @Override
     public DrivenFile get(DrivenFile parent, String title) {
-        return driven.first("'" + parent.getId() + "' in parents AND title = '" + title + "' AND sharedWithMe");
+        return googleDrive.first("'" + parent.getId() + "' in parents AND title = '" + title + "' AND sharedWithMe");
     }
 
     @Override
     public DrivenFile get(String title) {
-        return driven.first("title = '" + title + "' AND sharedWithMe");
+        return googleDrive.first("title = '" + title + "' AND sharedWithMe");
     }
 
     @Override

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.utils;
+package com.bingzer.android.driven.providers.gdrive;
 
 import android.content.Context;
 
+import com.bingzer.android.driven.DrivenCredential;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -30,13 +31,14 @@ import java.util.List;
  * Created by Ricky on 5/6/2014.
  */
 @SuppressWarnings("unused")
-public final class DriveUtils {
+final class DriveUtils {
 
-    public static Drive createGoogleDriveService(GoogleAccountCredential credential) {
-        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), credential).build();
+    static Drive createGoogleDriveService(DrivenCredential credential) {
+        GoogleAccountCredential account = createGoogleAccountCredential(credential.getContext(), credential.getAccountName());
+        return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), account).build();
     }
 
-    public static GoogleAccountCredential createGoogleAccountCredential(Context context, String username) {
+    static GoogleAccountCredential createGoogleAccountCredential(Context context, String username) {
         List<String> list = new ArrayList<String>();
         list.add(DriveScopes.DRIVE);
 

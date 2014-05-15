@@ -1,20 +1,19 @@
-package com.bingzer.android.driven;
+package com.bingzer.android.driven.providers.gdrive;
 
+import android.content.Context;
 import android.test.AndroidTestCase;
 
+import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.contracts.Task;
-import com.bingzer.android.driven.utils.DriveUtils;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.http.FileContent;
-import com.google.api.services.drive.model.File;
 
 import java.util.concurrent.CountDownLatch;
 
 import dagger.ObjectGraph;
 
-public class DrivenFileTest extends AndroidTestCase {
+public class DrivenFileImplTest extends AndroidTestCase {
 
-    private Driven driven;
+    private GoogleDrive drivenProvider;
     private DrivenFile drivenFile;
 
     @Override
@@ -25,13 +24,28 @@ public class DrivenFileTest extends AndroidTestCase {
         final String dexCache = getContext().getCacheDir().getPath();
         System.setProperty("dexmaker.dexcache", dexCache);
 
-        driven = ObjectGraph.create(StubModule.class).get(Driven.class);
-        GoogleAccountCredential credential = DriveUtils.createGoogleAccountCredential(getContext(), "TestUserCredential");
+        drivenProvider = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
+        DrivenCredential credential = new DrivenCredential() {
+            @Override
+            public Context getContext() {
+                return DrivenFileImplTest.this.getContext();
+            }
 
-        DrivenFile.setDriven(driven);
+            @Override
+            public String getAccountName() {
+                return "TestUserCredential";
+            }
 
-        driven.authenticate(credential);
-        drivenFile = driven.get("Title01");
+            @Override
+            public void setAccountName(String accountName) {
+
+            }
+        };
+
+        DrivenFileImpl.setDrivenProvider(drivenProvider);
+
+        drivenProvider.authenticate(credential);
+        drivenFile = drivenProvider.get("Title01");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,10 +58,10 @@ public class DrivenFileTest extends AndroidTestCase {
         assertFalse(drivenFile.isDirectory());
         assertFalse(drivenFile.hasDetails());
 
-        assertEquals("Id01", drivenFile.getModel().getId());
-        assertEquals("Title01", drivenFile.getModel().getTitle());
-        assertEquals("MimeType01", drivenFile.getModel().getMimeType());
-        assertEquals("DownloadUrl01", drivenFile.getModel().getDownloadUrl());
+        assertEquals("Id01", ((DrivenFileImpl)drivenFile).getModel().getId());
+        assertEquals("Title01", ((DrivenFileImpl)drivenFile).getModel().getTitle());
+        assertEquals("MimeType01", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
     }
 
     public void test_isDirectory() throws Exception {
@@ -55,15 +69,15 @@ public class DrivenFileTest extends AndroidTestCase {
     }
 
     public void test_getDetails() throws Exception {
-        drivenFile.getDetails();
+        drivenFile.fetchDetails();
         assertTrue(drivenFile.hasDetails());
     }
 
     public void test_getDetailsAsync() throws Exception {
         final CountDownLatch signal = new CountDownLatch(1);
-        drivenFile.getDetailsAsync(new Task<File>() {
+        drivenFile.fetchDetailsAsync(new Task<Boolean>() {
             @Override
-            public void onCompleted(File result) {
+            public void onCompleted(Boolean result) {
                 assertTrue(drivenFile.hasDetails());
                 signal.countDown();
             }
@@ -74,7 +88,7 @@ public class DrivenFileTest extends AndroidTestCase {
 
     public void test_delete() throws Exception {
         assertTrue(drivenFile.delete());
-        assertNull(driven.get(drivenFile.getTitle()));
+        assertNull(drivenProvider.get(drivenFile.getTitle()));
     }
 
     public void test_deleteAsync() throws Exception {
@@ -83,7 +97,7 @@ public class DrivenFileTest extends AndroidTestCase {
             @Override
             public void onCompleted(Boolean result) {
                 assertTrue(result);
-                assertNull(driven.get(drivenFile.getTitle()));
+                assertNull(drivenProvider.get(drivenFile.getTitle()));
                 signal.countDown();
             }
         });
@@ -92,9 +106,9 @@ public class DrivenFileTest extends AndroidTestCase {
     }
 
     public void test_list() throws Exception {
-        drivenFile = driven.create("Folder10");
-        assertNotNull(driven.create(drivenFile, "File11"));
-        assertNotNull(driven.create(drivenFile, "File12"));
+        drivenFile = drivenProvider.create("Folder10");
+        assertNotNull(drivenProvider.create(drivenFile, "File11"));
+        assertNotNull(drivenProvider.create(drivenFile, "File12"));
 
         int counter = 1;
         for(DrivenFile df : drivenFile.list()){
@@ -104,9 +118,9 @@ public class DrivenFileTest extends AndroidTestCase {
     }
 
     public void test_listAsync() throws Exception {
-        drivenFile = driven.create("Folder10");
-        assertNotNull(driven.create(drivenFile, "File11"));
-        assertNotNull(driven.create(drivenFile, "File12"));
+        drivenFile = drivenProvider.create("Folder10");
+        assertNotNull(drivenProvider.create(drivenFile, "File11"));
+        assertNotNull(drivenProvider.create(drivenFile, "File12"));
 
         final CountDownLatch signal = new CountDownLatch(1);
         drivenFile.listAsync(new Task<Iterable<DrivenFile>>() {
@@ -143,8 +157,7 @@ public class DrivenFileTest extends AndroidTestCase {
     }
 
     public void test_upload() throws Exception {
-        FileContent fileContent = new FileContent("MimeTypeEdited01", new java.io.File(""));
-        assertTrue(drivenFile.upload(fileContent));
+        assertTrue(drivenFile.upload("MimeTypeEdited01", new java.io.File("")));
 
         assertNotNull(drivenFile);
         assertEquals("Id01", drivenFile.getId());
@@ -154,16 +167,14 @@ public class DrivenFileTest extends AndroidTestCase {
         assertFalse(drivenFile.hasDetails());
 
         // check raw model
-        assertEquals("Id01", drivenFile.getModel().getId());
-        assertEquals("Description01", drivenFile.getModel().getDescription());
-        assertEquals("MimeTypeEdited01", drivenFile.getModel().getMimeType());
-        assertEquals("DownloadUrl01", drivenFile.getModel().getDownloadUrl());
+        assertEquals("Id01", ((DrivenFileImpl)drivenFile).getModel().getId());
+        assertEquals("Description01", ((DrivenFileImpl)drivenFile).getModel().getDescription());
+        assertEquals("MimeTypeEdited01", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
     }
 
     public void test_uploadAsync() throws Exception {
-        FileContent fileContent = new FileContent("MimeTypeEdited01", new java.io.File(""));
-
-        drivenFile.uploadAsync(fileContent, new Task<Boolean>() {
+        drivenFile.uploadAsync("MimeTypeEdited01", new java.io.File(""), new Task<Boolean>() {
             @Override
             public void onCompleted(Boolean result) {
                 assertTrue(result);
@@ -176,10 +187,10 @@ public class DrivenFileTest extends AndroidTestCase {
                 assertFalse(drivenFile.hasDetails());
 
                 // check raw model
-                assertEquals("Id01", drivenFile.getModel().getId());
-                assertEquals("Description01", drivenFile.getModel().getDescription());
-                assertEquals("MimeTypeEdited01", drivenFile.getModel().getMimeType());
-                assertEquals("DownloadUrl01", drivenFile.getModel().getDownloadUrl());
+                assertEquals("Id01", ((DrivenFileImpl)drivenFile).getModel().getId());
+                assertEquals("Description01", ((DrivenFileImpl)drivenFile).getModel().getDescription());
+                assertEquals("MimeTypeEdited01", ((DrivenFileImpl)drivenFile).getModel().getMimeType());
+                assertEquals("DownloadUrl01", ((DrivenFileImpl)drivenFile).getModel().getDownloadUrl());
             }
         });
     }

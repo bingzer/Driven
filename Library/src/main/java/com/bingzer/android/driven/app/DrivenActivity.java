@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.bingzer.android.driven.Driven;
+import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.DrivenProvider;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.Task;
@@ -39,7 +41,7 @@ public class DrivenActivity extends Activity {
     public static final int REQUEST_ACCOUNT_PICKER = 1;
     public static final int REQUEST_AUTHORIZATION = 2;
 
-    private static Driven driven = Driven.getDriven();
+    private static DrivenProvider drivenProvider = Driven.getProvider(Driven.GOOGLE_DRIVE);
     private GoogleAccountCredential credential;
 
     @Override
@@ -78,7 +80,7 @@ public class DrivenActivity extends Activity {
         final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
         if (accountName != null) {
             credential.setSelectedAccountName(accountName);
-            driven.authenticateAsync(credential, new Task<Result<DrivenException>>() {
+            drivenProvider.authenticateAsync(createCredential(credential), new Task<Result<DrivenException>>() {
                 @Override
                 public void onCompleted(Result<DrivenException> result) {
                     if(result.isSuccess())
@@ -109,6 +111,25 @@ public class DrivenActivity extends Activity {
         list.add(DriveScopes.DRIVE);
 
         return GoogleAccountCredential.usingOAuth2(context, list);
+    }
+
+    private DrivenCredential createCredential(final GoogleAccountCredential credential){
+        return new DrivenCredential() {
+            @Override
+            public Context getContext() {
+                return getBaseContext();
+            }
+
+            @Override
+            public String getAccountName() {
+                return credential.getSelectedAccountName();
+            }
+
+            @Override
+            public void setAccountName(String accountName) {
+                credential.setSelectedAccountName(accountName);
+            }
+        };
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
