@@ -16,8 +16,21 @@
 package com.bingzer.android.driven;
 
 import android.content.Context;
+import android.util.Log;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import static com.bingzer.android.driven.utils.IOUtils.safeClose;
 
 public class DrivenCredential {
+
+    private static final String TAG = "DrivenCredential";
 
     private Context context;
     private String accountName;
@@ -59,6 +72,81 @@ public class DrivenCredential {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public void save(String name) {
+        FileWriter writer = null;
+        try{
+            writer = new FileWriter(getCredentialFile(name));
+            writer.write(toString());
+            writer.flush();
+            writer.close();
+        }
+        catch (IOException e){
+            Log.e(TAG, "Failed to save credentials to file", e);
+        }
+        finally {
+            safeClose(writer);
+        }
+    }
+
+    public boolean read(String name) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(getCredentialFile(name)));
+            final StringBuilder jsonString = new StringBuilder();
+            String line;
+            while((line = reader.readLine()) != null){
+                jsonString.append(line);
+            }
+
+            JSONObject jsonObject = new JSONObject(jsonString.toString());
+            accountName = jsonObject.getString("accountName");
+
+            JSONObject tokenJson;
+            if((tokenJson =jsonObject.getJSONObject("token")) != null){
+                token = new Token(tokenJson.getString("applicationKey"), tokenJson.getString("applicationSecret"));
+                token.accessToken = tokenJson.getString("accessToken");
+            }
+
+            return true;
+        }
+        catch (Exception e){
+            Log.e(TAG, "Failed to read credentials from a file", e);
+            return false;
+        }
+        finally {
+            safeClose(reader);
+        }
+    }
+
+    public boolean hasSavedCredential(String name) {
+        File file = getCredentialFile(name);
+        return file != null && file.exists();
+    }
+
+    private File getCredentialFile(String name){
+        File dir = getContext().getFilesDir();
+        return new File(dir, name);
+    }
+
+    @Override
+    public String toString() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("accountName", accountName);
+            if(token != null){
+                JSONObject tokenObject = new JSONObject();
+                tokenObject.put("applicationKey", token.applicationKey);
+                tokenObject.put("applicationSecret", token.applicationSecret);
+                tokenObject.put("accessToken", token.accessToken);
+                jsonObject.put("token", tokenObject);
+            }
+            return jsonObject.toString();
+        }
+        catch (Exception e){
+            return "<error parsing JSON>";
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

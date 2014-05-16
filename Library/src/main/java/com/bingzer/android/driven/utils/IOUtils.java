@@ -24,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.Locale;
 
@@ -157,6 +159,28 @@ public final class IOUtils {
             try {
                 output.close();
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void safeClose(Writer writer){
+        if(writer != null){
+            try{
+                writer.close();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void safeClose(Reader reader){
+        if(reader != null){
+            try{
+                reader.close();
+            }
+            catch (IOException e){
                 e.printStackTrace();
             }
         }

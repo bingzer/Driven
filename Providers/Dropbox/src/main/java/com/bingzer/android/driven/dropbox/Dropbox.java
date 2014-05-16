@@ -77,9 +77,8 @@ public class Dropbox implements Driven {
     public Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential) {
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         try {
-            if(credential.getToken().getAccessToken() == null) {
-                String accessToken = readSavedCredentials(credential.getContext());
-                credential.getToken().setAccessToken(accessToken);
+            if(credential.hasSavedCredential(TAG)){
+                credential.read(TAG);
             }
 
             // And later in some initialization function:
@@ -95,7 +94,7 @@ public class Dropbox implements Driven {
             drivenUser = new DropboxUser(dropboxApi.accountInfo());
 
             if(saveCredential)
-                saveCredentials(credential);
+                credential.save(TAG);
 
             result.setSuccess(true);
         }
@@ -132,7 +131,11 @@ public class Dropbox implements Driven {
         dropboxApi = null;
         drivenUser = null;
 
-        result.setSuccess(true);
+        DrivenCredential credential = new DrivenCredential(context);
+        if(credential.hasSavedCredential(TAG)){
+            result.setSuccess(credential.read(TAG));
+        }
+
         return result;
     }
 
@@ -519,45 +522,4 @@ public class Dropbox implements Driven {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    private File getCredentialFile(Context context){
-        File dir = context.getFilesDir();
-        return new File(dir, "dropbox-credential");
-    }
-
-    private void saveCredentials(DrivenCredential credential) throws IOException {
-        FileWriter writer = null;
-        try{
-            writer = new FileWriter(getCredentialFile(credential.getContext()));
-            writer.write(credential.getAccountName());
-            writer.flush();
-            writer.close();
-        }
-        catch (IOException e){
-            Log.e(TAG, "Failed to save credentials to file", e);
-        }
-        finally {
-            if(writer != null) writer.close();
-        }
-    }
-
-    private String readSavedCredentials(Context context) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(getCredentialFile(context)));
-            return reader.readLine().trim();
-        }
-        catch (IOException e){
-            return null;
-        }
-        finally {
-            if(reader != null){
-                try{
-                    reader.close();
-                }
-                catch (IOException e){
-                    Log.wtf(TAG, "Failed when attempting to close");
-                }
-            }
-        }
-    }
 }

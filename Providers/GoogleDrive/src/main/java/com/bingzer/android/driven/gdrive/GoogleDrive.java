@@ -115,9 +115,8 @@ public final class GoogleDrive implements Driven {
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
-            String accountName = readSavedCredentials(credential.getContext());
-            if (credential.getAccountName() == null && accountName != null) {
-                credential.setAccountName(accountName);
+            if(credential.hasSavedCredential(TAG)){
+                credential.read(TAG);
             }
 
             googleDriveApi = getGoogleDriveApiFactory().createApi(credential);
@@ -128,7 +127,7 @@ public final class GoogleDrive implements Driven {
 
             // only save when it's not null
             if(saveCredential && credential.getAccountName() != null)
-                saveCredentials(credential);
+                credential.save(TAG);
         }
         catch (IOException e){
             Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getAccountName());
@@ -161,7 +160,12 @@ public final class GoogleDrive implements Driven {
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
         googleDriveApi = null;
         drivenUser = null;
-        result.setSuccess(getCredentialFile(context).delete());
+
+        DrivenCredential credential = new DrivenCredential(context);
+        if(credential.hasSavedCredential(TAG)){
+            result.setSuccess(credential.read(TAG));
+        }
+
         return result;
     }
 
@@ -554,48 +558,6 @@ public final class GoogleDrive implements Driven {
         if(includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
 
         return list.execute();
-    }
-
-    private File getCredentialFile(Context context){
-        File dir = context.getFilesDir();
-        return new File(dir, "credential");
-    }
-
-    private void saveCredentials(DrivenCredential credential) throws IOException{
-        FileWriter writer = null;
-        try{
-            writer = new FileWriter(getCredentialFile(credential.getContext()));
-            writer.write(credential.getAccountName());
-            writer.flush();
-            writer.close();
-        }
-        catch (IOException e){
-            Log.e(TAG, "Failed to save credentials to file", e);
-        }
-        finally {
-            if(writer != null) writer.close();
-        }
-    }
-
-    private String readSavedCredentials(Context context) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(getCredentialFile(context)));
-            return reader.readLine().trim();
-        }
-        catch (IOException e){
-            return null;
-        }
-        finally {
-            if(reader != null){
-                try{
-                    reader.close();
-                }
-                catch (IOException e){
-                    Log.wtf(TAG, "Failed when attempting to close");
-                }
-            }
-        }
     }
 
 
