@@ -617,6 +617,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
             counter++;
         }
+        assertTrue(counter > 1);
     }
 
     public void test_listAsync() throws Exception {
@@ -634,9 +635,10 @@ public class GoogleDriveTest extends AndroidTestCase{
                     assertEquals("DownloadUrl0" + counter, drivenFile.getDownloadUrl());
 
                     counter++;
-
-                    signal.countDown();
                 }
+                assertTrue(counter > 1);
+
+                signal.countDown();
             }
         });
 
@@ -654,7 +656,9 @@ public class GoogleDriveTest extends AndroidTestCase{
         int counter = 1;
         for(DrivenFile drivenFile : driven.list(parent)){
             assertEquals("Folder1" + counter + "0", drivenFile.getTitle());
+            counter++;
         }
+        assertTrue(counter > 1);
     }
 
     public void test_listAsync_Parent() throws Exception {
@@ -672,7 +676,9 @@ public class GoogleDriveTest extends AndroidTestCase{
                 int counter = 1;
                 for (DrivenFile drivenFile : result) {
                     assertEquals("Folder1" + counter + "0", drivenFile.getTitle());
+                    counter++;
                 }
+                assertTrue(counter > 1);
 
                 signal.countDown();
             }
