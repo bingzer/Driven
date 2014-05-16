@@ -1,5 +1,6 @@
 package com.bingzer.android.driven.dropbox;
 
+import com.bingzer.android.driven.dropbox.com.dropbox.client2.MockAccount;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.ProgressListener;
 import com.dropbox.client2.session.Session;
@@ -7,10 +8,17 @@ import com.dropbox.client2.session.Session;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.anyBoolean;
@@ -35,6 +43,11 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
         DropboxAPI<T> api = mock(DropboxAPI.class, RETURNS_DEEP_STUBS);
         try {
             when(api.getSession()).thenReturn(session);
+            when(api.accountInfo()).then(new Answer<DropboxAPI.Account>(){
+                @Override public DropboxAPI.Account answer(InvocationOnMock invocation) throws Throwable {
+                    return new MockAccount("country", "DisplayName", 1234, "referralLink", 100, 100, 100);
+                }
+            });
 
             //////////////////////////////////////////////////////////////////////
             // DELETE
@@ -71,7 +84,20 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
                     .then(new Answer<DropboxAPI.Entry>(){
                         @Override
                         public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                            return null;
+                            String path = invocation.getArguments()[0].toString();
+                            boolean isList = (Boolean) invocation.getArguments()[3];
+
+                            DropboxAPI.Entry entry;
+                            if(path.equals(Path.ROOT))
+                                entry = getRoot();
+                            else
+                                entry = getEntryByPath(path);
+
+                            if(entry != null && entry.isDir && isList){
+                                entry.contents = getChildren(entry);
+                            }
+
+                            return entry;
                         }
                     });
 
@@ -81,7 +107,11 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
             when(api.createFolder(anyString())).then(new Answer<DropboxAPI.Entry>() {
                 @Override
                 public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                    return null;
+                    String path = invocation.getArguments()[0].toString();
+                    DropboxAPI.Entry entry = entry(path, "Directory", true);
+                    entryList.add(entry);
+
+                    return entry;
                 }
             });
 
@@ -92,7 +122,10 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
                     .then(new Answer<DropboxAPI.Entry>() {
                 @Override
                 public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                    return null;
+                    String path = invocation.getArguments()[0].toString();
+                    DropboxAPI.Entry entry = entry(path, "MimeType", false);
+                    entryList.add(entry);
+                    return entry;
                 }
             });
 
@@ -103,7 +136,10 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
                     .then(new Answer<DropboxAPI.Entry>() {
                         @Override
                         public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                            return null;
+                            String path = invocation.getArguments()[0].toString();
+                            DropboxAPI.Entry entry = entry(path, "MimeType", false);
+                            entryList.add(entry);
+                            return entry;
                         }
                     });
 
@@ -111,10 +147,23 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
             //////////////////////////////////////////////////////////////////////
             // SEARCH
             when(api.search(anyString(), anyString(), anyInt(), anyBoolean()))
-                    .then(new Answer<DropboxAPI.Entry>() {
+                    .then(new Answer<List<DropboxAPI.Entry>>() {
                         @Override
-                        public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                            return null;
+                        public List<DropboxAPI.Entry> answer(InvocationOnMock invocation) throws Throwable {
+                            String path = invocation.getArguments()[0].toString();
+                            String query = invocation.getArguments()[1].toString();
+
+                            if(path.equals(Path.ROOT) && query == null){
+                                return entryList;
+                            }
+                            else{
+                                List<DropboxAPI.Entry> entries = new ArrayList<DropboxAPI.Entry>();
+                                for(DropboxAPI.Entry entry : entryList){
+                                    if(entry.path.contains(query))
+                                        entries.add(entry);
+                                }
+                                return entries;
+                            }
                         }
                     });
 
@@ -136,6 +185,16 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
         return api;
     }
 
+    @Override
+    public OutputStream createOutputStream(File file) throws IOException {
+        return new ByteArrayOutputStream();
+    }
+
+    @Override
+    public InputStream createInputStream(File file) throws IOException {
+        return new ByteArrayInputStream(new byte[1024]);
+    }
+
     public DropboxAPI.Entry getEntryByPath(String path){
         for(DropboxAPI.Entry entry : entryList){
             if(entry.path.equals(path)){
@@ -145,13 +204,34 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
         return null;
     }
 
+    public DropboxAPI.Entry getRoot(){
+        return entry("/", "Directory", true);
+    }
+
     private List<DropboxAPI.Entry> getEntries() {
         List<DropboxAPI.Entry> entries = new ArrayList<DropboxAPI.Entry>();
 
-        entries.add(entry("/Folder01", "FolderMimeType01", true));
-        entries.add(entry("/File01",   "FolderMimeType01", false));
-        entries.add(entry("/File02",   "FolderMimeType02", false));
-        entries.add(entry("/File03",   "FolderMimeType03", false));
+        entries.add(entry("/Folder100", "Directory", true));
+        entries.add(entry("/Folder100/File101", "MimeType101", false));
+        entries.add(entry("/Folder100/File102", "MimeType102", false));
+        entries.add(entry("/Folder100/File103", "MimeType103", false));
+        entries.add(entry("/File001",   "MimeType001", false));
+        entries.add(entry("/File002",   "MimeType001", false));
+        entries.add(entry("/File003",   "MimeType001", false));
+
+        return entries;
+    }
+
+    private List<DropboxAPI.Entry> getChildren(DropboxAPI.Entry entry){
+        if(entry.path.equals(Path.ROOT)) return entryList;
+
+        List<DropboxAPI.Entry> entries = new ArrayList<DropboxAPI.Entry>();
+        for(DropboxAPI.Entry child : entryList){
+            // make sure we don't include ourself
+            // check it with equals()
+            if(!child.path.equals(entry.path) && child.path.contains(entry.path))
+                entries.add(child);
+        }
 
         return entries;
     }

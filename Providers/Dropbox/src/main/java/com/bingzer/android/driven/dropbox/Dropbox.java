@@ -17,12 +17,8 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -67,7 +63,7 @@ public class Dropbox implements Driven {
 
     @Override
     public boolean isAuthenticated() {
-        return false;
+        return dropboxApi != null && drivenUser != null;
     }
 
     @Override
@@ -89,7 +85,11 @@ public class Dropbox implements Driven {
             // And later in some initialization function:
             AppKeyPair appKeys = new AppKeyPair(credential.getToken().getApplicationKey(), credential.getToken().getApplicationSecret());
             AndroidAuthSession session = new AndroidAuthSession(appKeys);
-            session.setOAuth2AccessToken(credential.getToken().getAccessToken());
+
+            // only if it's non null
+            // then set
+            if(credential.getToken().getAccessToken() != null)
+                session.setOAuth2AccessToken(credential.getToken().getAccessToken());
 
             dropboxApi = getApiFactory().createApi(session);
             drivenUser = new DropboxUser(dropboxApi.accountInfo());
@@ -164,7 +164,7 @@ public class Dropbox implements Driven {
     @Override
     public boolean delete(String id) {
         try {
-            getDropboxApi().delete(id);
+            getDropboxApi().delete(Path.clean(id));
             return true;
         }
         catch (DropboxException e) {
@@ -201,8 +201,8 @@ public class Dropbox implements Driven {
     public File download(DrivenFile drivenFile, File local) {
         OutputStream output = null;
         try {
-            output = new BufferedOutputStream(new FileOutputStream(local));
-            getDropboxApi().getFile(drivenFile.getId(), null, output, null);
+            output = getApiFactory().createOutputStream(local);
+            getDropboxApi().getFile(Path.clean(drivenFile), null, output, null);
             return local;
         }
         catch (Exception e) {
@@ -257,7 +257,8 @@ public class Dropbox implements Driven {
     public DrivenFile get(DrivenFile parent, String title) {
         try {
             DropboxAPI.Entry entry = getDropboxApi().metadata(Path.combine(parent, title), 1, null, false, null);
-            return new DropboxFile(entry);
+            if(entry != null) return new DropboxFile(entry);
+            return null;
         }
         catch (DropboxException e) {
             return null;
@@ -292,12 +293,15 @@ public class Dropbox implements Driven {
     @Override
     public Iterable<DrivenFile> list() {
         try {
-            DropboxAPI.Entry entry = getDropboxApi().metadata("/", 0, null, false, null);
+            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.ROOT, 0, null, true, null);
 
             List<DrivenFile> list = new ArrayList<DrivenFile>();
-            for(DropboxAPI.Entry children : entry.contents){
-                list.add(new DropboxFile(children));
+            if(entry != null && entry.contents != null){
+                for(DropboxAPI.Entry children : entry.contents){
+                    list.add(new DropboxFile(children));
+                }
             }
+
             return list;
         }
         catch (DropboxException e) {
@@ -308,11 +312,13 @@ public class Dropbox implements Driven {
     @Override
     public Iterable<DrivenFile> list(DrivenFile folder) {
         try {
-            DropboxAPI.Entry entry = getDropboxApi().metadata(folder.toString(), 0, null, false, null);
+            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.clean(folder), 0, null, true, null);
 
             List<DrivenFile> list = new ArrayList<DrivenFile>();
-            for(DropboxAPI.Entry children : entry.contents){
-                list.add(new DropboxFile(children));
+            if(entry != null && entry.contents != null){
+                for(DropboxAPI.Entry children : entry.contents){
+                    list.add(new DropboxFile(children));
+                }
             }
             return list;
         }
@@ -351,12 +357,12 @@ public class Dropbox implements Driven {
         try {
             boolean isDirectory = content == null || content.getFile().isDirectory();
             if (isDirectory) {
-                getDropboxApi().createFolder(name);
+                getDropboxApi().createFolder(Path.clean(name));
             }
 
             else{
-                InputStream input = new BufferedInputStream(new FileInputStream(content.getFile()));
-                getDropboxApi().putFile(name, input, content.getFile().length(), null, null);
+                InputStream input = getApiFactory().createInputStream(content.getFile());
+                getDropboxApi().putFile(Path.clean(name), input, content.getFile().length(), null, null);
                 safeClose(input);
             }
 
@@ -421,8 +427,8 @@ public class Dropbox implements Driven {
     public DrivenFile update(DrivenFile drivenFile, DrivenContent content) {
         InputStream input = null;
         try{
-            input = new BufferedInputStream(new FileInputStream(content.getFile()));
-            getDropboxApi().putFileOverwrite(drivenFile.getId(), input, content.getFile().length(), null);
+            input = getApiFactory().createInputStream(content.getFile());
+            getDropboxApi().putFileOverwrite(Path.clean(drivenFile), input, content.getFile().length(), null);
             return drivenFile;
         }
         catch (Exception e){
@@ -445,7 +451,7 @@ public class Dropbox implements Driven {
     @Override
     public DrivenFile first(String query) {
         try {
-            List<DropboxAPI.Entry> entryList = getDropboxApi().search("/", query, 1, true);
+            List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 1, true);
             return new DropboxFile(entryList.get(0));
         }
         catch (Exception e){
@@ -467,7 +473,7 @@ public class Dropbox implements Driven {
     public Iterable<DrivenFile> query(String query) {
         try {
             List<DrivenFile> list = new ArrayList<DrivenFile>();
-            List<DropboxAPI.Entry> entryList = getDropboxApi().search("/", query, 0, true);
+            List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 0, true);
             for(DropboxAPI.Entry entry : entryList){
                 list.add(new DropboxFile(entry));
             }
@@ -492,7 +498,7 @@ public class Dropbox implements Driven {
     @Override
     public boolean share(DrivenFile drivenFile, String user) {
         try {
-            DropboxAPI.DropboxLink link = getDropboxApi().share(drivenFile.getId());
+            DropboxAPI.DropboxLink link = getDropboxApi().share(Path.clean(drivenFile));
             // TODO: send email here
             return true;
         }
