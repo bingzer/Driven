@@ -150,7 +150,7 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public Result<DrivenException> deauthenticate(Context context) {
+    public Result<DrivenException> clearAuthentication(Context context) {
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         googleDriveApi = null;
         drivenUser = null;
@@ -164,11 +164,11 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public void deauthenticateAsync(final Context context, Task<Result<DrivenException>> result) {
+    public void clearAuthenticationAsync(final Context context, Task<Result<DrivenException>> result) {
         doAsync(result, new Delegate<Result<DrivenException>>() {
             @Override
             public Result<DrivenException> invoke() {
-                return deauthenticate(context);
+                return clearAuthentication(context);
             }
         });
     }
@@ -176,9 +176,9 @@ public final class GoogleDrive implements Driven {
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public boolean exists(String title) {
+    public boolean exists(String name) {
         try {
-            FileList list = list("title = '" + title + "'", "id", false);
+            FileList list = list("title = '" + name + "'", "id", false);
             return list.getItems().get(0) != null;
         } catch (Exception e) {
             return false;
@@ -186,9 +186,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public boolean exists(DrivenFile parent, String title) {
+    public boolean exists(DrivenFile parent, String name) {
         try {
-            FileList list = list("'" + parent.getId() + "' in parents AND title = '" + title + "'", "id", false);
+            FileList list = list("'" + parent.getId() + "' in parents AND title = '" + name + "'", "id", false);
             return list.getItems().get(0) != null;
         } catch (Exception e) {
             return false;
@@ -233,8 +233,8 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public DrivenFile get(String title) {
-        return first("title = '" + title + "'");
+    public DrivenFile get(String name) {
+        return first("title = '" + name + "'");
     }
 
     @Override
@@ -247,8 +247,8 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public DrivenFile get(DrivenFile parent, String title) {
-        return first("'" + parent.getId() + "' in parents AND title = '" + title + "'");
+    public DrivenFile get(DrivenFile parent, String name) {
+        return first("'" + parent.getId() + "' in parents AND title = '" + name + "'");
     }
 
     @Override
@@ -438,9 +438,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list(DrivenFile folder) {
+    public Iterable<DrivenFile> list(DrivenFile parent) {
         try {
-            FileList fileList = list("'" + folder.getId() + "' in parents", defaultFieldsItems, false);
+            FileList fileList = list("'" + parent.getId() + "' in parents", defaultFieldsItems, false);
             return GoogleDriveFile.from(fileList);
         }
         catch (IOException e){
@@ -560,13 +560,13 @@ public final class GoogleDrive implements Driven {
     private class SharedWithMeImpl implements SharedWithMe {
 
         @Override
-        public DrivenFile get(DrivenFile parent, String title) {
-            return first("'" + parent.getId() + "' in parents AND title = '" + title + "' AND sharedWithMe");
+        public DrivenFile get(DrivenFile parent, String name) {
+            return first("'" + parent.getId() + "' in parents AND title = '" + name + "' AND sharedWithMe");
         }
 
         @Override
-        public DrivenFile get(String title) {
-            return first("title = '" + title + "' AND sharedWithMe");
+        public DrivenFile get(String name) {
+            return first("title = '" + name + "' AND sharedWithMe");
         }
 
         @Override

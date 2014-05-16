@@ -16,11 +16,22 @@
 package com.bingzer.android.driven;
 
 /**
- * Simple wrapper for user that has authenticate
- * DrivenAPI to their GoogleDrive API
+ * Represents the authenticated user
  */
 public interface DrivenUser {
+    /**
+     * Returns the name of this user
+     */
     String getName();
+
+    /**
+     * Returns the display name of this user
+     */
     String getDisplayName();
+
+    /**
+     * Returns the email address of this user
+     */
     String getEmailAddress();
+
 }

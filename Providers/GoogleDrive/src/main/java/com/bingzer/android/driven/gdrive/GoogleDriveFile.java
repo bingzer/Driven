@@ -70,7 +70,7 @@ class GoogleDriveFile implements DrivenFile {
     }
 
     @Override
-    public String getTitle(){
+    public String getName(){
         return title;
     }
 

@@ -132,7 +132,7 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public Result<DrivenException> deauthenticate(Context context) {
+    public Result<DrivenException> clearAuthentication(Context context) {
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         dropboxApi = null;
         drivenUser = null;
@@ -146,11 +146,11 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public void deauthenticateAsync(final Context context, Task<Result<DrivenException>> result) {
+    public void clearAuthenticationAsync(final Context context, Task<Result<DrivenException>> result) {
         doAsync(result, new Delegate<Result<DrivenException>>() {
             @Override
             public Result<DrivenException> invoke() {
-                return deauthenticate(context);
+                return clearAuthentication(context);
             }
         });
     }
@@ -233,13 +233,13 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public boolean exists(String title) {
-        return get(title) != null;
+    public boolean exists(String name) {
+        return get(name) != null;
     }
 
     @Override
-    public boolean exists(DrivenFile parent, String title) {
-        return get(parent, title) != null;
+    public boolean exists(DrivenFile parent, String name) {
+        return get(parent, name) != null;
     }
 
     @Override
@@ -263,9 +263,9 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public DrivenFile get(DrivenFile parent, String title) {
+    public DrivenFile get(DrivenFile parent, String name) {
         try {
-            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.combine(parent, title), 1, null, false, null);
+            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.combine(parent, name), 1, null, false, null);
             if(entry != null) return new DropboxFile(entry);
             return null;
         }
@@ -275,8 +275,8 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public DrivenFile get(String title) {
-        return get(null, title);
+    public DrivenFile get(String name) {
+        return get(null, name);
     }
 
     @Override
@@ -319,9 +319,9 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list(DrivenFile folder) {
+    public Iterable<DrivenFile> list(DrivenFile parent) {
         try {
-            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.clean(folder), 0, null, true, null);
+            DropboxAPI.Entry entry = getDropboxApi().metadata(Path.clean(parent), 0, null, true, null);
 
             List<DrivenFile> list = new ArrayList<DrivenFile>();
             if(entry != null && entry.contents != null){
@@ -531,13 +531,13 @@ public class Dropbox implements Driven {
     class SharedWithMeImpl implements SharedWithMe {
 
         @Override
-        public DrivenFile get(DrivenFile parent, String title) {
-            return Dropbox.this.get(parent, title);
+        public DrivenFile get(DrivenFile parent, String name) {
+            return Dropbox.this.get(parent, name);
         }
 
         @Override
-        public DrivenFile get(String title) {
-            return Dropbox.this.get(title);
+        public DrivenFile get(String name) {
+            return Dropbox.this.get(name);
         }
 
         @Override

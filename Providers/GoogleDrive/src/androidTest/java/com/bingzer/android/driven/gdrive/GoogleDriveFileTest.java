@@ -36,7 +36,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
 
     public void test_property() throws Exception {
         assertEquals("Id01", drivenFile.getId());
-        assertEquals("Title01", drivenFile.getTitle());
+        assertEquals("Title01", drivenFile.getName());
         assertEquals("MimeType01", drivenFile.getType());
         assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
         assertFalse(drivenFile.isDirectory());
@@ -72,7 +72,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
 
     public void test_delete() throws Exception {
         assertTrue(drivenFile.delete());
-        assertNull(drivenProvider.get(drivenFile.getTitle()));
+        assertNull(drivenProvider.get(drivenFile.getName()));
     }
 
     public void test_deleteAsync() throws Exception {
@@ -81,7 +81,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
             @Override
             public void onCompleted(Boolean result) {
                 assertTrue(result);
-                assertNull(drivenProvider.get(drivenFile.getTitle()));
+                assertNull(drivenProvider.get(drivenFile.getName()));
                 signal.countDown();
             }
         });
@@ -97,7 +97,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         int counter = 1;
         for(DrivenFile df : drivenFile.list()){
             assertNotNull(df);
-            assertEquals("File1" + counter, df.getTitle());
+            assertEquals("File1" + counter, df.getName());
         }
     }
 
@@ -112,7 +112,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
                 int counter = 1;
                 for(DrivenFile df : drivenFile.list()){
                     assertNotNull(df);
-                    assertEquals("File1" + counter, df.getTitle());
+                    assertEquals("File1" + counter, df.getName());
 
                     signal.countDown();
                 }
@@ -145,7 +145,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
 
         assertNotNull(drivenFile);
         assertEquals("Id01", drivenFile.getId());
-        assertEquals("Title01", drivenFile.getTitle());
+        assertEquals("Title01", drivenFile.getName());
         assertEquals("MimeTypeEdited01", drivenFile.getType());  // we changed this (was MimeType01)
         assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
         assertFalse(drivenFile.hasDetails());
@@ -165,7 +165,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
 
                 assertNotNull(drivenFile);
                 assertEquals("Id01", drivenFile.getId());
-                assertEquals("Title01", drivenFile.getTitle());
+                assertEquals("Title01", drivenFile.getName());
                 assertEquals("MimeTypeEdited01", drivenFile.getType());  // we changed this (was MimeType01)
                 assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
                 assertFalse(drivenFile.hasDetails());

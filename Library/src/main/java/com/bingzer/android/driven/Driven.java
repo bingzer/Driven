@@ -18,16 +18,41 @@ package com.bingzer.android.driven;
 import com.bingzer.android.driven.contracts.DrivenApi;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 
-public interface Driven extends DrivenApi.Auth,
-                                    DrivenApi.Exists,
-                                    DrivenApi.Get, DrivenApi.Get.ById,
-                                    DrivenApi.Post, DrivenApi.Put,
-                                    DrivenApi.Delete, DrivenApi.Query,
-                                    DrivenApi.List, DrivenApi.Details,
-                                    DrivenApi.Download, DrivenApi.Share {
+/**
+ * Driven is an effort to unify API calls for different cloud storage
+ * (i.e: GoogleDrive, Dropbox, OneDrive, etc..). They have different
+ * file system and the concept of file is different.
+ * But, there are lots of similarities.
+ * <p/>
+ * At first Driven was used for GoogleDrive API calls but as requirements
+ * grow other providers will be implemented as well.
+ * <p/>
+ * <p/>
+ * {@code Driven} will try to address this by unifying all the
+ * common calls using this interface.
+ */
+public interface Driven extends
+        DrivenApi.Auth,
+        DrivenApi.Exists,
+        DrivenApi.Get,
+        DrivenApi.Get.ById,
+        DrivenApi.Post,
+        DrivenApi.Put,
+        DrivenApi.Delete,
+        DrivenApi.Query,
+        DrivenApi.List,
+        DrivenApi.Details,
+        DrivenApi.Download,
+        DrivenApi.Share {
 
+    /**
+     * Returns the driven user.
+     */
     DrivenUser getDrivenUser();
 
+    /**
+     * Returns the "SharedWithMe"
+     */
     SharedWithMe getShared();
 
 }

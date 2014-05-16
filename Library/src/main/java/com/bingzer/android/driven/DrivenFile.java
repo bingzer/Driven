@@ -20,47 +20,112 @@ import com.bingzer.android.driven.contracts.Task;
 import java.io.File;
 
 /**
- * A wrapper for "File" in GoogleDrive side
+ * Represents a remote file.
+ * Every provider implements and treat remote file differently.
+ * Consult the provider's documentation.
  */
 @SuppressWarnings("unused")
 public interface DrivenFile {
 
+    /**
+     * The unique identifier.
+     */
     public String getId();
 
+    /**
+     * True if this file is a directory
+     */
     public boolean isDirectory();
 
-    public String getTitle();
+    /**
+     * The name of this file
+     */
+    public String getName();
 
+    /**
+     * The MIME type of this file
+     */
     public String getType();
 
+    /**
+     * The public downloadable URL.
+     * Driven API should be able to use this URL
+     * to download this file on demand.
+     * It may or may not use authenticate scheme
+     * by the provider.
+     */
     public String getDownloadUrl();
 
+    /**
+     * True if this file has "all" the details (metadata)
+     * provided by the provider.
+     */
     public boolean hasDetails();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Fetch this file's complete metadata
+     */
     public boolean fetchDetails();
 
+    /**
+     * Async for {@link #fetchDetails()}
+     */
     public void fetchDetailsAsync(Task<Boolean> result);
 
+    /**
+     * If this file is {@link #isDirectory()} then this
+     * method should return all children within.
+     */
     public Iterable<DrivenFile> list();
 
+    /**
+     * Async for {@link #list()}
+     */
     public void listAsync(Task<Iterable<DrivenFile>> result);
 
+    /**
+     * Download and keep this file to the local.
+     * There should be no local-to-remote mapping.
+     */
     public File download(File local);
 
+    /**
+     * Async for {@link #download(java.io.File)}
+     */
     public void downloadAsync(final File local, Task<File> result);
 
+    /**
+     * Upload/Save a file to this file. The remote content file
+     * will be overwritten by the {@code content}
+     */
     public boolean upload(String mimeType, File content);
 
+    /**
+     * Async for {@link #upload(String, java.io.File)}
+     */
     public void uploadAsync(String mimeType, File content, Task<Boolean> result);
 
+    /**
+     * Share this file to other user. "Sharing" is generic and you should
+     * refer to the Provider's documentation
+     */
     public boolean share(String user);
 
+    /**
+     * Async for {@link #share(String)}
+     */
     public void shareAsync(final String user, Task<Boolean> result);
 
+    /**
+     * Delete or removes this file from remote provider.
+     */
     public boolean delete();
 
+    /**
+     * Async for {@link #delete()}
+     */
     public void deleteAsync(Task<Boolean> result);
 
 }

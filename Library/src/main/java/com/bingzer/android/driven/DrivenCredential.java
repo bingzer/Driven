@@ -28,6 +28,10 @@ import java.io.IOException;
 
 import static com.bingzer.android.driven.utils.IOUtils.safeClose;
 
+/**
+ * Represents a user credential used to authenticate
+ * the API to the provider.
+ */
 public class DrivenCredential {
 
     private static final String TAG = "DrivenCredential";
@@ -35,6 +39,8 @@ public class DrivenCredential {
     private Context context;
     private String accountName;
     private Token token;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
 
     public DrivenCredential(Context context){
         this(context, (String) null);
@@ -53,6 +59,8 @@ public class DrivenCredential {
         this.accountName = accountName;
         this.token = token;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
 
     public Context getContext() {
         return context;
@@ -73,6 +81,8 @@ public class DrivenCredential {
     public void setToken(Token token) {
         this.token = token;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
 
     public void save(String name) {
         FileWriter writer = null;
@@ -151,6 +161,12 @@ public class DrivenCredential {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Token provides information about the authentication.
+     * Most of the providers will likely use OAuth2 authentication,
+     * this class will provides a wrapper for the information needed
+     * to authenticate the API
+     */
     public static class Token {
         private String applicationKey;
         private String applicationSecret;
@@ -184,5 +200,6 @@ public class DrivenCredential {
         public void setAccessToken(String accessToken) {
             this.accessToken = accessToken;
         }
+
     }
 }

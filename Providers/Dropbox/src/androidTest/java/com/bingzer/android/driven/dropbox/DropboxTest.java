@@ -62,7 +62,7 @@ public class DropboxTest extends AndroidTestCase {
         driven.authenticate(credential);
         assertTrue(driven.isAuthenticated());
 
-        driven.deauthenticate(getContext());
+        driven.clearAuthentication(getContext());
         assertFalse(driven.isAuthenticated());
     }
 
@@ -72,7 +72,7 @@ public class DropboxTest extends AndroidTestCase {
         assertTrue(driven.isAuthenticated());
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.deauthenticateAsync(getContext(), new Task<Result<DrivenException>>() {
+        driven.clearAuthenticationAsync(getContext(), new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 assertFalse(driven.isAuthenticated());
@@ -199,7 +199,7 @@ public class DropboxTest extends AndroidTestCase {
 
         assertNotNull(drivenFile);
         assertEquals("/Folder100/File102", drivenFile.getId());
-        assertEquals("File102", drivenFile.getTitle());
+        assertEquals("File102", drivenFile.getName());
         assertEquals("MimeType102", drivenFile.getType());
         assertEquals("/Folder100/File102", drivenFile.getDownloadUrl());
         assertTrue(drivenFile.hasDetails());
@@ -213,7 +213,7 @@ public class DropboxTest extends AndroidTestCase {
             public void onCompleted(DrivenFile drivenFile) {
                 assertNotNull(drivenFile);
                 assertEquals("/Folder100/File102", drivenFile.getId());
-                assertEquals("File102", drivenFile.getTitle());
+                assertEquals("File102", drivenFile.getName());
                 assertEquals("MimeType102", drivenFile.getType());
                 assertEquals("/Folder100/File102", drivenFile.getDownloadUrl());
                 assertTrue(drivenFile.hasDetails());
@@ -229,7 +229,7 @@ public class DropboxTest extends AndroidTestCase {
 
         assertNotNull(drivenFile);
         assertEquals("/Folder100/File103", drivenFile.getId());
-        assertEquals("File103", drivenFile.getTitle());
+        assertEquals("File103", drivenFile.getName());
         assertEquals("MimeType103", drivenFile.getType());
         assertEquals("/Folder100/File103", drivenFile.getDownloadUrl());
         assertTrue(drivenFile.hasDetails());
@@ -243,7 +243,7 @@ public class DropboxTest extends AndroidTestCase {
             public void onCompleted(DrivenFile result) {
                 assertNotNull(result);
                 assertEquals("/Folder100/File103", result.getId());
-                assertEquals("File103", result.getTitle());
+                assertEquals("File103", result.getName());
                 assertEquals("MimeType103", result.getType());
                 assertEquals("/Folder100/File103", result.getDownloadUrl());
                 assertTrue(result.hasDetails());
@@ -269,7 +269,7 @@ public class DropboxTest extends AndroidTestCase {
 
         assertNotNull(drivenFile);
         assertEquals("/File001", drivenFile.getId());
-        assertEquals("File001", drivenFile.getTitle());
+        assertEquals("File001", drivenFile.getName());
         assertEquals("MimeType001", drivenFile.getType());  // we changed this (was MimeType01)
         assertEquals("/File001", drivenFile.getDownloadUrl());
         assertTrue(drivenFile.hasDetails());
@@ -287,7 +287,7 @@ public class DropboxTest extends AndroidTestCase {
             public void onCompleted(DrivenFile result) {
                 assertNotNull(result);
                 assertEquals("/File001", result.getId());
-                assertEquals("File001", result.getTitle());
+                assertEquals("File001", result.getName());
                 assertEquals("MimeType001", result.getType());  // we changed this (was MimeType01)
                 assertEquals("/File001", result.getDownloadUrl());
                 assertTrue(result.hasDetails());
@@ -333,7 +333,7 @@ public class DropboxTest extends AndroidTestCase {
         assertNotNull(drivenFile);
 
         assertEquals("/Folder100/File101", drivenFile.getId());
-        assertEquals("File101", drivenFile.getTitle());
+        assertEquals("File101", drivenFile.getName());
         assertEquals("MimeType101", drivenFile.getType());  // we changed this (was MimeType03)
         assertEquals("/Folder100/File101", drivenFile.getDownloadUrl());
         assertTrue(drivenFile.hasDetails());
@@ -349,7 +349,7 @@ public class DropboxTest extends AndroidTestCase {
                 assertNotNull(result);
 
                 assertEquals("/Folder100/File101", result.getId());
-                assertEquals("File101", result.getTitle());
+                assertEquals("File101", result.getName());
                 assertEquals("MimeType101", result.getType());  // we changed this (was MimeType03)
                 assertEquals("/Folder100/File101", result.getDownloadUrl());
                 assertTrue(result.hasDetails());
@@ -367,7 +367,7 @@ public class DropboxTest extends AndroidTestCase {
             assertNotNull(drivenFile);
 
             assertEquals("Id01", drivenFile.getId());
-            assertEquals("Title01", drivenFile.getTitle());
+            assertEquals("Title01", drivenFile.getName());
             assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
             assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
             assertFalse(drivenFile.hasDetails());
@@ -385,7 +385,7 @@ public class DropboxTest extends AndroidTestCase {
                     assertNotNull(drivenFile);
 
                     assertEquals("Id01", drivenFile.getId());
-                    assertEquals("Title01", drivenFile.getTitle());
+                    assertEquals("Title01", drivenFile.getName());
                     assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
                     assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
                     assertFalse(drivenFile.hasDetails());
@@ -547,13 +547,13 @@ public class DropboxTest extends AndroidTestCase {
 
         int counter = 0;
         for(DrivenFile drivenFile : driven.list()){
-            if(counter == 0) assertEquals("Folder100", drivenFile.getTitle());
-            else if(counter == 1) assertEquals("File101", drivenFile.getTitle());
-            else if(counter == 2) assertEquals("File102", drivenFile.getTitle());
-            else if(counter == 3) assertEquals("File103", drivenFile.getTitle());
-            else if(counter == 4) assertEquals("File001", drivenFile.getTitle());
-            else if(counter == 5) assertEquals("File002", drivenFile.getTitle());
-            else if(counter == 6) assertEquals("File003", drivenFile.getTitle());
+            if(counter == 0) assertEquals("Folder100", drivenFile.getName());
+            else if(counter == 1) assertEquals("File101", drivenFile.getName());
+            else if(counter == 2) assertEquals("File102", drivenFile.getName());
+            else if(counter == 3) assertEquals("File103", drivenFile.getName());
+            else if(counter == 4) assertEquals("File001", drivenFile.getName());
+            else if(counter == 5) assertEquals("File002", drivenFile.getName());
+            else if(counter == 6) assertEquals("File003", drivenFile.getName());
 
             counter++;
         }
@@ -569,13 +569,13 @@ public class DropboxTest extends AndroidTestCase {
             public void onCompleted(Iterable<DrivenFile> result) {
                 int counter = 0;
                 for(DrivenFile drivenFile : driven.list()){
-                    if(counter == 0) assertEquals("Folder100", drivenFile.getTitle());
-                    else if(counter == 1) assertEquals("File101", drivenFile.getTitle());
-                    else if(counter == 2) assertEquals("File102", drivenFile.getTitle());
-                    else if(counter == 3) assertEquals("File103", drivenFile.getTitle());
-                    else if(counter == 4) assertEquals("File001", drivenFile.getTitle());
-                    else if(counter == 5) assertEquals("File002", drivenFile.getTitle());
-                    else if(counter == 6) assertEquals("File003", drivenFile.getTitle());
+                    if(counter == 0) assertEquals("Folder100", drivenFile.getName());
+                    else if(counter == 1) assertEquals("File101", drivenFile.getName());
+                    else if(counter == 2) assertEquals("File102", drivenFile.getName());
+                    else if(counter == 3) assertEquals("File103", drivenFile.getName());
+                    else if(counter == 4) assertEquals("File001", drivenFile.getName());
+                    else if(counter == 5) assertEquals("File002", drivenFile.getName());
+                    else if(counter == 6) assertEquals("File003", drivenFile.getName());
 
                     counter++;
                 }
@@ -598,8 +598,8 @@ public class DropboxTest extends AndroidTestCase {
 
         int counter = 1;
         for(DrivenFile drivenFile : driven.list(parent)){
-            if(drivenFile.getTitle().startsWith("Folder1")) {
-                assertEquals("Folder1" + counter + "0", drivenFile.getTitle());
+            if(drivenFile.getName().startsWith("Folder1")) {
+                assertEquals("Folder1" + counter + "0", drivenFile.getName());
                 counter++;
             }
         }
@@ -620,8 +620,8 @@ public class DropboxTest extends AndroidTestCase {
             public void onCompleted(Iterable<DrivenFile> result) {
                 int counter = 1;
                 for (DrivenFile drivenFile : result) {
-                    if(drivenFile.getTitle().startsWith("Folder1")){
-                        assertEquals("Folder1" + counter + "0", drivenFile.getTitle());
+                    if(drivenFile.getName().startsWith("Folder1")){
+                        assertEquals("Folder1" + counter + "0", drivenFile.getName());
                         counter++;
                     }
                 }
