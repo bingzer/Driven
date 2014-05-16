@@ -11,7 +11,7 @@ public class StubModule {
 
     @Provides
     @Singleton
-    ProxyCreator provideProxyCreator(){
-        return new MockProxyCreator();
+    GoogleDriveApi.Factory provideProxyCreator(){
+        return new MockGoogleDriveApiFactory();
     }
 }

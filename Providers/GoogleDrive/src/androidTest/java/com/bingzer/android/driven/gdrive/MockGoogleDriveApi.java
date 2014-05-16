@@ -26,17 +26,10 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MockProxy implements Proxy {
+public class MockGoogleDriveApi implements GoogleDriveApi {
 
-    private Drive drive;
-
-    public MockProxy(){
-        drive = mock(Drive.class, RETURNS_DEEP_STUBS);
-    }
-
-    @Override
-    public Drive getDrive() {
-        return drive;
+    public MockGoogleDriveApi(){
+        Drive drive = mock(Drive.class, RETURNS_DEEP_STUBS);
     }
 
     @Override

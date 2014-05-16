@@ -62,11 +62,10 @@ public final class GoogleDrive implements Driven {
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Proxy proxy;
+    @Inject GoogleDriveApi.Factory googleDriveApiFactory;
+    private GoogleDriveApi googleDriveApi;
     private DrivenUser drivenUser;
     private final SharedWithMe sharedWithMe;
-    @Inject
-    ProxyCreator proxyCreator;
 
     public GoogleDrive(){
         sharedWithMe = new SharedWithMeImpl(this);
@@ -76,7 +75,7 @@ public final class GoogleDrive implements Driven {
 
     @Override
     public boolean isAuthenticated(){
-        return proxy != null && drivenUser != null;
+        return googleDriveApi != null && drivenUser != null;
     }
 
     @Override
@@ -85,18 +84,18 @@ public final class GoogleDrive implements Driven {
         return drivenUser;
     }
 
-    public Proxy getProxy() throws DrivenException{
+    public GoogleDriveApi getGoogleDriveApi() throws DrivenException{
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
-        return proxy;
+        return googleDriveApi;
     }
 
-    public ProxyCreator getProxyCreator(){
+    public GoogleDriveApi.Factory getGoogleDriveApiFactory(){
         // if it's not injected.. create the default one
-        if(proxyCreator == null) {
-            proxyCreator = new ProxyCreator.Default();
+        if(googleDriveApiFactory == null) {
+            googleDriveApiFactory = new GoogleDriveApi.Factory.Default();
         }
 
-        return proxyCreator;
+        return googleDriveApiFactory;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +108,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential) {
         Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
-        proxy = null;
+        googleDriveApi = null;
         drivenUser = null;
 
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
@@ -121,8 +120,8 @@ public final class GoogleDrive implements Driven {
                 credential.setAccountName(accountName);
             }
 
-            proxy = getProxyCreator().createProxy(credential);
-            drivenUser = new GoogleDriveUser(proxy.about().get().setFields("name,user").execute());
+            googleDriveApi = getGoogleDriveApiFactory().createApi(credential);
+            drivenUser = new GoogleDriveUser(googleDriveApi.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
             Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + drivenUser);
@@ -160,7 +159,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public Result<DrivenException> deauthenticate(Context context) {
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
-        proxy = null;
+        googleDriveApi = null;
         drivenUser = null;
         result.setSuccess(getCredentialFile(context).delete());
         return result;
@@ -219,7 +218,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public DrivenFile id(String id) {
         try{
-            return new GoogleDriveFile(getProxy().files().get(id).setFields(defaultFields).execute(), false);
+            return new GoogleDriveFile(getGoogleDriveApi().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -268,7 +267,7 @@ public final class GoogleDrive implements Driven {
         try{
             GoogleDriveFile driveFile = (GoogleDriveFile) drivenFile;
             com.google.api.services.drive.model.File file =
-                    getProxy()
+                    getGoogleDriveApi()
                             .files()
                             .update(driveFile.getId(), driveFile.getModel(), new FileContent(content.getType(), content.getFile()))
                             .execute();
@@ -291,7 +290,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public boolean delete(String id) {
         try {
-            getProxy().files().delete(id).execute();
+            getGoogleDriveApi().files().delete(id).execute();
             return true;
         }
         catch (IOException e){
@@ -382,9 +381,9 @@ public final class GoogleDrive implements Driven {
 
             /////////////////////////////////////
             if(content != null)
-                file = getProxy().files().insert(file, new FileContent(content.getType(), content.getFile())).execute();
+                file = getGoogleDriveApi().files().insert(file, new FileContent(content.getType(), content.getFile())).execute();
             else
-                file = getProxy().files().insert(file).execute();
+                file = getGoogleDriveApi().files().insert(file).execute();
 
             return id(file.getId());
         }
@@ -472,7 +471,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public DrivenFile getDetails(DrivenFile drivenFile) {
         try{
-            return new GoogleDriveFile(getProxy().files().get(drivenFile.getId()).execute(), true);
+            return new GoogleDriveFile(getGoogleDriveApi().files().get(drivenFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
@@ -492,7 +491,7 @@ public final class GoogleDrive implements Driven {
     public File download(DrivenFile drivenFile, File local) {
         try{
             GenericUrl url = new GenericUrl(drivenFile.getDownloadUrl());
-            HttpRequestFactory factory = getProxy().getRequestFactory();
+            HttpRequestFactory factory = getGoogleDriveApi().getRequestFactory();
             HttpRequest request = factory.buildGetRequest(url);
             HttpResponse response = request.execute();
 
@@ -522,7 +521,7 @@ public final class GoogleDrive implements Driven {
             newPermission.setType("user");
             newPermission.setRole("writer");
 
-            getProxy().permissions().insert(drivenFile.getId(), newPermission).execute();
+            getGoogleDriveApi().permissions().insert(drivenFile.getId(), newPermission).execute();
             return true;
         }
         catch (IOException e){
@@ -548,7 +547,7 @@ public final class GoogleDrive implements Driven {
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
-        Drive.Files.List list = getProxy().files().list();
+        Drive.Files.List list = getGoogleDriveApi().files().list();
 
         if(fields != null) list.setFields(fields);
         if(query != null) list.setQ(query);

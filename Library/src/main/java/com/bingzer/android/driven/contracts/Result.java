@@ -33,4 +33,5 @@ public interface Result<T extends Throwable> {
      * failure
      */
     public T getException();
+
 }
