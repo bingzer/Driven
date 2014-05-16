@@ -18,16 +18,17 @@ package com.bingzer.android.driven.gdrive;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenCredential;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenUser;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
@@ -39,10 +40,7 @@ import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.drive.model.Permission;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -65,11 +63,7 @@ public final class GoogleDrive implements Driven {
     @Inject GoogleDriveApi.Factory googleDriveApiFactory;
     private GoogleDriveApi googleDriveApi;
     private DrivenUser drivenUser;
-    private final SharedWithMe sharedWithMe;
-
-    public GoogleDrive(){
-        sharedWithMe = new SharedWithMeImpl(this);
-    }
+    private SharedWithMe sharedWithMe;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +105,7 @@ public final class GoogleDrive implements Driven {
         googleDriveApi = null;
         drivenUser = null;
 
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
@@ -157,7 +151,7 @@ public final class GoogleDrive implements Driven {
 
     @Override
     public Result<DrivenException> deauthenticate(Context context) {
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         googleDriveApi = null;
         drivenUser = null;
 
@@ -542,9 +536,10 @@ public final class GoogleDrive implements Driven {
         });
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-
+    @Override
     public SharedWithMe getShared(){
+        if(sharedWithMe == null)
+            sharedWithMe = new SharedWithMeImpl();
         return sharedWithMe;
     }
 
@@ -560,5 +555,39 @@ public final class GoogleDrive implements Driven {
         return list.execute();
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    private class SharedWithMeImpl implements SharedWithMe {
+
+        @Override
+        public DrivenFile get(DrivenFile parent, String title) {
+            return first("'" + parent.getId() + "' in parents AND title = '" + title + "' AND sharedWithMe");
+        }
+
+        @Override
+        public DrivenFile get(String title) {
+            return first("title = '" + title + "' AND sharedWithMe");
+        }
+
+        @Override
+        public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override
+                public DrivenFile invoke() {
+                    return get(parent, title);
+                }
+            });
+        }
+
+        @Override
+        public void getAsync(final String title, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override
+                public DrivenFile invoke() {
+                    return get(title);
+                }
+            });
+        }
+    }
 
 }

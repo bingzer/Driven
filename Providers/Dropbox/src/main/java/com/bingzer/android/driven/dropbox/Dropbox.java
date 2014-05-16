@@ -1,7 +1,6 @@
 package com.bingzer.android.driven.dropbox;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenContent;
@@ -9,19 +8,18 @@ import com.bingzer.android.driven.DrivenCredential;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenUser;
+import com.bingzer.android.driven.api.Path;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
+import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.api.ResultImpl;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ public class Dropbox implements Driven {
     @Inject DropboxApiFactory apiFactory;
     private DropboxAPI<AndroidAuthSession> dropboxApi;
     private DrivenUser drivenUser;
+    private SharedWithMe sharedWithMe;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +61,13 @@ public class Dropbox implements Driven {
     }
 
     @Override
+    public SharedWithMe getShared() {
+        if(sharedWithMe == null)
+            sharedWithMe = new SharedWithMeImpl();
+        return sharedWithMe;
+    }
+
+    @Override
     public boolean isAuthenticated() {
         return dropboxApi != null && drivenUser != null;
     }
@@ -75,7 +81,7 @@ public class Dropbox implements Driven {
 
     @Override
     public Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential) {
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         try {
             if(credential.hasSavedCredential(TAG)){
                 credential.read(TAG);
@@ -127,7 +133,7 @@ public class Dropbox implements Driven {
 
     @Override
     public Result<DrivenException> deauthenticate(Context context) {
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         dropboxApi = null;
         drivenUser = null;
 
@@ -522,4 +528,36 @@ public class Dropbox implements Driven {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+    class SharedWithMeImpl implements SharedWithMe {
+
+        @Override
+        public DrivenFile get(DrivenFile parent, String title) {
+            return Dropbox.this.get(parent, title);
+        }
+
+        @Override
+        public DrivenFile get(String title) {
+            return Dropbox.this.get(title);
+        }
+
+        @Override
+        public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override
+                public DrivenFile invoke() {
+                    return get(parent, title);
+                }
+            });
+        }
+
+        @Override
+        public void getAsync(final String title, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override
+                public DrivenFile invoke() {
+                    return get(title);
+                }
+            });
+        }
+    }
 }

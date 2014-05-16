@@ -1,6 +1,8 @@
-package com.bingzer.android.driven.dropbox;
+package com.bingzer.android.driven;
 
 import android.test.AndroidTestCase;
+
+import com.bingzer.android.driven.api.Path;
 
 public class PathTest extends AndroidTestCase{
 

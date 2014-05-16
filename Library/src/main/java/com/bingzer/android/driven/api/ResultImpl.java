@@ -13,16 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.dropbox;
+package com.bingzer.android.driven.api;
 
 import com.bingzer.android.driven.contracts.Result;
 
 /**
- * Created by Ricky on 5/5/2014.
+ * Default implementation of Result.
+ * Default of success is <code>true</code>
  */
-class ResultImpl<T extends Throwable> implements Result<T>{
+public class ResultImpl<T extends Throwable> implements Result<T>{
     private boolean success;
     private T exception;
+
+    public ResultImpl(){
+        this(true);
+    }
+
+    public ResultImpl(boolean success){
+        this(success, null);
+    }
+
+    public ResultImpl(boolean success, T exception){
+        this.success = success;
+        this.exception = exception;
+    }
 
     public void setSuccess(boolean success) {
         this.success = success;

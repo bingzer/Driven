@@ -16,6 +16,7 @@
 package com.bingzer.android.driven;
 
 import com.bingzer.android.driven.contracts.DrivenApi;
+import com.bingzer.android.driven.contracts.SharedWithMe;
 
 public interface Driven extends DrivenApi.Auth,
                                     DrivenApi.Exists,
@@ -26,5 +27,7 @@ public interface Driven extends DrivenApi.Auth,
                                     DrivenApi.Download, DrivenApi.Share {
 
     DrivenUser getDrivenUser();
+
+    SharedWithMe getShared();
 
 }

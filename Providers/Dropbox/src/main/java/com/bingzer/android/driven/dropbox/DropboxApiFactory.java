@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface DropboxApiFactory {
+interface DropboxApiFactory {
 
     <T extends Session> DropboxAPI<T> createApi(T session);
 

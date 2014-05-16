@@ -1,8 +1,9 @@
-package com.bingzer.android.driven.dropbox;
+package com.bingzer.android.driven.api;
 
 import com.bingzer.android.driven.DrivenFile;
 
-public class Path {
+public final class Path {
+
     public static final String ROOT = "/";
 
     public static String combine(DrivenFile drivenFile, String title){
@@ -36,5 +37,11 @@ public class Path {
     private static String emptyIfNull(String str){
         if(str == null) return "";
         return str;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Path(){
+        // nothing
     }
 }

@@ -3,13 +3,13 @@ package com.bingzer.android.driven.dropbox;
 import com.bingzer.android.driven.DrivenUser;
 import com.dropbox.client2.DropboxAPI;
 
-public class DropboxUser implements DrivenUser {
+class DropboxUser implements DrivenUser {
 
     private String name;
     private String displayName;
     private String emailAddress;
 
-    public DropboxUser(DropboxAPI.Account account){
+    DropboxUser(DropboxAPI.Account account){
         name = account.displayName;
         displayName = account.displayName;
     }

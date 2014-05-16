@@ -1,7 +1,8 @@
 package com.bingzer.android.driven.dropbox;
 
-import com.bingzer.android.driven.dropbox.com.dropbox.client2.MockAccount;
+import com.bingzer.android.driven.api.Path;
 import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.MockAccount;
 import com.dropbox.client2.ProgressListener;
 import com.dropbox.client2.session.Session;
 
@@ -15,10 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.anyBoolean;

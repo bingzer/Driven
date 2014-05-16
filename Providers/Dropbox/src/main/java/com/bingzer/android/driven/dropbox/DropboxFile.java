@@ -11,7 +11,7 @@ import java.io.File;
 
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
-public class DropboxFile implements DrivenFile {
+class DropboxFile implements DrivenFile {
 
     protected static Driven driven;
     protected static void setDriven(Driven driven){
@@ -30,7 +30,7 @@ public class DropboxFile implements DrivenFile {
     private boolean isDirectory;
     private DropboxAPI.Entry model;
 
-    public DropboxFile(DropboxAPI.Entry model){
+    DropboxFile(DropboxAPI.Entry model){
         init(model);
     }
 
