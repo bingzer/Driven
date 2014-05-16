@@ -31,12 +31,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 import static com.bingzer.android.driven.utils.IOUtils.safeClose;
 
 public class Dropbox implements Driven {
     private static final String TAG = "Dropbox";
 
+    @Inject DropboxApiFactory apiFactory;
     private DropboxAPI<AndroidAuthSession> dropboxApi;
     private DrivenUser drivenUser;
 
@@ -45,6 +48,15 @@ public class Dropbox implements Driven {
     public DropboxAPI<AndroidAuthSession> getDropboxApi(){
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return dropboxApi;
+    }
+
+    public DropboxApiFactory getApiFactory(){
+        // if it's not injected.. create the default one
+        if(apiFactory == null){
+            apiFactory = new DropboxApiFactory.Default();
+        }
+
+        return apiFactory;
     }
 
     @Override
@@ -77,9 +89,9 @@ public class Dropbox implements Driven {
             // And later in some initialization function:
             AppKeyPair appKeys = new AppKeyPair(credential.getToken().getApplicationKey(), credential.getToken().getApplicationSecret());
             AndroidAuthSession session = new AndroidAuthSession(appKeys);
+            session.setOAuth2AccessToken(credential.getToken().getAccessToken());
 
-            dropboxApi = new DropboxAPI<AndroidAuthSession>(session);
-            dropboxApi.getSession().setOAuth2AccessToken(credential.getToken().getAccessToken());
+            dropboxApi = getApiFactory().createApi(session);
             drivenUser = new DropboxUser(dropboxApi.accountInfo());
 
             if(saveCredential)

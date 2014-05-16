@@ -18,6 +18,13 @@ dependencies {
     compile project(':Library')
     // --- Drop box
     compile files('libs/dropbox-android-sdk-1.6.1.jar')
+    // --- Dagger
+    compile 'com.squareup.dagger:dagger:1.2.1'
+    androidTestProvided 'com.squareup.dagger:dagger-compiler:1.2.1'
+    // -- Mockito
+    androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
 }
 
 apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
