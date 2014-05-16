@@ -17,9 +17,9 @@ public class Path {
         String p2 = emptyIfNull(path2);
 
         if(p1.endsWith("/") || p2.startsWith("/"))
-            return path1 + path2;
+            return p1 + p2;
         else
-            return path1 + "/" + path2;
+            return p1 + "/" + p2;
     }
 
     public static String clean(String path){
