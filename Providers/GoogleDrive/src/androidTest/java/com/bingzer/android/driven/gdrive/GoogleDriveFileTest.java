@@ -39,7 +39,6 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         assertEquals("Title01", drivenFile.getName());
         assertEquals("MimeType01", drivenFile.getType());
         assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-        assertFalse(drivenFile.isDirectory());
         assertFalse(drivenFile.hasDetails());
 
         assertEquals("Id01", ((GoogleDriveFile)drivenFile).getModel().getId());
@@ -98,7 +97,10 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         for(DrivenFile df : drivenFile.list()){
             assertNotNull(df);
             assertEquals("File1" + counter, df.getName());
+            counter++;
         }
+
+        assertTrue(counter > 0);
     }
 
     public void test_listAsync() throws Exception {
@@ -114,8 +116,11 @@ public class GoogleDriveFileTest extends AndroidTestCase {
                     assertNotNull(df);
                     assertEquals("File1" + counter, df.getName());
 
-                    signal.countDown();
+                    counter++;
                 }
+
+                assertTrue(counter > 0);
+                signal.countDown();
             }
         });
 

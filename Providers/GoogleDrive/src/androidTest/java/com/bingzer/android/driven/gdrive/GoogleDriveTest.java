@@ -32,6 +32,12 @@ public class GoogleDriveTest extends AndroidTestCase{
         credential = new DrivenCredential(getContext(), "Test-User");
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        driven.clearAuthentication(getContext());
+    }
+
     public void test_getProxyCreator(){
         driven.authenticate(credential);
         assertTrue(driven.getGoogleDriveApi() instanceof MockGoogleDriveApi);

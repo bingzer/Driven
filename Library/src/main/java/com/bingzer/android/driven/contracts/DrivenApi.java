@@ -290,12 +290,12 @@ public interface DrivenApi {
          * you would use {@link com.bingzer.android.driven.DrivenFile#download(java.io.File)}
          * rather than calling this method
          */
-        File download(DrivenFile drivenFile, File local);
+        DrivenContent download(DrivenFile drivenFile, File local);
 
         /**
          * Async all for {@link #download(com.bingzer.android.driven.DrivenFile, java.io.File)}
          */
-        void downloadAsync(DrivenFile drivenFile, File local, Task<File> result);
+        void downloadAsync(DrivenFile drivenFile, File local, Task<DrivenContent> result);
 
     }
 

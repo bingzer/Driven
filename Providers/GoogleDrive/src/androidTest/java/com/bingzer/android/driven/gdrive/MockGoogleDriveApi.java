@@ -94,6 +94,8 @@ public class MockGoogleDriveApi implements GoogleDriveApi {
                             Matcher matcher = pattern.matcher(query);
                             if(matcher.find()) {
                                 String parentId = matcher.group(2);
+                                if(parentId.equals("root")) return fileList0;
+
                                 FileList list = new FileList();
                                 list.setItems(new ArrayList<File>());
 

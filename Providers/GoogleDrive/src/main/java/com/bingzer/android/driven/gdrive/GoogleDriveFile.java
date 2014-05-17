@@ -125,14 +125,14 @@ class GoogleDriveFile implements DrivenFile {
     }
 
     @Override
-    public java.io.File download(java.io.File local) {
+    public DrivenContent download(java.io.File local) {
         return getDriven().download(this, local);
     }
 
     @Override
-    public void downloadAsync(final java.io.File local, Task<java.io.File> result) {
-        doAsync(result, new Delegate<java.io.File>() {
-            @Override public java.io.File invoke() {
+    public void downloadAsync(final java.io.File local, Task<DrivenContent> result) {
+        doAsync(result, new Delegate<DrivenContent>() {
+            @Override public DrivenContent invoke() {
                 return download(local);
             }
         });

@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bingzer.android.driven.Driven;
+import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.dropbox.Dropbox;
@@ -204,11 +205,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             else{
                 try{
                     File tempFile = File.createTempFile("pre", "suffix");
-                    file.downloadAsync(tempFile, new Task<File>() {
-                        @Override public void onCompleted(File result) {
+                    file.downloadAsync(tempFile, new Task<DrivenContent>() {
+                        @Override public void onCompleted(DrivenContent result) {
                             Intent intent = new Intent();
                             intent.setAction(android.content.Intent.ACTION_VIEW);
-                            intent.setDataAndType(Uri.fromFile(result), file.getType());
+                            intent.setDataAndType(Uri.fromFile(result.getFile()), result.getType());
                             startActivity(intent);
                         }
                     });

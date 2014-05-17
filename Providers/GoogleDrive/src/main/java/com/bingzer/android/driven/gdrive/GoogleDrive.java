@@ -24,11 +24,11 @@ import com.bingzer.android.driven.DrivenCredential;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenUser;
+import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
-import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
@@ -163,9 +163,7 @@ public final class GoogleDrive implements Driven {
         drivenUser = null;
 
         DrivenCredential credential = new DrivenCredential(context);
-        if(credential.hasSavedCredential(TAG)){
-            result.setSuccess(credential.read(TAG));
-        }
+        credential.clear(TAG);
 
         return result;
     }
@@ -495,7 +493,7 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public File download(DrivenFile drivenFile, File local) {
+    public DrivenContent download(DrivenFile drivenFile, File local) {
         try{
             GenericUrl url = new GenericUrl(drivenFile.getDownloadUrl());
             HttpRequestFactory factory = getGoogleDriveApi().getRequestFactory();
@@ -503,7 +501,8 @@ public final class GoogleDrive implements Driven {
             HttpResponse response = request.execute();
 
             IOUtils.copyFile(response.getContent(), local);
-            return local;
+
+            return new DrivenContent(drivenFile.getType(), local);
         }
         catch (IOException e){
             return null;
@@ -511,9 +510,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public void downloadAsync(final DrivenFile drivenFile, final File local, Task<File> result) {
-        doAsync(result, new Delegate<File>() {
-            @Override public File invoke() {
+    public void downloadAsync(final DrivenFile drivenFile, final File local, Task<DrivenContent> result) {
+        doAsync(result, new Delegate<DrivenContent>() {
+            @Override public DrivenContent invoke() {
                 return download(drivenFile, local);
             }
         });

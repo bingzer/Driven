@@ -137,6 +137,11 @@ public class DrivenCredential {
         return file != null && file.exists();
     }
 
+    public boolean clear(String name){
+        File file = getCredentialFile(name);
+        return file != null && file.delete();
+    }
+
     private File getCredentialFile(String name){
         File dir = getContext().getFilesDir();
         return new File(dir, name);

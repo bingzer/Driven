@@ -33,6 +33,12 @@ public class DropboxTest extends AndroidTestCase {
         credential.setToken(new DrivenCredential.Token("appKey", "appSecret"));
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        driven.clearAuthentication(getContext());
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     public void test_authenticate(){
@@ -46,12 +52,18 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_authenticateAsync() throws InterruptedException {
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.authenticateAsync(credential, new Task<Result<DrivenException>>() {
+        driven.authenticateAsync(credential, new Task.WithErrorReporting<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 assertTrue(driven.isAuthenticated());
                 assertTrue(result.isSuccess());
                 assertNull(result.getException());
+                signal.countDown();
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                fail(error.getMessage());
                 signal.countDown();
             }
         });

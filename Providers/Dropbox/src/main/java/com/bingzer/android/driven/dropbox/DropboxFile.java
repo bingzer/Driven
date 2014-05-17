@@ -95,15 +95,15 @@ class DropboxFile implements DrivenFile {
     }
 
     @Override
-    public File download(File local) {
+    public DrivenContent download(File local) {
         return getDriven().download(this, local);
     }
 
     @Override
-    public void downloadAsync(final File local, Task<File> result) {
-        doAsync(result, new Delegate<File>() {
+    public void downloadAsync(final File local, Task<DrivenContent> result) {
+        doAsync(result, new Delegate<DrivenContent>() {
             @Override
-            public File invoke() {
+            public DrivenContent invoke() {
                 return download(local);
             }
         });

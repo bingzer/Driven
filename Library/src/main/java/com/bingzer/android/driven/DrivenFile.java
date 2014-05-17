@@ -89,12 +89,12 @@ public interface DrivenFile {
      * Download and keep this file to the local.
      * There should be no local-to-remote mapping.
      */
-    public File download(File local);
+    public DrivenContent download(File local);
 
     /**
      * Async for {@link #download(java.io.File)}
      */
-    public void downloadAsync(final File local, Task<File> result);
+    public void downloadAsync(final File local, Task<DrivenContent> result);
 
     /**
      * Upload/Save a file to this file. The remote content file

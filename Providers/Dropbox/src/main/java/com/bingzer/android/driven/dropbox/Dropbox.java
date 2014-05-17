@@ -10,11 +10,11 @@ import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.DrivenFile;
 import com.bingzer.android.driven.DrivenUser;
 import com.bingzer.android.driven.api.Path;
+import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Task;
-import com.bingzer.android.driven.api.ResultImpl;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
@@ -151,9 +151,7 @@ public class Dropbox implements Driven {
         drivenUser = null;
 
         DrivenCredential credential = new DrivenCredential(context);
-        if(credential.hasSavedCredential(TAG)){
-            result.setSuccess(credential.read(TAG));
-        }
+        credential.clear(TAG);
 
         return result;
     }
@@ -220,12 +218,12 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public File download(DrivenFile drivenFile, File local) {
+    public DrivenContent download(DrivenFile drivenFile, File local) {
         OutputStream output = null;
         try {
             output = getApiFactory().createOutputStream(local);
             getDropboxApi().getFile(Path.clean(drivenFile), null, output, null);
-            return local;
+            return new DrivenContent(drivenFile.getType(), local);
         }
         catch (Exception e) {
             return null;
@@ -236,10 +234,10 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public void downloadAsync(final DrivenFile drivenFile, final File local, Task<File> result) {
-        doAsync(result, new Delegate<File>() {
+    public void downloadAsync(final DrivenFile drivenFile, final File local, Task<DrivenContent> result) {
+        doAsync(result, new Delegate<DrivenContent>() {
             @Override
-            public File invoke() {
+            public DrivenContent invoke() {
                 return download(drivenFile, local);
             }
         });

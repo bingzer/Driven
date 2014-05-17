@@ -16,6 +16,7 @@
 package com.bingzer.android.driven.utils;
 
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.util.Log;
 
 import com.bingzer.android.driven.DrivenException;
@@ -33,13 +34,24 @@ public final class AsyncUtils {
 
     private static ThreadPoolExecutor threadPoolExecutor;
 
-    static {
-        final int numCore = Runtime.getRuntime().availableProcessors();
-        final LinkedBlockingQueue<Runnable> workerQueue = new LinkedBlockingQueue<Runnable>();
-        threadPoolExecutor = new ThreadPoolExecutor(numCore, numCore, 1, TimeUnit.SECONDS, workerQueue);
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static <T> void doAsync(final Task<T> task, final Delegate<T> action){
+        if(Looper.myLooper() == Looper.getMainLooper())
+            doAsyncTask(task, action);
+        else
+            doAsyncThread(task, action);
     }
 
-    public static <T> void doAsync2(final Task<T> task, final Delegate<T> action){
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static <T> void doAsyncThread(final Task<T> task, final Delegate<T> action){
+        if(threadPoolExecutor == null){
+            final int numCore = Runtime.getRuntime().availableProcessors();
+            final LinkedBlockingQueue<Runnable> workerQueue = new LinkedBlockingQueue<Runnable>();
+            threadPoolExecutor = new ThreadPoolExecutor(numCore, numCore, 1, TimeUnit.SECONDS, workerQueue);
+        }
+
         threadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -58,7 +70,7 @@ public final class AsyncUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> void doAsync(final Task<T> task, final Delegate<T> action){
+    private static <T> void doAsyncTask(final Task<T> task, final Delegate<T> action){
         new AsyncTask<Void, Void, T>(){
 
             @Override protected T doInBackground(Void... params) {
