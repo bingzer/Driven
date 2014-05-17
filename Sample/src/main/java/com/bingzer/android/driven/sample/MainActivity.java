@@ -1,10 +1,13 @@
 package com.bingzer.android.driven.sample;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
@@ -37,6 +41,7 @@ import java.util.List;
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener{
 
     private static final String TAG = "MainActivity";
+    private static final int REQUEST_PICK_FILE = 102;
     private Driven gdrive = new GoogleDrive();
     private Driven dropbox = new Dropbox();
     private Driven driven = gdrive;
@@ -52,6 +57,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(listAdapter = new ListAdapter());
         listView.setOnItemClickListener(new OnFileClickListener());
+        listView.setOnItemLongClickListener(new OnFileLongClickListener());
 
         SpinnerAdapter spinnerAdapter = ArrayAdapter
                 .createFromResource(this, R.array.driven_providers, android.R.layout.simple_dropdown_item_1line);
@@ -74,9 +80,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
+        if (id == R.id.action_create_folder)
+            return promptNewFolder();
+        else if(id == R.id.action_create_file)
+            return promptForFile();
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -84,11 +92,25 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         String provider = getBaseContext().getResources().getStringArray(R.array.driven_providers)[itemPosition];
         if(getString(R.string.google_drive).equals(provider)){
-            GoogleDriveActivity.launch(this);
+            if(!gdrive.isAuthenticated()){
+                GoogleDriveActivity.launch(this);
+            }
+            else{
+                driven = gdrive;
+                breadcrumbs.clear();
+                list(null);
+            }
             return true;
         }
         else if(getString(R.string.dropbox).equals(provider)){
-            DropboxActivity.launch(this, BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
+            if(!dropbox.isAuthenticated()){
+                DropboxActivity.launch(this, BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
+            }
+            else{
+                driven = dropbox;
+                breadcrumbs.clear();
+                list(null);
+            }
             return true;
         }
 
@@ -105,31 +127,15 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 case DropboxActivity.REQUEST_LOGIN:
                     driven = dropbox;
                     break;
+                case REQUEST_PICK_FILE:
+                    createFile("*/*", new File(data.getData().getPath()));
+                    return;
             }
 
             breadcrumbs.clear();
             list(null);
         }
 
-    }
-
-    private List<DrivenFile> files;
-    private DrivenFile parent;
-    private ArrayList<DrivenFile> breadcrumbs = new ArrayList<DrivenFile>();
-
-    private void list(DrivenFile parent){
-        breadcrumbs.add(parent);
-        this.parent = parent;
-        files = null;
-        listAdapter.notifyDataSetChanged();
-
-        driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
-            @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
-                files = (List<DrivenFile>) result;
-                listAdapter.notifyDataSetChanged();
-            }
-        });
     }
 
     @Override
@@ -147,6 +153,78 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         else{
             super.onBackPressed();
         }
+    }
+
+    private List<DrivenFile> files;
+    private DrivenFile parent;
+    private static final ArrayList<DrivenFile> breadcrumbs = new ArrayList<DrivenFile>();
+
+    private void list(DrivenFile parent){
+        breadcrumbs.add(parent);
+        this.parent = parent;
+        files = null;
+        listAdapter.notifyDataSetChanged();
+
+        driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
+            @Override
+            public void onCompleted(Iterable<DrivenFile> result) {
+                files = (List<DrivenFile>) result;
+                listAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private boolean promptNewFolder(){
+        final EditText editText = new EditText(this);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.create_folder)
+                .setView(editText)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable value = editText.getText();
+                        createFolder(value.toString());
+                    }
+                }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Do nothing.
+            }
+        }).show();
+
+        return true;
+    }
+
+    private void createFolder(String folderName){
+        if(folderName != null && folderName.length() > 0) {
+            driven.createAsync(parent, folderName, new Task<DrivenFile>() {
+                @Override
+                public void onCompleted(DrivenFile result) {
+                    list(parent);
+                }
+            });
+        }
+    }
+
+    private void createFile(String type, File local){
+        if(local != null && local.exists()){
+            driven.createAsync(parent, local.getName(), new DrivenContent(type, local), new Task<DrivenFile>() {
+                @Override
+                public void onCompleted(DrivenFile result) {
+                    list(parent);
+                }
+            });
+        }
+    }
+
+    private boolean promptForFile(){
+        try {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("file/*");
+            startActivityForResult(intent, REQUEST_PICK_FILE);
+        }
+        catch (Throwable e){
+            Toast.makeText(this, "You need a file browser app installed to do this", Toast.LENGTH_SHORT).show();
+        }
+        return true;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,10 +285,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     File tempFile = File.createTempFile("pre", "suffix");
                     file.downloadAsync(tempFile, new Task<DrivenContent>() {
                         @Override public void onCompleted(DrivenContent result) {
-                            Intent intent = new Intent();
-                            intent.setAction(android.content.Intent.ACTION_VIEW);
-                            intent.setDataAndType(Uri.fromFile(result.getFile()), result.getType());
-                            startActivity(intent);
+                            openFile(result.getFile(), result.getType());
                         }
                     });
                     Toast.makeText(getBaseContext(), "You will be notified when download is finished", Toast.LENGTH_SHORT).show();
@@ -220,5 +295,44 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 }
             }
         }
+
+        private void openFile(File file, String type){
+            try {
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(file), type);
+                startActivity(intent);
+            }
+            catch (Throwable e){
+                Toast.makeText(getBaseContext(), "Unable to open: " + file.getName(), Toast.LENGTH_SHORT).show();
+            }
+
+        }
     }
+
+    class OnFileLongClickListener implements AdapterView.OnItemLongClickListener {
+
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            final DrivenFile file = files.get(position);
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(R.string.confirm_delete)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            file.deleteAsync(new Task<Boolean>() {
+                                @Override
+                                public void onCompleted(Boolean result) {
+                                    list(MainActivity.this.parent);
+                                }
+                            });
+                        }
+                    }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // Do nothing.
+                }
+            }).show();
+            return false;
+        }
+    }
+
 }
