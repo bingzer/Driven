@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ import com.bingzer.android.driven.gdrive.app.GoogleDriveActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -104,18 +106,47 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     break;
             }
 
-            driven.listAsync(new Task<Iterable<DrivenFile>>() {
-                @Override
-                public void onCompleted(Iterable<DrivenFile> result) {
-                    files = (List<DrivenFile>) result;
-                    listAdapter.notifyDataSetChanged();
-                }
-            });
+            breadcrumbs.clear();
+            list(null);
         }
 
     }
 
     private List<DrivenFile> files;
+    private DrivenFile parent;
+    private ArrayList<DrivenFile> breadcrumbs = new ArrayList<DrivenFile>();
+
+    private void list(DrivenFile parent){
+        breadcrumbs.add(parent);
+        this.parent = parent;
+        files = null;
+        listAdapter.notifyDataSetChanged();
+
+        driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
+            @Override
+            public void onCompleted(Iterable<DrivenFile> result) {
+                files = (List<DrivenFile>) result;
+                listAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(breadcrumbs.size() > 0){
+            try{
+                DrivenFile lastParent = breadcrumbs.remove(breadcrumbs.size() - 1);
+                lastParent = breadcrumbs.remove(breadcrumbs.size() - 1);
+                list(lastParent);
+            }
+            catch (ArrayIndexOutOfBoundsException e){
+                list(null);
+            }
+        }
+        else{
+            super.onBackPressed();
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -140,14 +171,26 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if(convertView == null){
-                convertView = new TextView(getBaseContext());
+                ViewHolder viewHolder = new ViewHolder();
+                convertView = getLayoutInflater().inflate(R.layout.view_file, parent, false);
+
+                viewHolder.textView = (TextView) convertView.findViewById(R.id.text1);
+                viewHolder.imageView = (ImageView) convertView.findViewById(R.id.image1);
+                convertView.setTag(viewHolder);
             }
 
             DrivenFile file = files.get(position);
-            ((TextView) convertView).setText(file.getName());
+            ViewHolder holder = (ViewHolder) convertView.getTag();
+            holder.textView.setText(file.getName());
+            holder.imageView.setImageResource(file.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file);
 
             return convertView;
         }
+    }
+
+    class ViewHolder {
+        TextView textView;
+        ImageView imageView;
     }
 
     class OnFileClickListener implements AdapterView.OnItemClickListener {
@@ -156,17 +199,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             final DrivenFile file = files.get(position);
             if(file.isDirectory()){
-
+                list(file);
             }
             else{
                 try{
-                    final File tempFile = File.createTempFile("pre", "suffix");
+                    File tempFile = File.createTempFile("pre", "suffix");
                     file.downloadAsync(tempFile, new Task<File>() {
                         @Override public void onCompleted(File result) {
                             Intent intent = new Intent();
                             intent.setAction(android.content.Intent.ACTION_VIEW);
-                            intent.setDataAndType(Uri.fromFile(tempFile), file.getType());
-                            startActivityForResult(intent, 10);
+                            intent.setDataAndType(Uri.fromFile(result), file.getType());
+                            startActivity(intent);
                         }
                     });
                     Toast.makeText(getBaseContext(), "You will be notified when download is finished", Toast.LENGTH_SHORT).show();
