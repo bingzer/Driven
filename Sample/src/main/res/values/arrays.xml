@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="driven_providers">
+        <item>@string/google_drive</item>
+        <item>@string/dropbox</item>
+    </array>
+
+    <string name="google_drive">Google Drive</string>
+    <string name="dropbox">Dropbox</string>
+</resources>

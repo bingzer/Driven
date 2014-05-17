@@ -1,0 +1,39 @@
+project.ext.set("archivesBaseName", "driven-sample");
+
+apply plugin: 'android'
+
+android {
+    compileSdkVersion Integer.parseInt(project.VERSION_SDK)
+    buildToolsVersion project.VERSION_TOOLS
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(project.VERSION_SDK_MIN)
+        targetSdkVersion Integer.parseInt(project.VERSION_SDK_TARGET)
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
+
+        // -- from /user/.gradle/gradle.properties
+        // replace this with your own api key
+        buildConfigField "String", "DROPBOX_APP_KEY", "\"" + DROPBOX_APP_KEY + "\""
+        buildConfigField "String", "DROPBOX_APP_SECRET", "\"" + DROPBOX_APP_SECRET + "\""
+    }
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    //compile 'com.android.support:support-v4:19.1.+'
+    compile 'com.android.support:appcompat-v7:19.+'
+    compile 'com.google.android.gms:play-services:4.3.23'
+
+    compile project(':Library')
+    compile project(':Providers:Dropbox')
+    compile project(':Providers:GoogleDrive')
+}
