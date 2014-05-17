@@ -14,8 +14,8 @@ android {
 
         // -- from /user/.gradle/gradle.properties
         // replace this with your own api key
-        buildConfigField "String", "DROPBOX_APP_KEY", "\"" + DROPBOX_APP_KEY + "\""
-        buildConfigField "String", "DROPBOX_APP_SECRET", "\"" + DROPBOX_APP_SECRET + "\""
+        buildConfigField "String", "DROPBOX_APP_KEY", "\"" + (hasProperty('DROPBOX_APP_KEY') ?  DROPBOX_APP_KEY : "") + "\""
+        buildConfigField "String", "DROPBOX_APP_SECRET", "\"" + (hasProperty('DROPBOX_APP_SECRET') ? DROPBOX_APP_SECRET : "") + "\""
     }
 
     buildTypes {
