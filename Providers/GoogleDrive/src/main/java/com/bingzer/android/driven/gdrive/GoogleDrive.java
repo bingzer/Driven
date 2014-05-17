@@ -436,7 +436,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public Iterable<DrivenFile> list() {
         try {
-            FileList fileList = list(null, defaultFieldsItems, false);
+            FileList fileList = list("'root' in parents", defaultFieldsItems, false);
             return GoogleDriveFile.from(fileList);
         }
         catch (IOException e){
@@ -446,6 +446,8 @@ public final class GoogleDrive implements Driven {
 
     @Override
     public Iterable<DrivenFile> list(DrivenFile parent) {
+        if(parent == null) return list();
+
         try {
             FileList fileList = list("'" + parent.getId() + "' in parents", defaultFieldsItems, false);
             return GoogleDriveFile.from(fileList);
@@ -557,7 +559,7 @@ public final class GoogleDrive implements Driven {
 
         if(fields != null) list.setFields(fields);
         if(query != null) list.setQ(query);
-        if(includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
+        if(!includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
 
         return list.execute();
     }

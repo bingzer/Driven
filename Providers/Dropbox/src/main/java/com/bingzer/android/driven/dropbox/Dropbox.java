@@ -333,6 +333,8 @@ public class Dropbox implements Driven {
 
     @Override
     public Iterable<DrivenFile> list(DrivenFile parent) {
+        if(parent == null) return list();
+
         try {
             DropboxAPI.Entry entry = getDropboxApi().metadata(Path.clean(parent), 0, null, true, null);
 

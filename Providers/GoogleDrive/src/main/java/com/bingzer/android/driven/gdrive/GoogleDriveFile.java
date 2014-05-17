@@ -203,7 +203,7 @@ class GoogleDriveFile implements DrivenFile {
 
     public static Iterable<DrivenFile> from(FileList fileList){
         List<DrivenFile> list = new ArrayList<DrivenFile>();
-        for(int i = 0; i < fileList.size(); i++){
+        for(int i = 0; i < fileList.getItems().size(); i++){
             list.add(new GoogleDriveFile(fileList.getItems().get(i), false));
         }
 
