@@ -8,4 +8,5 @@
     <application android:allowBackup="true">
         <activity android:name=".app.GoogleDriveActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
     </application>
+
 </manifest>

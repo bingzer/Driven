@@ -15,6 +15,9 @@
  */
 package com.bingzer.android.driven.utils;
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
@@ -36,7 +39,7 @@ public final class AsyncUtils {
         threadPoolExecutor = new ThreadPoolExecutor(numCore, numCore, 1, TimeUnit.SECONDS, workerQueue);
     }
 
-    public static <T> void doAsync(final Task<T> task, final Delegate<T> action){
+    public static <T> void doAsync2(final Task<T> task, final Delegate<T> action){
         threadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -52,6 +55,36 @@ public final class AsyncUtils {
                 }
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> void doAsync(final Task<T> task, final Delegate<T> action){
+        new AsyncTask<Void, Void, T>(){
+
+            @Override protected T doInBackground(Void... params) {
+                try {
+                    return action.invoke();
+                }
+                catch (Throwable e){
+                    reportError(e);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(T result) {
+                task.onCompleted(result);
+            }
+
+            void reportError(Throwable error){
+                if(task instanceof Task.WithErrorReporting) {
+                    ((Task.WithErrorReporting) task).onError(error);
+                }
+                else
+                    Log.e("AsyncUtils", "Error occurred in AsyncTask", error);
+            }
+        }.execute();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////

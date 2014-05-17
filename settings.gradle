@@ -1,2 +1,2 @@
-include ':Library'
+include ':Library', ':Sample'
 include ':Providers:GoogleDrive', ':Providers:Dropbox'

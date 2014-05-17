@@ -37,7 +37,7 @@ import java.util.List;
 public class GoogleDriveActivity extends Activity {
     public static final String BUNDLE_KEY_LOGIN = "com.bingzer.android.driven.gdrive.app.login";
 
-    public static final int REQUEST_LOGIN = 3;
+    public static final int REQUEST_LOGIN = 100;
     public static final int REQUEST_ACCOUNT_PICKER = 1;
     public static final int REQUEST_AUTHORIZATION = 2;
 

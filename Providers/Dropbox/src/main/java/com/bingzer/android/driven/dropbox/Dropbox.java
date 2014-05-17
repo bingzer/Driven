@@ -1,6 +1,7 @@
 package com.bingzer.android.driven.dropbox;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenContent;
@@ -34,14 +35,14 @@ public class Dropbox implements Driven {
     private static final String TAG = "Dropbox";
 
     @Inject DropboxApiFactory apiFactory;
-    private DropboxAPI<AndroidAuthSession> dropboxApi;
-    private DrivenUser drivenUser;
+    private static DropboxAPI<AndroidAuthSession> dropboxApi;
+    private static DrivenUser drivenUser;
     private SharedWithMe sharedWithMe;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     public DropboxAPI<AndroidAuthSession> getDropboxApi(){
-        if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
+        if(dropboxApi == null) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return dropboxApi;
     }
 
@@ -81,6 +82,7 @@ public class Dropbox implements Driven {
 
     @Override
     public Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential) {
+        Log.i(TAG, "Driven API is authenticating with Dropbox Service");
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         try {
             if(credential.hasSavedCredential(TAG)){
@@ -99,12 +101,15 @@ public class Dropbox implements Driven {
             dropboxApi = getApiFactory().createApi(session);
             drivenUser = new DropboxUser(dropboxApi.accountInfo());
 
+            result.setSuccess(true);
+            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + drivenUser);
+
             if(saveCredential)
                 credential.save(TAG);
-
-            result.setSuccess(true);
         }
         catch (Exception e) {
+            Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getAccountName());
+            Log.e(TAG, "Exception:", e);
             result.setException(new DrivenException(e));
         }
 

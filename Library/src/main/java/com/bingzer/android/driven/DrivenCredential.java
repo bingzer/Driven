@@ -55,7 +55,7 @@ public class DrivenCredential {
     }
 
     public DrivenCredential(Context context, String accountName, Token token){
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.accountName = accountName;
         this.token = token;
     }
@@ -114,7 +114,7 @@ public class DrivenCredential {
             accountName = jsonObject.getString("accountName");
 
             JSONObject tokenJson;
-            if((tokenJson =jsonObject.getJSONObject("token")) != null){
+            if(jsonObject.has("token") && (tokenJson = jsonObject.getJSONObject("token")) != null){
                 token = new Token(tokenJson.getString("applicationKey"), tokenJson.getString("applicationSecret"));
                 token.accessToken = tokenJson.getString("accessToken");
             }

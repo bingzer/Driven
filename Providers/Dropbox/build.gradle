@@ -18,6 +18,7 @@ dependencies {
     compile project(':Library')
     // --- Drop box
     compile files('libs/dropbox-android-sdk-1.6.1.jar')
+    compile files('libs/json_simple-1.1.jar')
     // --- Dagger
     compile 'com.squareup.dagger:dagger:1.2.1'
     androidTestProvided 'com.squareup.dagger:dagger-compiler:1.2.1'

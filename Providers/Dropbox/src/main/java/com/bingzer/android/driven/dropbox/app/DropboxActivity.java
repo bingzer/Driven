@@ -15,7 +15,7 @@ public class DropboxActivity extends Activity {
     public static final String BUNDLE_KEY_APPKEY = "com.bingzer.android.driven.dropbox.app.appKey";
     public static final String BUNDLE_KEY_APPSECRET = "com.bingzer.android.driven.dropbox.app.appSecret";
 
-    public static final int REQUEST_LOGIN = 3;
+    public static final int REQUEST_LOGIN = 200;
 
     private static Dropbox driven = new Dropbox();
     private DrivenCredential credential;
@@ -37,12 +37,12 @@ public class DropboxActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        try {
+        try{
             if (driven.getDropboxApi().getSession().authenticationSuccessful()) {
                 driven.getDropboxApi().getSession().finishAuthentication();
                 credential.getToken().setAccessToken(driven.getDropboxApi().getSession().getOAuth2AccessToken());
-                requestAuthorization();
             }
+            requestAuthorization();
         }
         catch (DrivenException e){
             requestAuthorization();
@@ -56,8 +56,17 @@ public class DropboxActivity extends Activity {
                 if(!result.isSuccess()){
                     driven.getDropboxApi().getSession().startOAuth2Authentication(DropboxActivity.this);
                 }
+                else{
+                    // we're done!
+                    successfullyAuthorized();
+                }
             }
         });
+    }
+
+    private void successfullyAuthorized(){
+        setResult(RESULT_OK);
+        finish();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

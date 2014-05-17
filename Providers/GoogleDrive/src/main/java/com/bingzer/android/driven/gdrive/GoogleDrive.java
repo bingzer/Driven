@@ -61,8 +61,8 @@ public final class GoogleDrive implements Driven {
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject GoogleDriveApi.Factory googleDriveApiFactory;
-    private GoogleDriveApi googleDriveApi;
-    private DrivenUser drivenUser;
+    private static GoogleDriveApi googleDriveApi;
+    private static DrivenUser drivenUser;
     private SharedWithMe sharedWithMe;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,6 +125,7 @@ public final class GoogleDrive implements Driven {
         }
         catch (IOException e){
             Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getAccountName());
+            Log.e(TAG, "Exception:", e);
             result.setException(new DrivenException(e));
         }
 
