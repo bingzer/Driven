@@ -8,5 +8,6 @@
     <string name="create_folder">Create Folder</string>
     <string name="create_file">Create File</string>
     <string name="confirm_delete">Delete?</string>
+    <string name="clear_credentials">Clear credentials</string>
 
 </resources>

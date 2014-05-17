@@ -3,6 +3,7 @@ package com.bingzer.android.driven.sample;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -46,14 +47,20 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private Driven dropbox = new Dropbox();
     private Driven driven = gdrive;
 
+    private List<DrivenFile> files;
+    private DrivenFile parent;
+    private static final ArrayList<DrivenFile> breadcrumbs = new ArrayList<DrivenFile>();
+
     private ListAdapter listAdapter;
     private ListView listView;
+    private TextView breadcrumbsView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        breadcrumbsView = (TextView) findViewById(R.id.text_view);
         listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(listAdapter = new ListAdapter());
         listView.setOnItemClickListener(new OnFileClickListener());
@@ -64,6 +71,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getSupportActionBar().setListNavigationCallbacks(spinnerAdapter, this);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
 
@@ -84,6 +92,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             return promptNewFolder();
         else if(id == R.id.action_create_file)
             return promptForFile();
+        else if(id == R.id.action_clear_credentials)
+            return clearCredentials();
 
         return super.onOptionsItemSelected(item);
     }
@@ -155,10 +165,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         }
     }
 
-    private List<DrivenFile> files;
-    private DrivenFile parent;
-    private static final ArrayList<DrivenFile> breadcrumbs = new ArrayList<DrivenFile>();
-
     private void list(DrivenFile parent){
         breadcrumbs.add(parent);
         this.parent = parent;
@@ -172,6 +178,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 listAdapter.notifyDataSetChanged();
             }
         });
+        updateBreadcrumbsTextView();
     }
 
     private boolean promptNewFolder(){
@@ -225,6 +232,42 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             Toast.makeText(this, "You need a file browser app installed to do this", Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    private void updateBreadcrumbsTextView(){
+        final StringBuilder text = new StringBuilder();
+        for(DrivenFile file : breadcrumbs){
+            if(file != null)
+                text.append(file.getName());
+            text.append("/");
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                breadcrumbsView.setText(text);
+            }
+        });
+    }
+
+    private boolean clearCredentials(){
+        gdrive.clearAuthentication(this);
+        dropbox.clearAuthentication(this);
+        return true;
+    }
+
+    private void openFile(File file, String type){
+        Intent intent = new Intent();
+        intent.setAction(android.content.Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(file), type);
+
+        List<ResolveInfo> infos = getPackageManager().queryIntentActivities(intent, 0);
+        if (infos.size() > 0) {
+            startActivity(intent);
+        }
+        else{
+            Toast.makeText(this, "Can't open file: " + file.getName(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,19 +337,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     Log.e(TAG, "When downloading a file", e);
                 }
             }
-        }
-
-        private void openFile(File file, String type){
-            try {
-                Intent intent = new Intent();
-                intent.setAction(android.content.Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(file), type);
-                startActivity(intent);
-            }
-            catch (Throwable e){
-                Toast.makeText(getBaseContext(), "Unable to open: " + file.getName(), Toast.LENGTH_SHORT).show();
-            }
-
         }
     }
 
