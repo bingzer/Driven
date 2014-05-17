@@ -1,18 +1,22 @@
 package com.bingzer.android.driven.sample;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenFile;
@@ -22,11 +26,14 @@ import com.bingzer.android.driven.dropbox.app.DropboxActivity;
 import com.bingzer.android.driven.gdrive.GoogleDrive;
 import com.bingzer.android.driven.gdrive.app.GoogleDriveActivity;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener{
 
+    private static final String TAG = "MainActivity";
     private Driven gdrive = new GoogleDrive();
     private Driven dropbox = new Dropbox();
     private Driven driven = gdrive;
@@ -41,6 +48,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
         listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(listAdapter = new ListAdapter());
+        listView.setOnItemClickListener(new OnFileClickListener());
 
         SpinnerAdapter spinnerAdapter = ArrayAdapter
                 .createFromResource(this, R.array.driven_providers, android.R.layout.simple_dropdown_item_1line);
@@ -139,6 +147,34 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             ((TextView) convertView).setText(file.getName());
 
             return convertView;
+        }
+    }
+
+    class OnFileClickListener implements AdapterView.OnItemClickListener {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final DrivenFile file = files.get(position);
+            if(file.isDirectory()){
+
+            }
+            else{
+                try{
+                    final File tempFile = File.createTempFile("pre", "suffix");
+                    file.downloadAsync(tempFile, new Task<File>() {
+                        @Override public void onCompleted(File result) {
+                            Intent intent = new Intent();
+                            intent.setAction(android.content.Intent.ACTION_VIEW);
+                            intent.setDataAndType(Uri.fromFile(tempFile), file.getType());
+                            startActivityForResult(intent, 10);
+                        }
+                    });
+                    Toast.makeText(getBaseContext(), "You will be notified when download is finished", Toast.LENGTH_SHORT).show();
+                }
+                catch (IOException e){
+                    Log.e(TAG, "When downloading a file", e);
+                }
+            }
         }
     }
 }
