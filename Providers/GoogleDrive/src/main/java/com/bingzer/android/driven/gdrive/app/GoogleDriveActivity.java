@@ -42,17 +42,17 @@ public class GoogleDriveActivity extends Activity {
     public static final int REQUEST_AUTHORIZATION = 2;
 
     private static Driven driven = new GoogleDrive();
-    private GoogleAccountCredential credential;
+    private GoogleAccountCredential googleAccount;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setResult(RESULT_CANCELED);
-        credential = createGoogleAccountCredential(this);
 
-        if(getIntent() != null && getIntent().getIntExtra(BUNDLE_KEY_LOGIN, 0) == REQUEST_LOGIN){
-            startActivityForResult(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
-        }
+        googleAccount = createGoogleAccountCredential(this);
+        if (!driven.hasSavedCredentials(this))
+            showAccountChooser();
+        else
+            authenticate();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class GoogleDriveActivity extends Activity {
                     requestAuthorization(data);
                 }
                 else {
-                    startActivityForResult(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+                    startActivityForResult(googleAccount.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
                 }
 
                 break;
@@ -79,29 +79,39 @@ public class GoogleDriveActivity extends Activity {
     private void requestAuthorization(Intent data){
         final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
         if (accountName != null) {
-            credential.setSelectedAccountName(accountName);
-            driven.authenticateAsync(new DrivenCredential(this, credential.getSelectedAccountName()), new Task<Result<DrivenException>>() {
-                @Override
-                public void onCompleted(Result<DrivenException> result) {
-                    if(result.isSuccess())
-                        successfullyAuthorized();
-                    else{
-                        if(result.getException().getCause() instanceof UserRecoverableAuthIOException){
-                            UserRecoverableAuthIOException exception = (UserRecoverableAuthIOException) result.getException().getCause();
-                            startActivityForResult(exception.getIntent(), REQUEST_AUTHORIZATION);
-                        }
-                        else{
-                            throw result.getException();
-                        }
-                    }
-                }
-            });
+            googleAccount.setSelectedAccountName(accountName);
+            authenticate();
         }
     }
 
-    private void successfullyAuthorized(){
+    private void successfullyAuthenticated(){
         setResult(RESULT_OK);
         finish();
+    }
+
+    private void showAccountChooser(){
+        if(getIntent() != null && getIntent().getIntExtra(BUNDLE_KEY_LOGIN, 0) == REQUEST_LOGIN){
+            startActivityForResult(googleAccount.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+        }
+    }
+
+    private void authenticate(){
+        driven.authenticateAsync(new DrivenCredential(this, googleAccount.getSelectedAccountName()), new Task<Result<DrivenException>>() {
+            @Override
+            public void onCompleted(Result<DrivenException> result) {
+                if(result.isSuccess())
+                    successfullyAuthenticated();
+                else{
+                    if(result.getException().getCause() instanceof UserRecoverableAuthIOException){
+                        UserRecoverableAuthIOException exception = (UserRecoverableAuthIOException) result.getException().getCause();
+                        startActivityForResult(exception.getIntent(), REQUEST_AUTHORIZATION);
+                    }
+                    else{
+                        throw result.getException();
+                    }
+                }
+            }
+        });
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

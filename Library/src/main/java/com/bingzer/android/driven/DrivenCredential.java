@@ -111,7 +111,9 @@ public class DrivenCredential {
             }
 
             JSONObject jsonObject = new JSONObject(jsonString.toString());
-            accountName = jsonObject.getString("accountName");
+            if(jsonObject.has("accountName")){
+                accountName = jsonObject.getString("accountName");
+            }
 
             JSONObject tokenJson;
             if(jsonObject.has("token") && (tokenJson = jsonObject.getJSONObject("token")) != null){

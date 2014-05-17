@@ -74,6 +74,12 @@ public class Dropbox implements Driven {
     }
 
     @Override
+    public boolean hasSavedCredentials(Context context) {
+        DrivenCredential credential = new DrivenCredential(context);
+        return credential.hasSavedCredential(TAG);
+    }
+
+    @Override
     public Result<DrivenException> authenticate(DrivenCredential credential) {
         return authenticate(credential, true);
     }
@@ -85,6 +91,8 @@ public class Dropbox implements Driven {
         Log.i(TAG, "Driven API is authenticating with Dropbox Service");
         ResultImpl<DrivenException> result = new ResultImpl<DrivenException>(false);
         try {
+            if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
+
             if(credential.hasSavedCredential(TAG)){
                 credential.read(TAG);
             }
@@ -108,7 +116,7 @@ public class Dropbox implements Driven {
                 credential.save(TAG);
         }
         catch (Exception e) {
-            Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getAccountName());
+            Log.i(TAG, "Driven API failed to authenticate");
             Log.e(TAG, "Exception:", e);
             result.setException(new DrivenException(e));
         }

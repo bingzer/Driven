@@ -73,6 +73,12 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
+    public boolean hasSavedCredentials(Context context) {
+        DrivenCredential credential = new DrivenCredential(context);
+        return credential.hasSavedCredential(TAG);
+    }
+
+    @Override
     public DrivenUser getDrivenUser() throws DrivenException {
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return drivenUser;
@@ -124,7 +130,7 @@ public final class GoogleDrive implements Driven {
                 credential.save(TAG);
         }
         catch (IOException e){
-            Log.i(TAG, "Driven API cannot authenticate using account name: " + credential.getAccountName());
+            Log.i(TAG, "Driven API failed to authenticate");
             Log.e(TAG, "Exception:", e);
             result.setException(new DrivenException(e));
         }

@@ -64,6 +64,11 @@ public interface DrivenApi {
         boolean isAuthenticated();
 
         /**
+         * Check to see if we
+         */
+        boolean hasSavedCredentials(Context context);
+
+        /**
          * Try to authenticate with specified {@code credential}.
          * Credential (if successful) will be saved automatically
          * for future use

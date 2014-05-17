@@ -24,12 +24,12 @@ public class DropboxActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(getIntent() != null && getIntent().getIntExtra(BUNDLE_KEY_LOGIN, 0) == REQUEST_LOGIN){
-            String appKey = getIntent().getStringExtra(BUNDLE_KEY_APPKEY);
-            String appSecret = getIntent().getStringExtra(BUNDLE_KEY_APPSECRET);
-
-            DrivenCredential.Token token = new DrivenCredential.Token(appKey, appSecret);
-            credential = new DrivenCredential(this, token);
+        credential = new DrivenCredential(this);
+        if(!driven.hasSavedCredentials(this)){
+            showAccountChooser();
+        }
+        else{
+            authenticate();
         }
     }
 
@@ -42,14 +42,29 @@ public class DropboxActivity extends Activity {
                 driven.getDropboxApi().getSession().finishAuthentication();
                 credential.getToken().setAccessToken(driven.getDropboxApi().getSession().getOAuth2AccessToken());
             }
-            requestAuthorization();
+            authenticate();
         }
         catch (DrivenException e){
-            requestAuthorization();
+            authenticate();
         }
     }
 
-    private void requestAuthorization(){
+    private void successfullyAuthorized(){
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    private void showAccountChooser(){
+        if(getIntent() != null && getIntent().getIntExtra(BUNDLE_KEY_LOGIN, 0) == REQUEST_LOGIN){
+            String appKey = getIntent().getStringExtra(BUNDLE_KEY_APPKEY);
+            String appSecret = getIntent().getStringExtra(BUNDLE_KEY_APPSECRET);
+
+            DrivenCredential.Token token = new DrivenCredential.Token(appKey, appSecret);
+            credential.setToken(token);
+        }
+    }
+
+    private void authenticate(){
         driven.authenticateAsync(credential, new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
@@ -62,11 +77,6 @@ public class DropboxActivity extends Activity {
                 }
             }
         });
-    }
-
-    private void successfullyAuthorized(){
-        setResult(RESULT_OK);
-        finish();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
