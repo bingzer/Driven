@@ -165,6 +165,20 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
                         }
                     });
 
+            //////////////////////////////////////////////////////////////////////
+            // MOVE
+            when(api.move(anyString(), anyString())).then(new Answer<DropboxAPI.Entry>() {
+                @Override
+                public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
+                    String path = invocation.getArguments()[0].toString();
+                    String newPath = invocation.getArguments()[1].toString();
+
+                    DropboxAPI.Entry entry = getEntryByPath(path);
+                    entry.path = newPath;
+
+                    return entry;
+                }
+            });
 
             //////////////////////////////////////////////////////////////////////
             // SHARE
