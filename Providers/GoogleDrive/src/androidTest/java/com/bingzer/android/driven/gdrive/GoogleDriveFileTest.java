@@ -12,7 +12,7 @@ import dagger.ObjectGraph;
 
 public class GoogleDriveFileTest extends AndroidTestCase {
 
-    private GoogleDrive drivenProvider;
+    private GoogleDrive driven;
     private DrivenFile drivenFile;
 
     @Override
@@ -23,13 +23,13 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         final String dexCache = getContext().getCacheDir().getPath();
         System.setProperty("dexmaker.dexcache", dexCache);
 
-        drivenProvider = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
+        driven = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
         DrivenCredential credential = new DrivenCredential(getContext(), "Test-User");
 
-        GoogleDriveFile.setDriven(drivenProvider);
+        GoogleDriveFile.setDriven(driven);
 
-        drivenProvider.authenticate(credential);
-        drivenFile = drivenProvider.get("Title01");
+        driven.authenticate(credential);
+        drivenFile = driven.get("Title01");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
 
     public void test_delete() throws Exception {
         assertTrue(drivenFile.delete());
-        assertNull(drivenProvider.get(drivenFile.getName()));
+        assertNull(driven.get(drivenFile.getName()));
     }
 
     public void test_deleteAsync() throws Exception {
@@ -80,7 +80,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
             @Override
             public void onCompleted(Boolean result) {
                 assertTrue(result);
-                assertNull(drivenProvider.get(drivenFile.getName()));
+                assertNull(driven.get(drivenFile.getName()));
                 signal.countDown();
             }
         });
@@ -89,9 +89,9 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_list() throws Exception {
-        drivenFile = drivenProvider.create("Folder10");
-        assertNotNull(drivenProvider.create(drivenFile, "File11"));
-        assertNotNull(drivenProvider.create(drivenFile, "File12"));
+        drivenFile = driven.create("Folder10");
+        assertNotNull(driven.create(drivenFile, "File11"));
+        assertNotNull(driven.create(drivenFile, "File12"));
 
         int counter = 1;
         for(DrivenFile df : drivenFile.list()){
@@ -104,9 +104,9 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_listAsync() throws Exception {
-        drivenFile = drivenProvider.create("Folder10");
-        assertNotNull(drivenProvider.create(drivenFile, "File11"));
-        assertNotNull(drivenProvider.create(drivenFile, "File12"));
+        drivenFile = driven.create("Folder10");
+        assertNotNull(driven.create(drivenFile, "File11"));
+        assertNotNull(driven.create(drivenFile, "File12"));
 
         final CountDownLatch signal = new CountDownLatch(1);
         drivenFile.listAsync(new Task<Iterable<DrivenFile>>() {
@@ -163,6 +163,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_uploadAsync() throws Exception {
+        final CountDownLatch signal = new CountDownLatch(1);
         drivenFile.uploadAsync("MimeTypeEdited01", new java.io.File(""), new Task<Boolean>() {
             @Override
             public void onCompleted(Boolean result) {
@@ -180,8 +181,40 @@ public class GoogleDriveFileTest extends AndroidTestCase {
                 assertEquals("Description01", ((GoogleDriveFile)drivenFile).getModel().getDescription());
                 assertEquals("MimeTypeEdited01", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
                 assertEquals("DownloadUrl01", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
+
+                signal.countDown();
             }
         });
+
+        signal.await();
+    }
+
+    public void test_rename() throws Exception {
+        assertEquals("Title01", drivenFile.getName());
+        assertTrue(drivenFile.rename("Title01_Renamed"));
+        assertEquals("Title01_Renamed", drivenFile.getName());
+
+        assertNull(driven.get("Title01"));
+        assertNotNull(driven.get("Title01_Renamed"));
+    }
+
+    public void test_renameAsync() throws Exception {
+        assertEquals("Title01", drivenFile.getName());
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        drivenFile.renameAsync("Title01_Renamed", new Task<Boolean>() {
+            @Override
+            public void onCompleted(Boolean result) {
+                assertTrue(result);
+                assertEquals("Title01_Renamed", drivenFile.getName());
+
+                assertNull(driven.get("Title01"));
+                assertNotNull(driven.get("Title01_Renamed"));
+                signal.countDown();
+            }
+        });
+
+        signal.await();
     }
 
 }

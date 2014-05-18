@@ -269,11 +269,19 @@ public final class GoogleDrive implements Driven {
     public DrivenFile update(DrivenFile drivenFile, DrivenContent content) {
         try{
             GoogleDriveFile driveFile = (GoogleDriveFile) drivenFile;
-            com.google.api.services.drive.model.File file =
-                    getGoogleDriveApi()
-                            .files()
-                            .update(driveFile.getId(), driveFile.getModel(), new FileContent(content.getType(), content.getFile()))
-                            .execute();
+            com.google.api.services.drive.model.File file;
+            if(content == null){
+                file = getGoogleDriveApi()
+                        .files()
+                        .update(driveFile.getId(), driveFile.getModel())
+                        .execute();
+            }
+            else {
+                file = getGoogleDriveApi()
+                        .files()
+                        .update(driveFile.getId(), driveFile.getModel(), new FileContent(content.getType(), content.getFile()))
+                        .execute();
+            }
             return new GoogleDriveFile(file, drivenFile.hasDetails());
         }
         catch (IOException e){

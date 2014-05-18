@@ -180,6 +180,21 @@ class GoogleDriveFile implements DrivenFile {
         });
     }
 
+    @Override
+    public boolean rename(String name) {
+        fileModel.setTitle(name);
+        return consume(getDriven().update(this, null));
+    }
+
+    @Override
+    public void renameAsync(final String name, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return rename(name);
+            }
+        });
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     private boolean init(File file, boolean details){

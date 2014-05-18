@@ -3,9 +3,12 @@ package com.bingzer.android.driven.dropbox;
 import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenFile;
+import com.bingzer.android.driven.api.Path;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.utils.IOUtils;
 import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.exception.DropboxException;
 
 import java.io.File;
 
@@ -63,6 +66,12 @@ class DropboxFile implements DrivenFile {
     public boolean hasDetails() {
         return true;
     }
+
+    public String getParentDirectory(){
+        return Path.getDirectory(id);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public boolean fetchDetails() {
@@ -150,6 +159,27 @@ class DropboxFile implements DrivenFile {
             @Override
             public Boolean invoke() {
                 return delete();
+            }
+        });
+    }
+
+    @Override
+    public boolean rename(String name) {
+        try {
+            String newPath = Path.combine(getParentDirectory(), name);
+            DropboxAPI.Entry entry = ((Dropbox) getDriven()).getDropboxApi().move(id, newPath);
+            return init(entry);
+        }
+        catch (DropboxException e){
+            return false;
+        }
+    }
+
+    @Override
+    public void renameAsync(final String name, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return rename(name);
             }
         });
     }

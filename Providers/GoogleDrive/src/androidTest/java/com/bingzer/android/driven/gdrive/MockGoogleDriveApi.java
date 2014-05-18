@@ -48,6 +48,7 @@ public class MockGoogleDriveApi implements GoogleDriveApi {
 
     private String query;
     private String updateFileId;
+    private File updateFile;
     private String deleteFileId;
     private FileContent updateFileContent;
     private File insertFile;
@@ -140,8 +141,17 @@ public class MockGoogleDriveApi implements GoogleDriveApi {
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
                     updateFileId = invocation.getArguments()[0].toString();
+                    updateFile = (File) invocation.getArguments()[1];
                     updateFileContent = (FileContent) invocation.getArguments()[2];
 
+                    return update;
+                }
+            });
+            when(files.update(anyString(), (File) anyObject())).then(new Answer<Drive.Files.Update>(){
+                @Override
+                public Drive.Files.Update answer(InvocationOnMock invocation) throws Throwable {
+                    updateFileId = invocation.getArguments()[0].toString();
+                    updateFile = (File) invocation.getArguments()[1];
                     return update;
                 }
             });
@@ -150,7 +160,10 @@ public class MockGoogleDriveApi implements GoogleDriveApi {
                 public File answer(InvocationOnMock invocation) throws Throwable {
                     for (File file : fileList0.getItems()) {
                         if (file.getId().equals(updateFileId)) {
-                            file.setMimeType(updateFileContent.getType());
+                            if(updateFileContent != null)
+                                file.setMimeType(updateFileContent.getType());
+                            if(updateFile != null)
+                                file.setTitle(updateFile.getTitle());
                             return file;
                         }
                     }
