@@ -10,6 +10,7 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.exception.DropboxException;
 
 import java.io.File;
+import java.util.List;
 
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
@@ -88,15 +89,15 @@ class DropboxFile implements DrivenFile {
     }
 
     @Override
-    public Iterable<DrivenFile> list() {
+    public List<DrivenFile> list() {
         return getDriven().list(this);
     }
 
     @Override
-    public void listAsync(Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+    public void listAsync(Task<List<DrivenFile>> result) {
+        doAsync(result, new Delegate<List<DrivenFile>>() {
             @Override
-            public Iterable<DrivenFile> invoke() {
+            public List<DrivenFile> invoke() {
                 return list();
             }
         });
@@ -133,16 +134,30 @@ class DropboxFile implements DrivenFile {
     }
 
     @Override
-    public boolean share(String user) {
-        return getDriven().share(this, user);
+    public String share(String user) {
+        return getDriven().getSharing().share(this, user);
     }
 
     @Override
-    public void shareAsync(final String user, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
+    public String share(String user, int kind) {
+        return getDriven().getSharing().share(this, user, kind);
+    }
+
+    @Override
+    public void shareAsync(final String user, Task<String> result) {
+        doAsync(result, new Delegate<String>() {
             @Override
-            public Boolean invoke() {
+            public String invoke() {
                 return share(user);
+            }
+        });
+    }
+
+    @Override
+    public void shareAsync(final String user, final int kind, Task<String> result) {
+        doAsync(result, new Delegate<String>() {
+            @Override public String invoke() {
+                return share(user, kind);
             }
         });
     }

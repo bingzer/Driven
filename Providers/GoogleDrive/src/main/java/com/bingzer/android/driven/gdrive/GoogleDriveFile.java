@@ -15,15 +15,13 @@
  */
 package com.bingzer.android.driven.gdrive;
 
+import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.DrivenContent;
 import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.Driven;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
@@ -111,14 +109,14 @@ class GoogleDriveFile implements DrivenFile {
     }
 
     @Override
-    public Iterable<DrivenFile> list() {
+    public List<DrivenFile> list() {
         return getDriven().list(this);
     }
 
     @Override
-    public void listAsync(Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
-            @Override public Iterable<DrivenFile> invoke() {
+    public void listAsync(Task<List<DrivenFile>> result) {
+        doAsync(result, new Delegate<List<DrivenFile>>() {
+            @Override public List<DrivenFile> invoke() {
                 return list();
             }
         });
@@ -153,15 +151,29 @@ class GoogleDriveFile implements DrivenFile {
     }
 
     @Override
-    public boolean share(String user){
-        return getDriven().share(this, user);
+    public String share(String user){
+        return getDriven().getSharing().share(this, user);
     }
 
     @Override
-    public void shareAsync(final String user, Task<Boolean> result){
-        doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
+    public String share(String user, int kind) {
+        return getDriven().getSharing().share(this, user, kind);
+    }
+
+    @Override
+    public void shareAsync(final String user, Task<String> result){
+        doAsync(result, new Delegate<String>() {
+            @Override public String invoke() {
                 return share(user);
+            }
+        });
+    }
+
+    @Override
+    public void shareAsync(final String user, final int kind, Task<String> result) {
+        doAsync(result, new Delegate<String>() {
+            @Override public String invoke() {
+                return share(user, kind);
             }
         });
     }
@@ -212,16 +224,5 @@ class GoogleDriveFile implements DrivenFile {
             return false;
         GoogleDriveFile other = (GoogleDriveFile) drivenFile;
         return other.fileModel != null && init(other.fileModel, other.hasDetails);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static Iterable<DrivenFile> from(FileList fileList){
-        List<DrivenFile> list = new ArrayList<DrivenFile>();
-        for(int i = 0; i < fileList.getItems().size(); i++){
-            list.add(new GoogleDriveFile(fileList.getItems().get(i), false));
-        }
-
-        return list;
     }
 }

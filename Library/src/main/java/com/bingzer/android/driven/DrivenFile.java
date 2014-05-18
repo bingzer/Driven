@@ -15,9 +15,12 @@
  */
 package com.bingzer.android.driven;
 
+import android.content.Context;
+
 import com.bingzer.android.driven.contracts.Task;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Represents a remote file.
@@ -78,12 +81,12 @@ public interface DrivenFile {
      * If this file is {@link #isDirectory()} then this
      * method should return all children within.
      */
-    public Iterable<DrivenFile> list();
+    public List<DrivenFile> list();
 
     /**
      * Async for {@link #list()}
      */
-    public void listAsync(Task<Iterable<DrivenFile>> result);
+    public void listAsync(Task<List<DrivenFile>> result);
 
     /**
      * Download and keep this file to the local.
@@ -111,12 +114,23 @@ public interface DrivenFile {
      * Share this file to other user. "Sharing" is generic and you should
      * refer to the Provider's documentation
      */
-    public boolean share(String user);
+    public String share(String user);
+
+    /**
+     * Share this file to other user. "Sharing" is generic and you should
+     * refer to the Provider's documentation
+     */
+    public String share(String user, int kind);
 
     /**
      * Async for {@link #share(String)}
      */
-    public void shareAsync(final String user, Task<Boolean> result);
+    public void shareAsync(String user, Task<String> result);
+
+    /**
+     * Async for {@link #share(String, int)}
+     */
+    public void shareAsync(String user, int kind, Task<String> result);
 
     /**
      * Delete or removes this file from remote provider.

@@ -1,6 +1,7 @@
 package com.bingzer.android.driven.dropbox;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import com.bingzer.android.driven.Driven;
@@ -14,7 +15,9 @@ import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
+import com.bingzer.android.driven.contracts.Sharing;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.contracts.Trashed;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
@@ -38,6 +41,8 @@ public class Dropbox implements Driven {
     private static DropboxAPI<AndroidAuthSession> dropboxApi;
     private static DrivenUser drivenUser;
     private SharedWithMe sharedWithMe;
+    private Sharing sharing;
+    private Trashed trashed;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +71,19 @@ public class Dropbox implements Driven {
         if(sharedWithMe == null)
             sharedWithMe = new SharedWithMeImpl();
         return sharedWithMe;
+    }
+
+    @Override
+    public Trashed getTrashed() {
+        if(trashed == null)
+            trashed = new TrashedImpl();
+        return trashed;
+    }
+
+    public Sharing getSharing(){
+        if(sharing == null)
+            sharing = new SharingImpl();
+        return sharing;
     }
 
     @Override
@@ -311,7 +329,7 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list() {
+    public List<DrivenFile> list() {
         try {
             DropboxAPI.Entry entry = getDropboxApi().metadata(Path.ROOT, 0, null, true, null);
 
@@ -330,7 +348,7 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list(DrivenFile parent) {
+    public List<DrivenFile> list(DrivenFile parent) {
         if(parent == null) return list();
 
         try {
@@ -350,20 +368,20 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public void listAsync(final DrivenFile folder, Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+    public void listAsync(final DrivenFile folder, Task<List<DrivenFile>> result) {
+        doAsync(result, new Delegate<List<DrivenFile>>() {
             @Override
-            public Iterable<DrivenFile> invoke() {
+            public List<DrivenFile> invoke() {
                 return list(folder);
             }
         });
     }
 
     @Override
-    public void listAsync(Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+    public void listAsync(Task<List<DrivenFile>> result) {
+        doAsync(result, new Delegate<List<DrivenFile>>() {
             @Override
-            public Iterable<DrivenFile> invoke() {
+            public List<DrivenFile> invoke() {
                 return list();
             }
         });
@@ -492,7 +510,7 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> query(String query) {
+    public List<DrivenFile> query(String query) {
         try {
             List<DrivenFile> list = new ArrayList<DrivenFile>();
             List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 0, true);
@@ -508,33 +526,11 @@ public class Dropbox implements Driven {
     }
 
     @Override
-    public void queryAsync(final String query, Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
+    public void queryAsync(final String query, Task<List<DrivenFile>> result) {
+        doAsync(result, new Delegate<List<DrivenFile>>() {
             @Override
-            public Iterable<DrivenFile> invoke() {
+            public List<DrivenFile> invoke() {
                 return query(query);
-            }
-        });
-    }
-
-    @Override
-    public boolean share(DrivenFile drivenFile, String user) {
-        try {
-            DropboxAPI.DropboxLink link = getDropboxApi().share(Path.clean(drivenFile));
-            // TODO: send email here
-            return true;
-        }
-        catch (Exception e){
-            return false;
-        }
-    }
-
-    @Override
-    public void shareAsync(final DrivenFile drivenFile, final String user, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return share(drivenFile, user);
             }
         });
     }
@@ -544,31 +540,142 @@ public class Dropbox implements Driven {
     class SharedWithMeImpl implements SharedWithMe {
 
         @Override
-        public DrivenFile get(DrivenFile parent, String name) {
-            return Dropbox.this.get(parent, name);
+        public boolean isSupported() {
+            return false;
         }
 
         @Override
-        public DrivenFile get(String name) {
-            return Dropbox.this.get(name);
+        public boolean exists(String name) {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
         }
 
         @Override
-        public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
-            doAsync(result, new Delegate<DrivenFile>() {
+        public void existsAsync(final String name, Task<Boolean> result) {
+            doAsync(result, new Delegate<Boolean>() {
                 @Override
-                public DrivenFile invoke() {
-                    return get(parent, title);
+                public Boolean invoke() {
+                    return exists(name);
                 }
             });
         }
 
         @Override
-        public void getAsync(final String title, Task<DrivenFile> result) {
+        public DrivenFile get(String name) {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
+        }
+
+        @Override
+        public void getAsync(final String name, Task<DrivenFile> result) {
             doAsync(result, new Delegate<DrivenFile>() {
                 @Override
                 public DrivenFile invoke() {
-                    return get(title);
+                    return get(name);
+                }
+            });
+        }
+
+        @Override
+        public List<DrivenFile> list() {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
+        }
+
+        @Override
+        public void listAsync(Task<List<DrivenFile>> result) {
+            doAsync(result, new Delegate<List<DrivenFile>>() {
+                @Override
+                public List<DrivenFile> invoke() {
+                    return list();
+                }
+            });
+        }
+    }
+
+    class TrashedImpl implements Trashed {
+
+        @Override
+        public boolean isSupported() {
+            return false;
+        }
+
+        @Override
+        public boolean exists(String name) {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
+        }
+
+        @Override
+        public void existsAsync(final String name, Task<Boolean> result) {
+            doAsync(result, new Delegate<Boolean>() {
+                @Override public Boolean invoke() {
+                    return exists(name);
+                }
+            });
+        }
+
+        @Override
+        public DrivenFile get(String name) {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
+        }
+
+        @Override
+        public void getAsync(final String name, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override public DrivenFile invoke() {
+                    return get(name);
+                }
+            });
+        }
+
+        @Override
+        public List<DrivenFile> list() {
+            throw new DrivenException(new UnsupportedOperationException("Not supported"));
+        }
+
+        @Override
+        public void listAsync(Task<List<DrivenFile>> result) {
+            doAsync(result, new Delegate<List<DrivenFile>>() {
+                @Override public List<DrivenFile> invoke() {
+                    return list();
+                }
+            });
+        }
+    }
+
+    class SharingImpl implements Sharing {
+
+        @Override
+        public boolean isSupported() {
+            return false;
+        }
+
+        @Override
+        public String share(DrivenFile drivenFile, String user) {
+            return share(drivenFile, user, PERMISSION_DEFAULT);
+        }
+
+        @Override
+        public String share(DrivenFile drivenFile, String user, int kind) {
+            try {
+                DropboxAPI.DropboxLink link = getDropboxApi().share(drivenFile.getId());
+                return link.url;
+            } catch (DropboxException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public void shareAsync(final DrivenFile drivenFile, final String user, Task<String> result) {
+            doAsync(result, new Delegate<String>() {
+                @Override public String invoke() {
+                    return share(drivenFile, user);
+                }
+            });
+        }
+
+        @Override
+        public void shareAsync(final DrivenFile drivenFile, final String user, final int kind, Task<String> result) {
+            doAsync(result, new Delegate<String>() {
+                @Override public String invoke() {
+                    return share(drivenFile, user, kind);
                 }
             });
         }

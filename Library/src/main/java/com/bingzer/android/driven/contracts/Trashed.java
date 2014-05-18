@@ -20,17 +20,17 @@ import com.bingzer.android.driven.DrivenFile;
 import java.util.List;
 
 /**
- * "SharedWithMe" contracts.
+ * Contracts for "Trashed" or "Deleted" directory
  */
-public interface SharedWithMe {
+public interface Trashed {
 
     /**
-     * True if Provider's implementation support "SharedWithMe"
+     * True if Provider's implementation support "Trashed"
      */
     boolean isSupported();
 
     /**
-     * Check to see if there's a file by its name in the SharedWithMe directory
+     * Check to see if there's a file by its name in the Trashed directory
      */
     boolean exists(String name);
 

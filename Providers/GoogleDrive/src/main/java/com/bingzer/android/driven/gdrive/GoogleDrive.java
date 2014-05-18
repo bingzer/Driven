@@ -28,7 +28,9 @@ import com.bingzer.android.driven.api.ResultImpl;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
+import com.bingzer.android.driven.contracts.Sharing;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.contracts.Trashed;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.GenericUrl;
@@ -42,7 +44,9 @@ import com.google.api.services.drive.model.Permission;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -64,6 +68,8 @@ public final class GoogleDrive implements Driven {
     private static GoogleDriveApi googleDriveApi;
     private static DrivenUser drivenUser;
     private SharedWithMe sharedWithMe;
+    private Sharing sharing;
+    private Trashed trashed;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -183,8 +189,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public boolean exists(String name) {
         try {
-            FileList list = list("title = '" + name + "'", "id", false);
-            return list.getItems().get(0) != null;
+            return exists("title = '" + name + "'", "id", false);
         } catch (Exception e) {
             return false;
         }
@@ -193,8 +198,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public boolean exists(DrivenFile parent, String name) {
         try {
-            FileList list = list("'" + parent.getId() + "' in parents AND title = '" + name + "'", "id", false);
-            return list.getItems().get(0) != null;
+            return exists("'" + parent.getId() + "' in parents AND title = '" + name + "'", "id", false);
         } catch (Exception e) {
             return false;
         }
@@ -321,10 +325,7 @@ public final class GoogleDrive implements Driven {
     @Override
     public DrivenFile first(String query) {
         try{
-            FileList fileList = list(query, defaultFieldsItems, true);
-            if(fileList != null)
-                return new GoogleDriveFile(fileList.getItems().get(0), false);
-            return null;
+            return first(query, defaultFieldsItems, true);
         }
         catch (IOException e){
             return null;
@@ -345,10 +346,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> query(String query) {
+    public java.util.List<DrivenFile> query(String query) {
         try{
-            FileList fileList = list(query, defaultFieldsItems, true);
-            return GoogleDriveFile.from(fileList);
+            return list(query, defaultFieldsItems, true);
         }
         catch (IOException e){
             return null;
@@ -356,9 +356,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public void queryAsync(final String query, Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
-            @Override public Iterable<DrivenFile> invoke() {
+    public void queryAsync(final String query, Task<java.util.List<DrivenFile>> result) {
+        doAsync(result, new Delegate<java.util.List<DrivenFile>>() {
+            @Override public java.util.List<DrivenFile> invoke() {
                 return query(query);
             }
         });
@@ -440,10 +440,9 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list() {
+    public java.util.List<DrivenFile> list() {
         try {
-            FileList fileList = list("'root' in parents", defaultFieldsItems, false);
-            return GoogleDriveFile.from(fileList);
+            return list("'root' in parents", defaultFieldsItems, false);
         }
         catch (IOException e){
             return null;
@@ -451,12 +450,11 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public Iterable<DrivenFile> list(DrivenFile parent) {
+    public java.util.List<DrivenFile> list(DrivenFile parent) {
         if(parent == null) return list();
 
         try {
-            FileList fileList = list("'" + parent.getId() + "' in parents", defaultFieldsItems, false);
-            return GoogleDriveFile.from(fileList);
+            return list("'" + parent.getId() + "' in parents", defaultFieldsItems, false);
         }
         catch (IOException e){
             return null;
@@ -464,18 +462,18 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public void listAsync(final DrivenFile folder, Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
-            @Override public Iterable<DrivenFile> invoke() {
+    public void listAsync(final DrivenFile folder, Task<java.util.List<DrivenFile>> result) {
+        doAsync(result, new Delegate<java.util.List<DrivenFile>>() {
+            @Override public java.util.List<DrivenFile> invoke() {
                 return list(folder);
             }
         });
     }
 
     @Override
-    public void listAsync(Task<Iterable<DrivenFile>> result) {
-        doAsync(result, new Delegate<Iterable<DrivenFile>>() {
-            @Override public Iterable<DrivenFile> invoke() {
+    public void listAsync(Task<java.util.List<DrivenFile>> result) {
+        doAsync(result, new Delegate<java.util.List<DrivenFile>>() {
+            @Override public java.util.List<DrivenFile> invoke() {
                 return list();
             }
         });
@@ -527,80 +525,239 @@ public final class GoogleDrive implements Driven {
     }
 
     @Override
-    public boolean share(DrivenFile drivenFile, String user) {
-        try{
-            Permission newPermission = new Permission();
-
-            newPermission.setValue(user);
-            newPermission.setType("user");
-            newPermission.setRole("writer");
-
-            getGoogleDriveApi().permissions().insert(drivenFile.getId(), newPermission).execute();
-            return true;
-        }
-        catch (IOException e){
-            return false;
-        }
-    }
-
-    @Override
-    public void shareAsync(final DrivenFile drivenFile, final String user, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return share(drivenFile, user);
-            }
-        });
-    }
-
-    @Override
     public SharedWithMe getShared(){
         if(sharedWithMe == null)
             sharedWithMe = new SharedWithMeImpl();
         return sharedWithMe;
     }
 
+    @Override
+    public Trashed getTrashed(){
+        if(trashed == null)
+            trashed = new TrashedImpl();
+        return trashed;
+    }
+
+    public Sharing getSharing(){
+        if(sharing == null)
+            sharing = new SharingImpl();
+        return sharing;
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    private FileList list(String query, String fields, boolean includeTrashed) throws IOException{
+    private boolean exists(String query, String fields, boolean includeTrashed) throws IOException {
+        return first(query, fields, includeTrashed) != null;
+    }
+
+
+    private DrivenFile first(String query, String fields, boolean includeTrash) throws IOException {
+        List<DrivenFile> list = list(query, fields, includeTrash);
+        if(list != null && list.size() > 0)
+            return list.get(0);
+        return null;
+    }
+
+    private List<DrivenFile> list(String query, String fields, boolean includeTrashed) throws IOException{
         Drive.Files.List list = getGoogleDriveApi().files().list();
 
         if(fields != null) list.setFields(fields);
         if(query != null) list.setQ(query);
         if(!includeTrashed) list.setQ(query + (query != null ? " AND" : "") + " trashed = false");
 
-        return list.execute();
+        return list(list.execute());
+    }
+
+    private List<DrivenFile> list(FileList fileList){
+        if(fileList == null) return null;
+
+        List<DrivenFile> list = new ArrayList<DrivenFile>();
+        for(int i = 0; i < fileList.getItems().size(); i++){
+            list.add(new GoogleDriveFile(fileList.getItems().get(i), false));
+        }
+
+        return list;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    private class SharedWithMeImpl implements SharedWithMe {
+    class SharingImpl implements Sharing {
 
         @Override
-        public DrivenFile get(DrivenFile parent, String name) {
-            return first("'" + parent.getId() + "' in parents AND title = '" + name + "' AND sharedWithMe");
+        public boolean isSupported() {
+            return true;
         }
 
         @Override
-        public DrivenFile get(String name) {
-            return first("title = '" + name + "' AND sharedWithMe");
+        public String share(DrivenFile drivenFile, String user) {
+            return share(drivenFile, user, PERMISSION_DEFAULT);
         }
 
         @Override
-        public void getAsync(final DrivenFile parent, final String title, Task<DrivenFile> result) {
-            doAsync(result, new Delegate<DrivenFile>() {
-                @Override
-                public DrivenFile invoke() {
-                    return get(parent, title);
+        public String share(DrivenFile drivenFile, String user, int kind) {
+            try{
+                Permission permission = new Permission();
+
+                permission.setValue(user);
+                permission.setType("user");
+                permission.setRole(getPermission(kind));
+
+                permission = getGoogleDriveApi().permissions().insert(drivenFile.getId(), permission).execute();
+                return permission.getSelfLink();
+            }
+            catch (IOException e){
+                return null;
+            }
+        }
+
+        @Override
+        public void shareAsync(final DrivenFile drivenFile, final String user, Task<String> result) {
+            doAsync(result, new Delegate<String>() {
+                @Override public String invoke() {
+                    return share(drivenFile, user);
                 }
             });
         }
 
         @Override
-        public void getAsync(final String title, Task<DrivenFile> result) {
+        public void shareAsync(final DrivenFile drivenFile, final String user, final int kind, Task<String> result) {
+            doAsync(result, new Delegate<String>() {
+                @Override public String invoke() {
+                    return share(drivenFile, user, kind);
+                }
+            });
+        }
+
+        private String getPermission(int kind){
+            switch (kind){
+                default: return "writer";
+                case PERMISSION_READ: return "read";
+                case PERMISSION_FULL: return "writer";
+            }
+        }
+    }
+
+    class SharedWithMeImpl implements SharedWithMe {
+
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+
+        @Override
+        public boolean exists(String name) {
+            return first("title = '" + name + "' AND sharedWithMe") != null;
+        }
+
+        @Override
+        public void existsAsync(final String name, Task<Boolean> result) {
+            doAsync(result, new Delegate<Boolean>() {
+                @Override public Boolean invoke() {
+                    return exists(name);
+                }
+            });
+        }
+
+        @Override
+        public DrivenFile get(String name) {
+            try {
+                return GoogleDrive.this.first("title = '" + name + "' AND sharedWithMe", defaultFields, false);
+            }
+            catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public void getAsync(final String name, Task<DrivenFile> result) {
             doAsync(result, new Delegate<DrivenFile>() {
                 @Override
                 public DrivenFile invoke() {
-                    return get(title);
+                    return get(name);
+                }
+            });
+        }
+
+        @Override
+        public List<DrivenFile> list() {
+            try{
+                return GoogleDrive.this.list("sharedWithMe", defaultFieldsItems, false);
+            }
+            catch (IOException e){
+                return null;
+            }
+        }
+
+        @Override
+        public void listAsync(Task<List<DrivenFile>> result) {
+            doAsync(result, new Delegate<List<DrivenFile>>() {
+                @Override public List<DrivenFile> invoke() {
+                    return list();
+                }
+            });
+        }
+    }
+
+    class TrashedImpl implements Trashed {
+
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+
+        @Override
+        public boolean exists(String name) {
+            try {
+                return GoogleDrive.this.exists("'title' = " + name + "'", defaultFields, true);
+            }
+            catch (IOException e){
+                return false;
+            }
+        }
+
+        @Override
+        public void existsAsync(final String name, Task<Boolean> result) {
+            doAsync(result, new Delegate<Boolean>() {
+                @Override public Boolean invoke() {
+                    return exists(name);
+                }
+            });
+        }
+
+        @Override
+        public DrivenFile get(String name) {
+            try {
+                return GoogleDrive.this.first("'title' = " + name + "'", "id", true);
+            }
+            catch (IOException e){
+                return null;
+            }
+        }
+
+        @Override
+        public void getAsync(final String name, Task<DrivenFile> result) {
+            doAsync(result, new Delegate<DrivenFile>() {
+                @Override public DrivenFile invoke() {
+                    return get(name);
+                }
+            });
+        }
+
+        @Override
+        public List<DrivenFile> list() {
+            try {
+                return GoogleDrive.this.list("", defaultFieldsItems, true);
+            }
+            catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public void listAsync(Task<List<DrivenFile>> result) {
+            doAsync(result, new Delegate<List<DrivenFile>>() {
+                @Override public List<DrivenFile> invoke() {
+                    return list();
                 }
             });
         }

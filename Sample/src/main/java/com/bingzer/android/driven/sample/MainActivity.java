@@ -171,9 +171,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         files = null;
         listAdapter.notifyDataSetChanged();
 
-        driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
+        driven.listAsync(parent, new Task<List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(List<DrivenFile> result) {
                 files = (List<DrivenFile>) result;
                 listAdapter.notifyDataSetChanged();
             }
