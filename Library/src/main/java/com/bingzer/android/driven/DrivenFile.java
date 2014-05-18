@@ -128,4 +128,15 @@ public interface DrivenFile {
      */
     public void deleteAsync(Task<Boolean> result);
 
+    /**
+     * Rename the name of this file. True if successful,
+     * false otherwise
+     */
+    public boolean rename(String name);
+
+    /**
+     * Async call for {@link #rename(String)}
+     */
+    public void rename(String name, Task<Boolean> result);
+
 }

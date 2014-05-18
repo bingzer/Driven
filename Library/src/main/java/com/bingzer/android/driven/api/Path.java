@@ -20,27 +20,68 @@ import com.bingzer.android.driven.DrivenFile;
 public final class Path {
 
     public static final String ROOT = "/";
+    public static final String SEPARATOR = "/";
+    public static final String EMPTY = "";
 
     public static String combine(DrivenFile drivenFile, String title){
         if(drivenFile != null)
             return combine(drivenFile.getId(), title);
         else
-            return combine("", title);
+            return combine(EMPTY, title);
     }
 
     public static String combine(String path1, String path2){
         String p1 = emptyIfNull(path1);
         String p2 = emptyIfNull(path2);
 
-        if(p1.endsWith("/") || p2.startsWith("/"))
+        if(p1.endsWith(SEPARATOR) || p2.startsWith(SEPARATOR))
             return p1 + p2;
         else
-            return p1 + "/" + p2;
+            return p1 + SEPARATOR + p2;
     }
+
+    /**
+     * Returns the directory of this file
+     */
+    public static String getDirectory(String path){
+        if(path == null) throw new NullPointerException("path can't be null");
+
+        path = path.trim();
+        if(path.equals(ROOT)) return null;
+
+        if(path.endsWith(SEPARATOR))
+            path = path.substring(0, path.length() - 1);
+
+        int lastIndex = path.lastIndexOf(SEPARATOR);
+        if(lastIndex > 0){
+            return path.substring(0, lastIndex);
+        }
+
+        return SEPARATOR;
+    }
+
+    public static String getFilename(String path){
+        if(path == null) return null;
+
+        path = path.trim();
+        if(path.equals(ROOT)) return ROOT;
+
+        if(path.endsWith(SEPARATOR))
+            path = path.substring(0, path.length() - 1);
+
+        int lastIndex = path.lastIndexOf(SEPARATOR);
+        if(lastIndex > -1){
+            return path.substring(lastIndex + 1);
+        }
+
+        return path;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
 
     public static String clean(String path){
         // make sure that path has "/"
-        if(path != null && !path.startsWith("/")) return "/" + path;
+        if(path != null && !path.startsWith(SEPARATOR)) return SEPARATOR + path;
         return path;
     }
 
@@ -50,7 +91,7 @@ public final class Path {
     }
 
     private static String emptyIfNull(String str){
-        if(str == null) return "";
+        if(str == null) return EMPTY;
         return str;
     }
 

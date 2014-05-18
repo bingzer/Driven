@@ -29,4 +29,25 @@ public class PathTest extends AndroidTestCase{
         assertEquals("/Folder/File", Path.clean("/Folder/File"));
         assertEquals("/Folder/File", Path.clean("Folder/File"));
     }
+
+    public void test_getDirectory(){
+        assertEquals("/Folder/SubFolder", Path.getDirectory("/Folder/SubFolder/File"));
+        assertEquals("/Folder", Path.getDirectory("/Folder/SubFolder/"));
+        assertEquals("/Folder", Path.getDirectory("/Folder/SubFolder"));
+        assertEquals("/", Path.getDirectory("/Folder/"));
+        assertEquals("/", Path.getDirectory("/Folder"));
+        assertNull(Path.getDirectory("/"));
+    }
+
+    public void test_getFilename(){
+        assertEquals("File", Path.getFilename("/Folder/SubFolder/File"));
+        assertEquals("File.001", Path.getFilename("/Folder/SubFolder/File.001"));
+        assertEquals("File", Path.getFilename("File"));
+        assertEquals("File.001", Path.getFilename("File.001"));
+        assertEquals("Folder", Path.getFilename("/Folder"));
+        assertEquals("Folder", Path.getFilename("/Folder/"));
+        assertEquals("SubFolder", Path.getFilename("/Folder/SubFolder"));
+        assertEquals("SubFolder", Path.getFilename("/Folder/SubFolder/"));
+        assertEquals("/", Path.getFilename("/"));
+    }
 }
