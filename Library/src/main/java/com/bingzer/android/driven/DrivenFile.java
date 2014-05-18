@@ -137,6 +137,6 @@ public interface DrivenFile {
     /**
      * Async call for {@link #rename(String)}
      */
-    public void rename(String name, Task<Boolean> result);
+    public void renameAsync(String name, Task<Boolean> result);
 
 }
