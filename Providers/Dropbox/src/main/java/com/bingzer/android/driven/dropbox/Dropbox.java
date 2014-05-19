@@ -657,7 +657,8 @@ public class Dropbox implements Driven {
             try {
                 DropboxAPI.DropboxLink link = getDropboxApi().share(drivenFile.getId());
                 return link.url;
-            } catch (DropboxException e) {
+            }
+            catch (Exception e) {
                 return null;
             }
         }

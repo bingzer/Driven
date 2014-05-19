@@ -421,7 +421,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_query() throws Exception {
         driven.authenticate(credential);
-        Iterable<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
+        java.util.List<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
         for(DrivenFile drivenFile : drivenFiles){
             assertNotNull(drivenFile);
 
@@ -437,9 +437,9 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.queryAsync("title = 'Title01'", new Task<Iterable<DrivenFile>>() {
+        driven.queryAsync("title = 'Title01'", new Task<java.util.List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(java.util.List<DrivenFile> result) {
                 for (DrivenFile drivenFile : result) {
                     assertNotNull(drivenFile);
 
@@ -630,9 +630,9 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(new Task<Iterable<DrivenFile>>() {
+        driven.listAsync(new Task<java.util.List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(java.util.List<DrivenFile> result) {
                 int counter = 1;
                 for (DrivenFile drivenFile : result) {
                     assertEquals("Id0" + counter, drivenFile.getId());
@@ -676,9 +676,9 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.create(parent, "Folder130");
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(parent, new Task<Iterable<DrivenFile>>() {
+        driven.listAsync(parent, new Task<java.util.List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(java.util.List<DrivenFile> result) {
                 int counter = 1;
                 for (DrivenFile drivenFile : result) {
                     assertEquals("Folder1" + counter + "0", drivenFile.getName());
@@ -738,7 +738,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         DrivenFile drivenFile = driven.id("Id01");
-        assertTrue(driven.share(drivenFile, "other-user"));
+        assertNotNull(driven.getSharing().share(drivenFile, "other-user"));
     }
 
     public void test_shareAsync() throws Exception {
@@ -746,10 +746,10 @@ public class GoogleDriveTest extends AndroidTestCase{
 
         DrivenFile drivenFile = driven.id("Id01");
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.shareAsync(drivenFile, "other-user", new Task<Boolean>() {
+        driven.getSharing().shareAsync(drivenFile, "other-user", new Task<String>() {
             @Override
-            public void onCompleted(Boolean result) {
-                assertTrue(result);
+            public void onCompleted(String result) {
+                assertNotNull(result);
                 signal.countDown();
             }
         });

@@ -250,6 +250,7 @@ public class MockGoogleDriveApi implements GoogleDriveApi {
                 @Override
                 public Drive.Permissions.Insert answer(InvocationOnMock invocation) throws Throwable {
                     permission = (Permission) invocation.getArguments()[1];
+                    permission.setSelfLink("mock-self-link:" + invocation.getArguments()[0].toString());
                     return insert;
                 }
             });

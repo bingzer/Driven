@@ -10,6 +10,7 @@ import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.Task;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import dagger.ObjectGraph;
@@ -374,7 +375,7 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_query() throws Exception {
         driven.authenticate(credential);
-        Iterable<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
+        List<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
         for(DrivenFile drivenFile : drivenFiles){
             assertNotNull(drivenFile);
 
@@ -390,9 +391,9 @@ public class DropboxTest extends AndroidTestCase {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.queryAsync("title = 'Title01'", new Task<Iterable<DrivenFile>>() {
+        driven.queryAsync("title = 'Title01'", new Task<List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(List<DrivenFile> result) {
                 for (DrivenFile drivenFile : result) {
                     assertNotNull(drivenFile);
 
@@ -576,9 +577,9 @@ public class DropboxTest extends AndroidTestCase {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(new Task<Iterable<DrivenFile>>() {
+        driven.listAsync(new Task<List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(List<DrivenFile> result) {
                 int counter = 0;
                 for(DrivenFile drivenFile : driven.list()){
                     if(counter == 0) assertEquals("Folder100", drivenFile.getName());
@@ -627,9 +628,9 @@ public class DropboxTest extends AndroidTestCase {
         driven.create(parent, "Folder130");
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(parent, new Task.WithErrorReporting<Iterable<DrivenFile>>() {
+        driven.listAsync(parent, new Task.WithErrorReporting<List<DrivenFile>>() {
             @Override
-            public void onCompleted(Iterable<DrivenFile> result) {
+            public void onCompleted(List<DrivenFile> result) {
                 int counter = 1;
                 for (DrivenFile drivenFile : result) {
                     if(drivenFile.getName().startsWith("Folder1")){
@@ -692,11 +693,12 @@ public class DropboxTest extends AndroidTestCase {
     }
     */
 
+    /*
     public void test_share() throws Exception {
         driven.authenticate(credential);
 
         DrivenFile drivenFile = driven.id("Id01");
-        assertTrue(driven.share(drivenFile, "other-user"));
+        assertNotNull(driven.getSharing().share(drivenFile, "other-user"));
     }
 
     public void test_shareAsync() throws Exception {
@@ -704,14 +706,15 @@ public class DropboxTest extends AndroidTestCase {
 
         DrivenFile drivenFile = driven.id("Id01");
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.shareAsync(drivenFile, "other-user", new Task<Boolean>() {
+        driven.getSharing().shareAsync(drivenFile, "other-user", new Task<String>() {
             @Override
-            public void onCompleted(Boolean result) {
-                assertTrue(result);
+            public void onCompleted(String result) {
+                assertNotNull(result);
                 signal.countDown();
             }
         });
 
         signal.await();
     }
+    */
 }

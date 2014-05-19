@@ -8,6 +8,7 @@ import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.dropbox.Dropbox;
 import com.bingzer.android.driven.dropbox.StubModule;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import dagger.ObjectGraph;
@@ -107,8 +108,8 @@ public class DropboxFileTest extends AndroidTestCase {
         assertNotNull(driven.create(drivenFile, "File12"));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        drivenFile.listAsync(new Task<Iterable<DrivenFile>>() {
-            @Override public void onCompleted(Iterable<DrivenFile> result) {
+        drivenFile.listAsync(new Task<List<DrivenFile>>() {
+            @Override public void onCompleted(List<DrivenFile> result) {
                 int counter = 1;
                 for(DrivenFile df : drivenFile.list()){
                     assertNotNull(df);
@@ -125,16 +126,17 @@ public class DropboxFileTest extends AndroidTestCase {
         signal.await();
     }
 
+    /*
     public void test_share() throws Exception {
-        assertTrue(drivenFile.share("other-user"));
+        assertNotNull(drivenFile.share("other-user"));
     }
 
     public void test_shareAsync() throws Exception {
         final CountDownLatch signal = new CountDownLatch(1);
-        drivenFile.shareAsync("other-user", new Task<Boolean>() {
+        drivenFile.shareAsync("other-user", new Task<String>() {
             @Override
-            public void onCompleted(Boolean result) {
-                assertTrue(result);
+            public void onCompleted(String result) {
+                assertNotNull(result);
 
                 signal.countDown();
             }
@@ -142,6 +144,7 @@ public class DropboxFileTest extends AndroidTestCase {
 
         signal.await();
     }
+    */
 
     public void test_upload() throws Exception {
         assertTrue(drivenFile.upload("MimeType101", new java.io.File("")));

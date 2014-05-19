@@ -183,10 +183,11 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
             //////////////////////////////////////////////////////////////////////
             // SHARE
             when(api.share(anyString()))
-                    .then(new Answer<DropboxAPI.Entry>() {
+                    .then(new Answer<DropboxAPI.DropboxLink>() {
                         @Override
-                        public DropboxAPI.Entry answer(InvocationOnMock invocation) throws Throwable {
-                            return null;
+                        public DropboxAPI.DropboxLink answer(InvocationOnMock invocation) throws Throwable {
+                            DropboxAPI.DropboxLink link = mock(DropboxAPI.DropboxLink.class);
+                            return link;
                         }
                     });
         }

@@ -109,8 +109,8 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         assertNotNull(driven.create(drivenFile, "File12"));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        drivenFile.listAsync(new Task<Iterable<DrivenFile>>() {
-            @Override public void onCompleted(Iterable<DrivenFile> result) {
+        drivenFile.listAsync(new Task<java.util.List<DrivenFile>>() {
+            @Override public void onCompleted(java.util.List<DrivenFile> result) {
                 int counter = 1;
                 for(DrivenFile df : drivenFile.list()){
                     assertNotNull(df);
@@ -128,15 +128,15 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_share() throws Exception {
-        assertTrue(drivenFile.share("other-user"));
+        assertNotNull(drivenFile.share("other-user"));
     }
 
     public void test_shareAsync() throws Exception {
         final CountDownLatch signal = new CountDownLatch(1);
-        drivenFile.shareAsync("other-user", new Task<Boolean>() {
+        drivenFile.shareAsync("other-user", new Task<String>() {
             @Override
-            public void onCompleted(Boolean result) {
-                assertTrue(result);
+            public void onCompleted(String result) {
+                assertNotNull(result);
 
                 signal.countDown();
             }
