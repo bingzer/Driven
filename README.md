@@ -15,8 +15,8 @@ Driven driven = new GoogleDrive();
 driven.authenticate(credentials);
 
 // list all files in the root
-driven.listAsync(new Task<Iterable<DrivenFile>>(){
-  public void onComplete(Iterable<DrivenFile> files){
+driven.listAsync(new Task<List<DrivenFile>>(){
+  public void onComplete(List<DrivenFile> files){
   }
 });
 
@@ -28,8 +28,8 @@ Driven driven = new Dropbox();
 driven.authenticate(credentials);
 
 // list all files in the root
-driven.listAsync(new Task<Iterable<DrivenFile>>(){
-  public void onComplete(Iterable<DrivenFile> files){
+driven.listAsync(new Task<List<DrivenFile>>(){
+  public void onComplete(List<DrivenFile> files){
   }
 });
 ```
