@@ -29,7 +29,7 @@ StorageProvider provider = new Dropbox();
 provider.authenticate(credentials);
 
 // list all files in the root
-driven.listAsync(new Task<List<DrivenFile>>(){
+provider.listAsync(new Task<List<DrivenFile>>(){
   public void onComplete(List<DrivenFile> files){
     ...
   }
