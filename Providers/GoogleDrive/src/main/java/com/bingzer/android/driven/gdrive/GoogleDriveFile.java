@@ -100,8 +100,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void fetchDetailsAsync(Task<Boolean> result){
-        doAsync(result, new Delegate<Boolean>() {
+    public void fetchDetailsAsync(Task<Boolean> task){
+        doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return fetchDetails();
             }
@@ -114,8 +114,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void listAsync(Task<List<RemoteFile>> result) {
-        doAsync(result, new Delegate<List<RemoteFile>>() {
+    public void listAsync(Task<List<RemoteFile>> task) {
+        doAsync(task, new Delegate<List<RemoteFile>>() {
             @Override public List<RemoteFile> invoke() {
                 return list();
             }
@@ -128,8 +128,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void downloadAsync(final LocalFile local, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
+    public void downloadAsync(final LocalFile local, Task<Boolean> task) {
+        doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return download(local);
             }
@@ -142,8 +142,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void uploadAsync(final LocalFile local, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
+    public void uploadAsync(final LocalFile local, Task<Boolean> task) {
+        doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return upload(local);
             }
@@ -161,8 +161,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void shareAsync(final String user, Task<String> result){
-        doAsync(result, new Delegate<String>() {
+    public void shareAsync(final String user, Task<String> task){
+        doAsync(task, new Delegate<String>() {
             @Override public String invoke() {
                 return share(user);
             }
@@ -170,8 +170,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void shareAsync(final String user, final int kind, Task<String> result) {
-        doAsync(result, new Delegate<String>() {
+    public void shareAsync(final String user, final int kind, Task<String> task) {
+        doAsync(task, new Delegate<String>() {
             @Override public String invoke() {
                 return share(user, kind);
             }
@@ -184,8 +184,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void deleteAsync(Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
+    public void deleteAsync(Task<Boolean> task) {
+        doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return delete();
             }
@@ -199,8 +199,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void renameAsync(final String name, Task<Boolean> result) {
-        doAsync(result, new Delegate<Boolean>() {
+    public void renameAsync(final String name, Task<Boolean> task) {
+        doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
                 return rename(name);
             }

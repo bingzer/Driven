@@ -72,7 +72,7 @@ public interface RemoteFile {
     /**
      * Async for {@link #fetchDetails()}
      */
-    public void fetchDetailsAsync(Task<Boolean> result);
+    public void fetchDetailsAsync(Task<Boolean> task);
 
     /**
      * If this file is {@link #isDirectory()} then this
@@ -83,7 +83,7 @@ public interface RemoteFile {
     /**
      * Async for {@link #list()}
      */
-    public void listAsync(Task<List<RemoteFile>> result);
+    public void listAsync(Task<List<RemoteFile>> task);
 
     /**
      * Download and keep this file to the local.
@@ -94,7 +94,7 @@ public interface RemoteFile {
     /**
      * Async for {@link #download(LocalFile)}
      */
-    public void downloadAsync(LocalFile local, Task<Boolean> result);
+    public void downloadAsync(LocalFile local, Task<Boolean> task);
 
     /**
      * Upload/Save a file to this file. The remote content file
@@ -105,7 +105,7 @@ public interface RemoteFile {
     /**
      * Async for {@link #upload(com.bingzer.android.driven.LocalFile)}
      */
-    public void uploadAsync(LocalFile local, Task<Boolean> result);
+    public void uploadAsync(LocalFile local, Task<Boolean> task);
 
     /**
      * Share this file to other user. "Sharing" is generic and you should
@@ -122,12 +122,12 @@ public interface RemoteFile {
     /**
      * Async for {@link #share(String)}
      */
-    public void shareAsync(String user, Task<String> result);
+    public void shareAsync(String user, Task<String> task);
 
     /**
      * Async for {@link #share(String, int)}
      */
-    public void shareAsync(String user, int kind, Task<String> result);
+    public void shareAsync(String user, int kind, Task<String> task);
 
     /**
      * Delete or removes this file from remote provider.
@@ -137,7 +137,7 @@ public interface RemoteFile {
     /**
      * Async for {@link #delete()}
      */
-    public void deleteAsync(Task<Boolean> result);
+    public void deleteAsync(Task<Boolean> task);
 
     /**
      * Rename the name of this file. True if successful,
@@ -148,6 +148,6 @@ public interface RemoteFile {
     /**
      * Async call for {@link #rename(String)}
      */
-    public void renameAsync(String name, Task<Boolean> result);
+    public void renameAsync(String name, Task<Boolean> task);
 
 }
