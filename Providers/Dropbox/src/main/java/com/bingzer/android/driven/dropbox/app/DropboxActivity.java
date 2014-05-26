@@ -1,13 +1,12 @@
 package com.bingzer.android.driven.dropbox.app;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DrivenException;
-import com.bingzer.android.driven.contracts.Result;
+import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.dropbox.Dropbox;
 
@@ -19,13 +18,13 @@ public class DropboxActivity extends Activity {
     public static final int REQUEST_LOGIN = 200;
 
     private static Dropbox driven = new Dropbox();
-    private DrivenCredential credential;
+    private Credential credential;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        credential = new DrivenCredential(this);
+        credential = new Credential(this);
         if(!driven.hasSavedCredentials(this)){
             showAccountChooser();
         }
@@ -60,7 +59,7 @@ public class DropboxActivity extends Activity {
             String appKey = getIntent().getStringExtra(BUNDLE_KEY_APPKEY);
             String appSecret = getIntent().getStringExtra(BUNDLE_KEY_APPSECRET);
 
-            DrivenCredential.Token token = new DrivenCredential.Token(appKey, appSecret);
+            Credential.Token token = new Credential.Token(appKey, appSecret);
             credential.setToken(token);
         }
     }

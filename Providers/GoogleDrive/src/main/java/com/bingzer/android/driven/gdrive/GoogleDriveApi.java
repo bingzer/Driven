@@ -17,7 +17,7 @@ package com.bingzer.android.driven.gdrive;
 
 import android.content.Context;
 
-import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.Credential;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -77,16 +77,16 @@ interface GoogleDriveApi {
         /**
          * Returns DrivenService
          */
-        GoogleDriveApi createApi(DrivenCredential credential);
+        GoogleDriveApi createApi(Credential credential);
 
         static class Default implements Factory {
 
             @Override
-            public GoogleDriveApi createApi(DrivenCredential credential) {
+            public GoogleDriveApi createApi(Credential credential) {
                 return new GoogleDriveApi.Default(createGoogleDriveService(credential));
             }
 
-            private Drive createGoogleDriveService(DrivenCredential credential) {
+            private Drive createGoogleDriveService(Credential credential) {
                 GoogleAccountCredential account = createGoogleAccountCredential(credential.getContext(), credential.getAccountName());
                 return new Drive.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), account).build();
             }

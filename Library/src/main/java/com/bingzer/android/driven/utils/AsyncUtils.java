@@ -63,7 +63,9 @@ public final class AsyncUtils {
                     if(task instanceof Task.WithErrorReporting){
                         ((Task.WithErrorReporting) task).onError(error);
                     }
-                    else throw new DrivenException(error);
+                    else{
+                        throwError(error);
+                    }
                 }
             }
         });
@@ -93,10 +95,16 @@ public final class AsyncUtils {
                 if(task instanceof Task.WithErrorReporting) {
                     ((Task.WithErrorReporting) task).onError(error);
                 }
-                else
-                    Log.e("AsyncUtils", "Error occurred in AsyncTask", error);
+                else{
+                    throwError(error);
+                }
             }
         }.execute();
+    }
+
+    private static void throwError(Throwable any){
+        Log.e("AsyncUtils", "Error occurred:", any);
+        throw new DrivenException(any);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////

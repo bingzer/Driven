@@ -15,9 +15,9 @@
  */
 package com.bingzer.android.driven.gdrive;
 
-import com.bingzer.android.driven.Driven;
-import com.bingzer.android.driven.DrivenContent;
-import com.bingzer.android.driven.DrivenFile;
+import com.bingzer.android.driven.StorageProvider;
+import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 import com.google.api.services.drive.model.File;
@@ -30,18 +30,18 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
  * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
-class GoogleDriveFile implements DrivenFile {
+class GoogleDriveFile implements RemoteFile {
     public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
 
-    protected static Driven driven;
-    protected static void setDriven(Driven driven){
-        GoogleDriveFile.driven = driven;
+    protected static StorageProvider storageProvider;
+    protected static void setStorageProvider(StorageProvider storageProvider){
+        GoogleDriveFile.storageProvider = storageProvider;
     }
 
-    protected static Driven getDriven(){
-        if(driven == null)
-            driven = new GoogleDrive();
-        return driven;
+    protected static StorageProvider getStorageProvider(){
+        if(storageProvider == null)
+            storageProvider = new GoogleDrive();
+        return storageProvider;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ class GoogleDriveFile implements DrivenFile {
 
     @Override
     public boolean fetchDetails(){
-        if(!hasDetails) consume(getDriven().getDetails(this));
+        if(!hasDetails) consume(getStorageProvider().getDetails(this));
         return true;
     }
 
@@ -109,55 +109,55 @@ class GoogleDriveFile implements DrivenFile {
     }
 
     @Override
-    public List<DrivenFile> list() {
-        return getDriven().list(this);
+    public List<RemoteFile> list() {
+        return getStorageProvider().list(this);
     }
 
     @Override
-    public void listAsync(Task<List<DrivenFile>> result) {
-        doAsync(result, new Delegate<List<DrivenFile>>() {
-            @Override public List<DrivenFile> invoke() {
+    public void listAsync(Task<List<RemoteFile>> result) {
+        doAsync(result, new Delegate<List<RemoteFile>>() {
+            @Override public List<RemoteFile> invoke() {
                 return list();
             }
         });
     }
 
     @Override
-    public DrivenContent download(java.io.File local) {
-        return getDriven().download(this, local);
+    public boolean download(LocalFile local) {
+        return getStorageProvider().download(this, local);
     }
 
     @Override
-    public void downloadAsync(final java.io.File local, Task<DrivenContent> result) {
-        doAsync(result, new Delegate<DrivenContent>() {
-            @Override public DrivenContent invoke() {
+    public void downloadAsync(final LocalFile local, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
                 return download(local);
             }
         });
     }
 
     @Override
-    public boolean upload(String mimeType, java.io.File content) {
-        return consume(getDriven().update(this, new DrivenContent(mimeType, content)));
+    public boolean upload(LocalFile local) {
+        return consume(getStorageProvider().update(this, local));
     }
 
     @Override
-    public void uploadAsync(final String mimeType, final java.io.File content, Task<Boolean> result) {
+    public void uploadAsync(final LocalFile local, Task<Boolean> result) {
         doAsync(result, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
-                return upload(mimeType, content);
+                return upload(local);
             }
         });
     }
 
     @Override
     public String share(String user){
-        return getDriven().getSharing().share(this, user);
+        return getStorageProvider().getSharing().share(this, user);
     }
 
     @Override
     public String share(String user, int kind) {
-        return getDriven().getSharing().share(this, user, kind);
+        return getStorageProvider().getSharing().share(this, user, kind);
     }
 
     @Override
@@ -180,7 +180,7 @@ class GoogleDriveFile implements DrivenFile {
 
     @Override
     public boolean delete(){
-        return getDriven().delete(getId());
+        return getStorageProvider().delete(getId());
     }
 
     @Override
@@ -195,7 +195,7 @@ class GoogleDriveFile implements DrivenFile {
     @Override
     public boolean rename(String name) {
         fileModel.setTitle(name);
-        return consume(getDriven().update(this, null));
+        return consume(getStorageProvider().update(this, null));
     }
 
     @Override
@@ -219,10 +219,10 @@ class GoogleDriveFile implements DrivenFile {
         return true;
     }
 
-    private boolean consume(DrivenFile drivenFile){
-        if(!(drivenFile instanceof GoogleDriveFile))
+    private boolean consume(RemoteFile remoteFile){
+        if(!(remoteFile instanceof GoogleDriveFile))
             return false;
-        GoogleDriveFile other = (GoogleDriveFile) drivenFile;
+        GoogleDriveFile other = (GoogleDriveFile) remoteFile;
         return other.fileModel != null && init(other.fileModel, other.hasDetails);
     }
 }

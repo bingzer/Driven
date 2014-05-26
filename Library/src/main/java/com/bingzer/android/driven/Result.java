@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.api;
-
-import com.bingzer.android.driven.contracts.Result;
+package com.bingzer.android.driven;
 
 /**
- * Default implementation of Result.
  * Default of success is <code>true</code>
  */
-public class ResultImpl<T extends Throwable> implements Result<T>{
+public class Result<T extends Throwable> {
     private boolean success;
     private T exception;
 
-    public ResultImpl(){
+    public Result(){
         this(true);
     }
 
-    public ResultImpl(boolean success){
+    public Result(boolean success){
         this(success, null);
     }
 
-    public ResultImpl(boolean success, T exception){
+    public Result(boolean success, T exception){
         this.success = success;
         this.exception = exception;
     }

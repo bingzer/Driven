@@ -11,12 +11,13 @@ Sample Code:
 
 Listing files via GoogleDrive:
 ``` java
-Driven driven = new GoogleDrive();
-driven.authenticate(credentials);
+StorageProvider provider = new GoogleDrive();
+provider.authenticate(credentials);
 
 // list all files in the root
-driven.listAsync(new Task<Iterable<DrivenFile>>(){
-  public void onComplete(Iterable<DrivenFile> files){
+provider.listAsync(new Task<List<DrivenFile>>(){
+  public void onComplete(List<DrivenFile> files){
+    ...
   }
 });
 
@@ -24,16 +25,35 @@ driven.listAsync(new Task<Iterable<DrivenFile>>(){
 
 Listing files via Dropbox:
 ``` java
-Driven driven = new Dropbox();
-driven.authenticate(credentials);
+StorageProvider provider = new Dropbox();
+provider.authenticate(credentials);
 
 // list all files in the root
-driven.listAsync(new Task<Iterable<DrivenFile>>(){
-  public void onComplete(Iterable<DrivenFile> files){
+driven.listAsync(new Task<List<DrivenFile>>(){
+  public void onComplete(List<DrivenFile> files){
+    ...
   }
 });
 ```
 Same interface, same method calls!
+ 
+Download snapshots
+==================
+**IMPORTANT** 
+This library is still under heavy development and yet scheduled for v.1 release.
+
+```groovy
+
+repositories {
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
+dependencies {
+    compile (group:'com.bingzer.android.dbv', name: 'dbquery', version:'0.3.0-SNAPSHOT', changing: true)
+}
+```
 
 LICENSE
 =======

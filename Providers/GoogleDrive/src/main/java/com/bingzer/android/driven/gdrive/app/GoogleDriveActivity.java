@@ -21,10 +21,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.bingzer.android.driven.DrivenCredential;
-import com.bingzer.android.driven.Driven;
+import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.Result;
+import com.bingzer.android.driven.StorageProvider;
 import com.bingzer.android.driven.DrivenException;
-import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.gdrive.GoogleDrive;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -41,7 +41,7 @@ public class GoogleDriveActivity extends Activity {
     public static final int REQUEST_ACCOUNT_PICKER = 1;
     public static final int REQUEST_AUTHORIZATION = 2;
 
-    private static Driven driven = new GoogleDrive();
+    private static StorageProvider storageProvider = new GoogleDrive();
     private GoogleAccountCredential googleAccount;
 
     @Override
@@ -49,7 +49,7 @@ public class GoogleDriveActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         googleAccount = createGoogleAccountCredential(this);
-        if (!driven.hasSavedCredentials(this))
+        if (!storageProvider.hasSavedCredentials(this))
             showAccountChooser();
         else
             authenticate();
@@ -96,7 +96,7 @@ public class GoogleDriveActivity extends Activity {
     }
 
     private void authenticate(){
-        driven.authenticateAsync(new DrivenCredential(this, googleAccount.getSelectedAccountName()), new Task<Result<DrivenException>>() {
+        storageProvider.authenticateAsync(new Credential(this, googleAccount.getSelectedAccountName()), new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 if(result.isSuccess())

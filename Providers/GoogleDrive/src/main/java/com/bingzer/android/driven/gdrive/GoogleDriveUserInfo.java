@@ -15,19 +15,19 @@
  */
 package com.bingzer.android.driven.gdrive;
 
-import com.bingzer.android.driven.DrivenUser;
+import com.bingzer.android.driven.UserInfo;
 import com.google.api.services.drive.model.About;
 
 /**
  * Simple wrapper for user that has authenticate
  * DrivenAPI to their GoogleDrive API
  */
-class GoogleDriveUser implements DrivenUser {
+class GoogleDriveUserInfo implements UserInfo {
     private String name;
     private String displayName;
     private String emailAddress;
 
-    protected GoogleDriveUser(About about){
+    protected GoogleDriveUserInfo(About about){
         name = about.getName();
         displayName = about.getUser().getDisplayName();
         emailAddress = about.getUser().getEmailAddress();

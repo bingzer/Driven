@@ -15,14 +15,14 @@
  */
 package com.bingzer.android.driven.contracts;
 
-import com.bingzer.android.driven.DrivenFile;
+import com.bingzer.android.driven.RemoteFile;
 
 import java.util.List;
 
 /**
  * "SharedWithMe" contracts.
  */
-public interface SharedWithMe {
+public interface SharedWithMe extends Feature {
 
     /**
      * True if Provider's implementation support "SharedWithMe"
@@ -40,24 +40,24 @@ public interface SharedWithMe {
     void existsAsync(String name, Task<Boolean> result);
 
     /**
-     * Returns {@link com.bingzer.android.driven.DrivenFile} (if found) by its name
+     * Returns {@link com.bingzer.android.driven.RemoteFile} (if found) by its name
      */
-    DrivenFile get(String name);
+    RemoteFile get(String name);
 
     /**
      * Async call fro {@link #get(String)}
      */
-    void getAsync(String name, Task<DrivenFile> result);
+    void getAsync(String name, Task<RemoteFile> result);
 
     /**
-     * Returns a collection of {@link com.bingzer.android.driven.DrivenFile}s found
+     * Returns a collection of {@link com.bingzer.android.driven.RemoteFile}s found
      * in the root directory
      */
-    List<DrivenFile> list();
+    List<RemoteFile> list();
 
     /**
      * Async call for {@link #list()}
      */
-    void listAsync(Task<List<DrivenFile>> result);
+    void listAsync(Task<List<RemoteFile>> result);
 
 }

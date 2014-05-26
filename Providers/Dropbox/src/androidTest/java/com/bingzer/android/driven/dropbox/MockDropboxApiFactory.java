@@ -1,6 +1,6 @@
 package com.bingzer.android.driven.dropbox;
 
-import com.bingzer.android.driven.api.Path;
+import com.bingzer.android.driven.utils.Path;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.MockAccount;
 import com.dropbox.client2.ProgressListener;

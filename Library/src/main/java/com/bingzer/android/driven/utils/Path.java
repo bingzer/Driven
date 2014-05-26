@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.api;
+package com.bingzer.android.driven.utils;
 
-import com.bingzer.android.driven.DrivenFile;
+import com.bingzer.android.driven.RemoteFile;
 
 public final class Path {
 
@@ -23,9 +23,9 @@ public final class Path {
     public static final String SEPARATOR = "/";
     public static final String EMPTY = "";
 
-    public static String combine(DrivenFile drivenFile, String title){
-        if(drivenFile != null)
-            return combine(drivenFile.getId(), title);
+    public static String combine(RemoteFile remoteFile, String title){
+        if(remoteFile != null)
+            return combine(remoteFile.getId(), title);
         else
             return combine(EMPTY, title);
     }
@@ -85,8 +85,8 @@ public final class Path {
         return path;
     }
 
-    public static String clean(DrivenFile drivenFile){
-        if(drivenFile != null) return clean(drivenFile.getId());
+    public static String clean(RemoteFile remoteFile){
+        if(remoteFile != null) return clean(remoteFile.getId());
         return null;
     }
 

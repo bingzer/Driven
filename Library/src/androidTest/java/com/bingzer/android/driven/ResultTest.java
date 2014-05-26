@@ -2,27 +2,25 @@ package com.bingzer.android.driven;
 
 import android.test.AndroidTestCase;
 
-import com.bingzer.android.driven.api.ResultImpl;
-
 public class ResultTest extends AndroidTestCase {
 
     public void test_cotr(){
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        Result<DrivenException> result = new Result<DrivenException>();
         assertEquals(true, result.isSuccess());
         assertNull(result.getException());
 
-        result = new ResultImpl<DrivenException>(false);
+        result = new Result<DrivenException>(false);
         assertEquals(false, result.isSuccess());
         assertNull(result.getException());
 
-        result = new ResultImpl<DrivenException>(false, new DrivenException("hi"));
+        result = new Result<DrivenException>(false, new DrivenException("hi"));
         assertEquals(false, result.isSuccess());
         assertNotNull(result.getException());
         assertEquals("hi", result.getException().getMessage());
     }
 
     public void test_setSuccess(){
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        Result<DrivenException> result = new Result<DrivenException>();
         assertEquals(true, result.isSuccess());
         assertNull(result.getException());
 
@@ -35,7 +33,7 @@ public class ResultTest extends AndroidTestCase {
 
 
     public void test_setException(){
-        ResultImpl<DrivenException> result = new ResultImpl<DrivenException>();
+        Result<DrivenException> result = new Result<DrivenException>();
         assertEquals(true, result.isSuccess());
         assertNull(result.getException());
 

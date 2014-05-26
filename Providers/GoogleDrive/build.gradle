@@ -17,8 +17,19 @@ android {
 dependencies {
     compile project(':Library')
     // --- Google Drive
-    compile 'com.google.apis:google-api-services-drive:v2-rev123-1.18.0-rc'
-    compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
+    //compile 'com.google.apis:google-api-services-drive:v2-rev123-1.18.0-rc'
+    compile(group: 'com.google.apis', name: 'google-api-services-drive', version: 'v2-rev126-1.18.0-rc') {
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+    }
+    //compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
+    compile(group: 'com.google.api-client', name: 'google-api-client-android', version: '1.18.0-rc') {
+        // Exclude artifacts that the Android SDK/Runtime provides.
+        exclude(group: 'xpp3', module: 'xpp3')
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+        exclude(group: 'junit', module: 'junit')
+        exclude(group: 'com.google.android', module: 'android')
+    }
+
     // --- Dagger
     compile 'com.squareup.dagger:dagger:1.2.1'
     androidTestProvided 'com.squareup.dagger:dagger-compiler:1.2.1'

@@ -13,34 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven;
+package com.bingzer.android.driven.contracts;
 
-import java.io.File;
+/**
+ * Represents a feature
+ */
+public interface Feature {
 
-public class DrivenContent {
-
-    private File file;
-    private String type;
-
-    public DrivenContent(String type, File file){
-        this.type = type;
-        this.file = file;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
+    boolean isSupported();
 
 }

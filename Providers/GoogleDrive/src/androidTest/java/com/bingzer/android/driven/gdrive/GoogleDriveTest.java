@@ -2,11 +2,11 @@ package com.bingzer.android.driven.gdrive;
 
 import android.test.AndroidTestCase;
 
-import com.bingzer.android.driven.DrivenContent;
-import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.DrivenException;
-import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.contracts.Result;
+import com.bingzer.android.driven.RemoteFile;
+import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.contracts.Task;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import dagger.ObjectGraph;
 public class GoogleDriveTest extends AndroidTestCase{
 
     private GoogleDrive driven;
-    private DrivenCredential credential;
+    private Credential credential;
 
     @Override
     protected void setUp() throws Exception {
@@ -29,7 +29,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
         driven = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
         //credential = DriveUtils.createGoogleAccountCredential(getContext(), "TestUserCredential");
-        credential = new DrivenCredential(getContext(), "Test-User");
+        credential = new Credential(getContext(), "Test-User");
     }
 
     @Override
@@ -129,9 +129,9 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_async_fail() throws Exception {
         // we don't authenticate now it should throw error
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("Title01", new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 fail("Should throw error");
                 signal.countDown();
             }
@@ -193,7 +193,7 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_exists_inParent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "File101");
 
         assertTrue(driven.exists(parent, "File101"));
@@ -202,7 +202,7 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_existsAsync_inParent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "File102");
 
         final CountDownLatch signal = new CountDownLatch(1);
@@ -218,40 +218,40 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_get() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("Id01");
+        RemoteFile remoteFile = driven.id("Id01");
 
-        assertNotNull(drivenFile);
-        assertEquals("Id01", drivenFile.getId());
-        assertEquals("Title01", drivenFile.getName());
-        assertEquals("MimeType01", drivenFile.getType());
-        assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-        assertFalse(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("Id01", remoteFile.getId());
+        assertEquals("Title01", remoteFile.getName());
+        assertEquals("MimeType01", remoteFile.getType());
+        assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+        assertFalse(remoteFile.hasDetails());
 
         // check raw model
-        assertEquals("Id01", ((GoogleDriveFile)drivenFile).getModel().getId());
-        assertEquals("Description01", ((GoogleDriveFile)drivenFile).getModel().getDescription());
-        assertEquals("MimeType01", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl01", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id01", ((GoogleDriveFile) remoteFile).getModel().getId());
+        assertEquals("Description01", ((GoogleDriveFile) remoteFile).getModel().getDescription());
+        assertEquals("MimeType01", ((GoogleDriveFile) remoteFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((GoogleDriveFile) remoteFile).getModel().getDownloadUrl());
     }
 
     public void test_getAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.idAsync("Id03", new Task<DrivenFile>() {
+        driven.idAsync("Id03", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile drivenFile) {
-                assertNotNull(drivenFile);
-                assertEquals("Id03", drivenFile.getId());
-                assertEquals("Title03", drivenFile.getName());
-                assertEquals("MimeType03", drivenFile.getType());
-                assertEquals("DownloadUrl03", drivenFile.getDownloadUrl());
-                assertFalse(drivenFile.hasDetails());
+            public void onCompleted(RemoteFile remoteFile) {
+                assertNotNull(remoteFile);
+                assertEquals("Id03", remoteFile.getId());
+                assertEquals("Title03", remoteFile.getName());
+                assertEquals("MimeType03", remoteFile.getType());
+                assertEquals("DownloadUrl03", remoteFile.getDownloadUrl());
+                assertFalse(remoteFile.hasDetails());
 
                 // check raw model
-                assertEquals("Id03", ((GoogleDriveFile) drivenFile).getModel().getId());
-                assertEquals("Description03", ((GoogleDriveFile) drivenFile).getModel().getDescription());
-                assertEquals("MimeType03", ((GoogleDriveFile) drivenFile).getModel().getMimeType());
-                assertEquals("DownloadUrl03", ((GoogleDriveFile) drivenFile).getModel().getDownloadUrl());
+                assertEquals("Id03", ((GoogleDriveFile) remoteFile).getModel().getId());
+                assertEquals("Description03", ((GoogleDriveFile) remoteFile).getModel().getDescription());
+                assertEquals("MimeType03", ((GoogleDriveFile) remoteFile).getModel().getMimeType());
+                assertEquals("DownloadUrl03", ((GoogleDriveFile) remoteFile).getModel().getDownloadUrl());
                 signal.countDown();
             }
         });
@@ -260,28 +260,28 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_title() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("Title02");
+        RemoteFile remoteFile = driven.get("Title02");
 
-        assertNotNull(drivenFile);
-        assertEquals("Id02", drivenFile.getId());
-        assertEquals("Title02", drivenFile.getName());
-        assertEquals("MimeType02", drivenFile.getType());
-        assertEquals("DownloadUrl02", drivenFile.getDownloadUrl());
-        assertFalse(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("Id02", remoteFile.getId());
+        assertEquals("Title02", remoteFile.getName());
+        assertEquals("MimeType02", remoteFile.getType());
+        assertEquals("DownloadUrl02", remoteFile.getDownloadUrl());
+        assertFalse(remoteFile.hasDetails());
 
         // check raw model
-        assertEquals("Id02", ((GoogleDriveFile)drivenFile).getModel().getId());
-        assertEquals("Description02", ((GoogleDriveFile)drivenFile).getModel().getDescription());
-        assertEquals("MimeType02", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl02", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id02", ((GoogleDriveFile) remoteFile).getModel().getId());
+        assertEquals("Description02", ((GoogleDriveFile) remoteFile).getModel().getDescription());
+        assertEquals("MimeType02", ((GoogleDriveFile) remoteFile).getModel().getMimeType());
+        assertEquals("DownloadUrl02", ((GoogleDriveFile) remoteFile).getModel().getDownloadUrl());
     }
 
     public void test_titleAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("Title01", new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertEquals("Id01", result.getId());
                 assertEquals("Title01", result.getName());
@@ -308,36 +308,36 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_update() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("Id01");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("Id01");
+        assertNotNull(remoteFile);
 
-        driven.update(drivenFile, new DrivenContent("MimeTypeEdited01", new File("")));
-        drivenFile = driven.id("Id01");
+        driven.update(remoteFile, new LocalFile("MimeTypeEdited01", new File("")));
+        remoteFile = driven.id("Id01");
 
-        assertNotNull(drivenFile);
-        assertEquals("Id01", drivenFile.getId());
-        assertEquals("Title01", drivenFile.getName());
-        assertEquals("MimeTypeEdited01", drivenFile.getType());  // we changed this (was MimeType01)
-        assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-        assertFalse(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("Id01", remoteFile.getId());
+        assertEquals("Title01", remoteFile.getName());
+        assertEquals("MimeTypeEdited01", remoteFile.getType());  // we changed this (was MimeType01)
+        assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+        assertFalse(remoteFile.hasDetails());
 
         // check raw model
-        assertEquals("Id01", ((GoogleDriveFile)drivenFile).getModel().getId());
-        assertEquals("Description01", ((GoogleDriveFile)drivenFile).getModel().getDescription());
-        assertEquals("MimeTypeEdited01", ((GoogleDriveFile)drivenFile).getModel().getMimeType());
-        assertEquals("DownloadUrl01", ((GoogleDriveFile)drivenFile).getModel().getDownloadUrl());
+        assertEquals("Id01", ((GoogleDriveFile) remoteFile).getModel().getId());
+        assertEquals("Description01", ((GoogleDriveFile) remoteFile).getModel().getDescription());
+        assertEquals("MimeTypeEdited01", ((GoogleDriveFile) remoteFile).getModel().getMimeType());
+        assertEquals("DownloadUrl01", ((GoogleDriveFile) remoteFile).getModel().getDownloadUrl());
     }
 
     public void test_updateAsync() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("Id03");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("Id03");
+        assertNotNull(remoteFile);
 
-        final DrivenContent fileContent = new DrivenContent("MimeTypeEdited03", new File(""));
+        final LocalFile localFile = new LocalFile("MimeTypeEdited03", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.updateAsync(drivenFile, fileContent, new Task.WithErrorReporting<DrivenFile>() {
+        driven.updateAsync(remoteFile, localFile, new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertEquals("Id03", result.getId());
                 assertEquals("Title03", result.getName());
@@ -364,16 +364,16 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_delete() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("Id03");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("Id03");
+        assertNotNull(remoteFile);
 
         assertTrue(driven.delete("Id03"));
     }
 
     public void test_deleteAsync() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("Id02");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("Id02");
+        assertNotNull(remoteFile);
 
         final CountDownLatch signal = new CountDownLatch(1);
         driven.deleteAsync("Id02", new Task<Boolean>() {
@@ -388,23 +388,23 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_first() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.first("title = 'Title01'");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.first("title = 'Title01'");
+        assertNotNull(remoteFile);
 
-        assertEquals("Id01", drivenFile.getId());
-        assertEquals("Title01", drivenFile.getName());
-        assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
-        assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-        assertFalse(drivenFile.hasDetails());
+        assertEquals("Id01", remoteFile.getId());
+        assertEquals("Title01", remoteFile.getName());
+        assertEquals("MimeType01", remoteFile.getType());  // we changed this (was MimeType03)
+        assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+        assertFalse(remoteFile.hasDetails());
     }
 
     public void test_firstAsync() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.firstAsync("title = 'Title01'", new Task<DrivenFile>() {
+        driven.firstAsync("title = 'Title01'", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
 
                 assertEquals("Id01", result.getId());
@@ -421,15 +421,15 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_query() throws Exception {
         driven.authenticate(credential);
-        java.util.List<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
-        for(DrivenFile drivenFile : drivenFiles){
-            assertNotNull(drivenFile);
+        java.util.List<RemoteFile> remoteFiles = driven.query("title = 'Title01'");
+        for(RemoteFile remoteFile : remoteFiles){
+            assertNotNull(remoteFile);
 
-            assertEquals("Id01", drivenFile.getId());
-            assertEquals("Title01", drivenFile.getName());
-            assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
-            assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-            assertFalse(drivenFile.hasDetails());
+            assertEquals("Id01", remoteFile.getId());
+            assertEquals("Title01", remoteFile.getName());
+            assertEquals("MimeType01", remoteFile.getType());  // we changed this (was MimeType03)
+            assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+            assertFalse(remoteFile.hasDetails());
         }
     }
 
@@ -437,17 +437,17 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.queryAsync("title = 'Title01'", new Task<java.util.List<DrivenFile>>() {
+        driven.queryAsync("title = 'Title01'", new Task<java.util.List<RemoteFile>>() {
             @Override
-            public void onCompleted(java.util.List<DrivenFile> result) {
-                for (DrivenFile drivenFile : result) {
-                    assertNotNull(drivenFile);
+            public void onCompleted(java.util.List<RemoteFile> result) {
+                for (RemoteFile remoteFile : result) {
+                    assertNotNull(remoteFile);
 
-                    assertEquals("Id01", drivenFile.getId());
-                    assertEquals("Title01", drivenFile.getName());
-                    assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
-                    assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-                    assertFalse(drivenFile.hasDetails());
+                    assertEquals("Id01", remoteFile.getId());
+                    assertEquals("Title01", remoteFile.getName());
+                    assertEquals("MimeType01", remoteFile.getType());  // we changed this (was MimeType03)
+                    assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+                    assertFalse(remoteFile.hasDetails());
                 }
                 signal.countDown();
             }
@@ -458,22 +458,22 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_create() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.create("Folder100");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        RemoteFile remoteFile = driven.create("Folder100");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
 
-        drivenFile = driven.id("Folder100");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        remoteFile = driven.id("Folder100");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
     }
 
     public void test_createAsync() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync("Folder100", new Task<DrivenFile>() {
+        driven.createAsync("Folder100", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
@@ -490,26 +490,26 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_create_file() throws Exception {
         driven.authenticate(credential);
 
-        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
-        DrivenFile drivenFile = driven.create("File101", fileContent);
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
-        assertEquals("MimeType101", drivenFile.getType());
+        LocalFile localFile = new LocalFile("MimeType101", new File(""));
+        RemoteFile remoteFile = driven.create("File101", localFile);
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
+        assertEquals("MimeType101", remoteFile.getType());
 
-        drivenFile = driven.id("File101");
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
-        assertEquals("MimeType101", drivenFile.getType());
+        remoteFile = driven.id("File101");
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
+        assertEquals("MimeType101", remoteFile.getType());
     }
 
     public void test_createAsync_file() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
-        driven.createAsync("File101", fileContent, new Task<DrivenFile>() {
+        LocalFile localFile = new LocalFile("MimeType101", new File(""));
+        driven.createAsync("File101", localFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
                 assertEquals("MimeType101", result.getType());
@@ -530,31 +530,31 @@ public class GoogleDriveTest extends AndroidTestCase{
         // we're going to create a folder within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
-        DrivenFile drivenFile = driven.create(parent, "Folder110");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        RemoteFile remoteFile = driven.create(parent, "Folder110");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
 
         // check parent
         // since we're mocking the fields requested are ignored
         // therefore the parent references should be populated
         // without having to have to call drivenFile.getDetails()
-        assertEquals("Folder100", ((GoogleDriveFile)drivenFile).getModel().getParents().get(0).getId());
+        assertEquals("Folder100", ((GoogleDriveFile) remoteFile).getModel().getParents().get(0).getId());
     }
 
     public void test_createAsync_inParent() throws Exception {
         // we're going to create a folder within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "Folder110", new Task<DrivenFile>() {
+        driven.createAsync(parent, "Folder110", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
@@ -575,30 +575,30 @@ public class GoogleDriveTest extends AndroidTestCase{
         // we're going to create a file within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
-        DrivenFile drivenFile = driven.create(parent, "File101", fileContent);
+        LocalFile localFile = new LocalFile("MimeType101", new File(""));
+        RemoteFile remoteFile = driven.create(parent, "File101", localFile);
 
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
-        assertEquals(drivenFile.getType(), "MimeType101");
-        assertEquals("Folder100", ((GoogleDriveFile)drivenFile).getModel().getParents().get(0).getId());
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
+        assertEquals(remoteFile.getType(), "MimeType101");
+        assertEquals("Folder100", ((GoogleDriveFile) remoteFile).getModel().getParents().get(0).getId());
     }
 
     public void test_createAsync_fileInParent() throws Exception {
         // we're going to create a file within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
+        LocalFile localFile = new LocalFile("MimeType101", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "File101", fileContent, new Task<DrivenFile>() {
+        driven.createAsync(parent, "File101", localFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
                 assertEquals(result.getType(), "MimeType101");
@@ -615,11 +615,11 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         int counter = 1;
-        for(DrivenFile drivenFile : driven.list()){
-            assertEquals("Id0" + counter, drivenFile.getId());
-            assertEquals("Title0" + counter, drivenFile.getName());
-            assertEquals("MimeType0" + counter, drivenFile.getType());
-            assertEquals("DownloadUrl0" + counter, drivenFile.getDownloadUrl());
+        for(RemoteFile remoteFile : driven.list()){
+            assertEquals("Id0" + counter, remoteFile.getId());
+            assertEquals("Title0" + counter, remoteFile.getName());
+            assertEquals("MimeType0" + counter, remoteFile.getType());
+            assertEquals("DownloadUrl0" + counter, remoteFile.getDownloadUrl());
 
             counter++;
         }
@@ -630,15 +630,15 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(new Task<java.util.List<DrivenFile>>() {
+        driven.listAsync(new Task<java.util.List<RemoteFile>>() {
             @Override
-            public void onCompleted(java.util.List<DrivenFile> result) {
+            public void onCompleted(java.util.List<RemoteFile> result) {
                 int counter = 1;
-                for (DrivenFile drivenFile : result) {
-                    assertEquals("Id0" + counter, drivenFile.getId());
-                    assertEquals("Title0" + counter, drivenFile.getName());
-                    assertEquals("MimeType0" + counter, drivenFile.getType());
-                    assertEquals("DownloadUrl0" + counter, drivenFile.getDownloadUrl());
+                for (RemoteFile remoteFile : result) {
+                    assertEquals("Id0" + counter, remoteFile.getId());
+                    assertEquals("Title0" + counter, remoteFile.getName());
+                    assertEquals("MimeType0" + counter, remoteFile.getType());
+                    assertEquals("DownloadUrl0" + counter, remoteFile.getDownloadUrl());
 
                     counter++;
                 }
@@ -654,14 +654,14 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_list_Parent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "Folder110");
         driven.create(parent, "Folder120");
         driven.create(parent, "Folder130");
 
         int counter = 1;
-        for(DrivenFile drivenFile : driven.list(parent)){
-            assertEquals("Folder1" + counter + "0", drivenFile.getName());
+        for(RemoteFile remoteFile : driven.list(parent)){
+            assertEquals("Folder1" + counter + "0", remoteFile.getName());
             counter++;
         }
         assertTrue(counter > 1);
@@ -670,18 +670,18 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_listAsync_Parent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "Folder110");
         driven.create(parent, "Folder120");
         driven.create(parent, "Folder130");
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(parent, new Task<java.util.List<DrivenFile>>() {
+        driven.listAsync(parent, new Task<java.util.List<RemoteFile>>() {
             @Override
-            public void onCompleted(java.util.List<DrivenFile> result) {
+            public void onCompleted(java.util.List<RemoteFile> result) {
                 int counter = 1;
-                for (DrivenFile drivenFile : result) {
-                    assertEquals("Folder1" + counter + "0", drivenFile.getName());
+                for (RemoteFile remoteFile : result) {
+                    assertEquals("Folder1" + counter + "0", remoteFile.getName());
                     counter++;
                 }
                 assertTrue(counter > 1);
@@ -696,24 +696,24 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_getDetails() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("Id01");
-        assertFalse(drivenFile.hasDetails());
+        RemoteFile remoteFile = driven.id("Id01");
+        assertFalse(remoteFile.hasDetails());
 
-        drivenFile = driven.getDetails(drivenFile);
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.hasDetails());
+        remoteFile = driven.getDetails(remoteFile);
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_getDetailsAsync() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("Id01");
-        assertFalse(drivenFile.hasDetails());
+        RemoteFile remoteFile = driven.id("Id01");
+        assertFalse(remoteFile.hasDetails());
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getDetailsAsync(drivenFile, new Task<DrivenFile>() {
+        driven.getDetailsAsync(remoteFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.hasDetails());
 
@@ -737,16 +737,16 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_share() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("Id01");
-        assertNotNull(driven.getSharing().share(drivenFile, "other-user"));
+        RemoteFile remoteFile = driven.id("Id01");
+        assertNotNull(driven.getSharing().share(remoteFile, "other-user"));
     }
 
     public void test_shareAsync() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("Id01");
+        RemoteFile remoteFile = driven.id("Id01");
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getSharing().shareAsync(drivenFile, "other-user", new Task<String>() {
+        driven.getSharing().shareAsync(remoteFile, "other-user", new Task<String>() {
             @Override
             public void onCompleted(String result) {
                 assertNotNull(result);

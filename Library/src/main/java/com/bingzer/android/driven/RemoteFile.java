@@ -15,11 +15,8 @@
  */
 package com.bingzer.android.driven;
 
-import android.content.Context;
-
 import com.bingzer.android.driven.contracts.Task;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -28,7 +25,7 @@ import java.util.List;
  * Consult the provider's documentation.
  */
 @SuppressWarnings("unused")
-public interface DrivenFile {
+public interface RemoteFile {
 
     /**
      * The unique identifier.
@@ -81,34 +78,34 @@ public interface DrivenFile {
      * If this file is {@link #isDirectory()} then this
      * method should return all children within.
      */
-    public List<DrivenFile> list();
+    public List<RemoteFile> list();
 
     /**
      * Async for {@link #list()}
      */
-    public void listAsync(Task<List<DrivenFile>> result);
+    public void listAsync(Task<List<RemoteFile>> result);
 
     /**
      * Download and keep this file to the local.
      * There should be no local-to-remote mapping.
      */
-    public DrivenContent download(File local);
+    public boolean download(LocalFile local);
 
     /**
-     * Async for {@link #download(java.io.File)}
+     * Async for {@link #download(LocalFile)}
      */
-    public void downloadAsync(final File local, Task<DrivenContent> result);
+    public void downloadAsync(LocalFile local, Task<Boolean> result);
 
     /**
      * Upload/Save a file to this file. The remote content file
      * will be overwritten by the {@code content}
      */
-    public boolean upload(String mimeType, File content);
+    public boolean upload(LocalFile local);
 
     /**
-     * Async for {@link #upload(String, java.io.File)}
+     * Async for {@link #upload(com.bingzer.android.driven.LocalFile)}
      */
-    public void uploadAsync(String mimeType, File content, Task<Boolean> result);
+    public void uploadAsync(LocalFile local, Task<Boolean> result);
 
     /**
      * Share this file to other user. "Sharing" is generic and you should

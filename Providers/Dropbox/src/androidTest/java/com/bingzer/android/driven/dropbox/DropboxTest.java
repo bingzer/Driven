@@ -2,11 +2,11 @@ package com.bingzer.android.driven.dropbox;
 
 import android.test.AndroidTestCase;
 
-import com.bingzer.android.driven.DrivenContent;
-import com.bingzer.android.driven.DrivenCredential;
+import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.DrivenException;
-import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.contracts.Result;
+import com.bingzer.android.driven.RemoteFile;
+import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.contracts.Task;
 
 import java.io.File;
@@ -18,7 +18,7 @@ import dagger.ObjectGraph;
 public class DropboxTest extends AndroidTestCase {
 
     Dropbox driven;
-    DrivenCredential credential;
+    Credential credential;
 
     @Override
     protected void setUp() throws Exception {
@@ -30,8 +30,8 @@ public class DropboxTest extends AndroidTestCase {
 
         driven = ObjectGraph.create(StubModule.class).get(Dropbox.class);
         //credential = DriveUtils.createGoogleAccountCredential(getContext(), "TestUserCredential");
-        credential = new DrivenCredential(getContext(), "Test-User");
-        credential.setToken(new DrivenCredential.Token("appKey", "appSecret"));
+        credential = new Credential(getContext(), "Test-User");
+        credential.setToken(new Credential.Token("appKey", "appSecret"));
     }
 
     @Override
@@ -117,9 +117,9 @@ public class DropboxTest extends AndroidTestCase {
     public void test_async_fail() throws Exception {
         // we don't authenticate now it should throw error
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getAsync("Title01", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("Title01", new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 fail("Should throw error");
                 signal.countDown();
             }
@@ -183,7 +183,7 @@ public class DropboxTest extends AndroidTestCase {
     public void test_exists_inParent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "File101");
 
         assertTrue(driven.exists(parent, "File101"));
@@ -192,7 +192,7 @@ public class DropboxTest extends AndroidTestCase {
     public void test_existsAsync_inParent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder100");
+        RemoteFile parent = driven.create("Folder100");
         driven.create(parent, "File102");
 
         final CountDownLatch signal = new CountDownLatch(1);
@@ -208,28 +208,28 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_get() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("/Folder100/File102");
+        RemoteFile remoteFile = driven.id("/Folder100/File102");
 
-        assertNotNull(drivenFile);
-        assertEquals("/Folder100/File102", drivenFile.getId());
-        assertEquals("File102", drivenFile.getName());
-        assertEquals("MimeType102", drivenFile.getType());
-        assertEquals("/Folder100/File102", drivenFile.getDownloadUrl());
-        assertTrue(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("/Folder100/File102", remoteFile.getId());
+        assertEquals("File102", remoteFile.getName());
+        assertEquals("MimeType102", remoteFile.getType());
+        assertEquals("/Folder100/File102", remoteFile.getDownloadUrl());
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_getAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.idAsync("/Folder100/File102", new Task<DrivenFile>() {
+        driven.idAsync("/Folder100/File102", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile drivenFile) {
-                assertNotNull(drivenFile);
-                assertEquals("/Folder100/File102", drivenFile.getId());
-                assertEquals("File102", drivenFile.getName());
-                assertEquals("MimeType102", drivenFile.getType());
-                assertEquals("/Folder100/File102", drivenFile.getDownloadUrl());
-                assertTrue(drivenFile.hasDetails());
+            public void onCompleted(RemoteFile remoteFile) {
+                assertNotNull(remoteFile);
+                assertEquals("/Folder100/File102", remoteFile.getId());
+                assertEquals("File102", remoteFile.getName());
+                assertEquals("MimeType102", remoteFile.getType());
+                assertEquals("/Folder100/File102", remoteFile.getDownloadUrl());
+                assertTrue(remoteFile.hasDetails());
                 signal.countDown();
             }
         });
@@ -238,22 +238,22 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_title() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.get("/Folder100/File103");
+        RemoteFile remoteFile = driven.get("/Folder100/File103");
 
-        assertNotNull(drivenFile);
-        assertEquals("/Folder100/File103", drivenFile.getId());
-        assertEquals("File103", drivenFile.getName());
-        assertEquals("MimeType103", drivenFile.getType());
-        assertEquals("/Folder100/File103", drivenFile.getDownloadUrl());
-        assertTrue(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("/Folder100/File103", remoteFile.getId());
+        assertEquals("File103", remoteFile.getName());
+        assertEquals("MimeType103", remoteFile.getType());
+        assertEquals("/Folder100/File103", remoteFile.getDownloadUrl());
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_titleAsync() throws Exception {
         driven.authenticate(credential);
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getAsync("/Folder100/File103", new Task.WithErrorReporting<DrivenFile>() {
+        driven.getAsync("/Folder100/File103", new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertEquals("/Folder100/File103", result.getId());
                 assertEquals("File103", result.getName());
@@ -274,30 +274,30 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_update() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("File001");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("File001");
+        assertNotNull(remoteFile);
 
-        driven.update(drivenFile, new DrivenContent("MimeType001", new File("")));
-        drivenFile = driven.id("File001");
+        driven.update(remoteFile, new LocalFile("MimeType001", new File("")));
+        remoteFile = driven.id("File001");
 
-        assertNotNull(drivenFile);
-        assertEquals("/File001", drivenFile.getId());
-        assertEquals("File001", drivenFile.getName());
-        assertEquals("MimeType001", drivenFile.getType());  // we changed this (was MimeType01)
-        assertEquals("/File001", drivenFile.getDownloadUrl());
-        assertTrue(drivenFile.hasDetails());
+        assertNotNull(remoteFile);
+        assertEquals("/File001", remoteFile.getId());
+        assertEquals("File001", remoteFile.getName());
+        assertEquals("MimeType001", remoteFile.getType());  // we changed this (was MimeType01)
+        assertEquals("/File001", remoteFile.getDownloadUrl());
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_updateAsync() throws Exception{
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("File001");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("File001");
+        assertNotNull(remoteFile);
 
-        final DrivenContent fileContent = new DrivenContent("MimeType001", new File(""));
+        final LocalFile localFile = new LocalFile("MimeType001", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.updateAsync(drivenFile, fileContent, new Task.WithErrorReporting<DrivenFile>() {
+        driven.updateAsync(remoteFile, localFile, new Task.WithErrorReporting<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertEquals("/File001", result.getId());
                 assertEquals("File001", result.getName());
@@ -318,16 +318,16 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_delete() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("File003");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("File003");
+        assertNotNull(remoteFile);
 
         assertTrue(driven.delete("File003"));
     }
 
     public void test_deleteAsync() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.id("File003");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.id("File003");
+        assertNotNull(remoteFile);
 
         final CountDownLatch signal = new CountDownLatch(1);
         driven.deleteAsync("File003", new Task<Boolean>() {
@@ -342,23 +342,23 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_first() throws Exception {
         driven.authenticate(credential);
-        DrivenFile drivenFile = driven.first("File101");
-        assertNotNull(drivenFile);
+        RemoteFile remoteFile = driven.first("File101");
+        assertNotNull(remoteFile);
 
-        assertEquals("/Folder100/File101", drivenFile.getId());
-        assertEquals("File101", drivenFile.getName());
-        assertEquals("MimeType101", drivenFile.getType());  // we changed this (was MimeType03)
-        assertEquals("/Folder100/File101", drivenFile.getDownloadUrl());
-        assertTrue(drivenFile.hasDetails());
+        assertEquals("/Folder100/File101", remoteFile.getId());
+        assertEquals("File101", remoteFile.getName());
+        assertEquals("MimeType101", remoteFile.getType());  // we changed this (was MimeType03)
+        assertEquals("/Folder100/File101", remoteFile.getDownloadUrl());
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_firstAsync() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.firstAsync("File101", new Task<DrivenFile>() {
+        driven.firstAsync("File101", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
 
                 assertEquals("/Folder100/File101", result.getId());
@@ -375,15 +375,15 @@ public class DropboxTest extends AndroidTestCase {
 
     public void test_query() throws Exception {
         driven.authenticate(credential);
-        List<DrivenFile> drivenFiles = driven.query("title = 'Title01'");
-        for(DrivenFile drivenFile : drivenFiles){
-            assertNotNull(drivenFile);
+        List<RemoteFile> remoteFiles = driven.query("title = 'Title01'");
+        for(RemoteFile remoteFile : remoteFiles){
+            assertNotNull(remoteFile);
 
-            assertEquals("Id01", drivenFile.getId());
-            assertEquals("Title01", drivenFile.getName());
-            assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
-            assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-            assertFalse(drivenFile.hasDetails());
+            assertEquals("Id01", remoteFile.getId());
+            assertEquals("Title01", remoteFile.getName());
+            assertEquals("MimeType01", remoteFile.getType());  // we changed this (was MimeType03)
+            assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+            assertFalse(remoteFile.hasDetails());
         }
     }
 
@@ -391,17 +391,17 @@ public class DropboxTest extends AndroidTestCase {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.queryAsync("title = 'Title01'", new Task<List<DrivenFile>>() {
+        driven.queryAsync("title = 'Title01'", new Task<List<RemoteFile>>() {
             @Override
-            public void onCompleted(List<DrivenFile> result) {
-                for (DrivenFile drivenFile : result) {
-                    assertNotNull(drivenFile);
+            public void onCompleted(List<RemoteFile> result) {
+                for (RemoteFile remoteFile : result) {
+                    assertNotNull(remoteFile);
 
-                    assertEquals("Id01", drivenFile.getId());
-                    assertEquals("Title01", drivenFile.getName());
-                    assertEquals("MimeType01", drivenFile.getType());  // we changed this (was MimeType03)
-                    assertEquals("DownloadUrl01", drivenFile.getDownloadUrl());
-                    assertFalse(drivenFile.hasDetails());
+                    assertEquals("Id01", remoteFile.getId());
+                    assertEquals("Title01", remoteFile.getName());
+                    assertEquals("MimeType01", remoteFile.getType());  // we changed this (was MimeType03)
+                    assertEquals("DownloadUrl01", remoteFile.getDownloadUrl());
+                    assertFalse(remoteFile.hasDetails());
                 }
                 signal.countDown();
             }
@@ -412,22 +412,22 @@ public class DropboxTest extends AndroidTestCase {
     public void test_create() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.create("/Folder200");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        RemoteFile remoteFile = driven.create("/Folder200");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
 
-        drivenFile = driven.id("/Folder200");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        remoteFile = driven.id("/Folder200");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
     }
 
     public void test_createAsync() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync("/Folder200", new Task<DrivenFile>() {
+        driven.createAsync("/Folder200", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
@@ -444,24 +444,24 @@ public class DropboxTest extends AndroidTestCase {
     public void test_create_file() throws Exception {
         driven.authenticate(credential);
 
-        DrivenContent fileContent = new DrivenContent("MimeType004", new File(""));
-        DrivenFile drivenFile = driven.create("File004", fileContent);
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
+        LocalFile localFile = new LocalFile("MimeType004", new File(""));
+        RemoteFile remoteFile = driven.create("File004", localFile);
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
 
-        drivenFile = driven.id("File004");
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
+        remoteFile = driven.id("File004");
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
     }
 
     public void test_createAsync_file() throws Exception {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        DrivenContent fileContent = new DrivenContent("MimeType004", new File(""));
-        driven.createAsync("File004", fileContent, new Task<DrivenFile>() {
+        LocalFile localFile = new LocalFile("MimeType004", new File(""));
+        driven.createAsync("File004", localFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
 
@@ -480,25 +480,25 @@ public class DropboxTest extends AndroidTestCase {
         // we're going to create a folder within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder200");
+        RemoteFile parent = driven.create("Folder200");
         assertNotNull(parent);
 
-        DrivenFile drivenFile = driven.create(parent, "Folder210");
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.isDirectory());
+        RemoteFile remoteFile = driven.create(parent, "Folder210");
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.isDirectory());
     }
 
     public void test_createAsync_inParent() throws Exception {
         // we're going to create a folder within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder200");
+        RemoteFile parent = driven.create("Folder200");
         assertNotNull(parent);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "Folder210", new Task<DrivenFile>() {
+        driven.createAsync(parent, "Folder210", new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.isDirectory());
 
@@ -513,28 +513,28 @@ public class DropboxTest extends AndroidTestCase {
         // we're going to create a file within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder200");
+        RemoteFile parent = driven.create("Folder200");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContent("MimeType101", new File(""));
-        DrivenFile drivenFile = driven.create(parent, "File201", fileContent);
+        LocalFile localFile = new LocalFile("MimeType101", new File(""));
+        RemoteFile remoteFile = driven.create(parent, "File201", localFile);
 
-        assertNotNull(drivenFile);
-        assertFalse(drivenFile.isDirectory());
+        assertNotNull(remoteFile);
+        assertFalse(remoteFile.isDirectory());
     }
 
     public void test_createAsync_fileInParent() throws Exception {
         // we're going to create a file within a parent
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.create("Folder200");
+        RemoteFile parent = driven.create("Folder200");
         assertNotNull(parent);
 
-        DrivenContent fileContent = new DrivenContent("MimeType201", new File(""));
+        LocalFile localFile = new LocalFile("MimeType201", new File(""));
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "File201", fileContent, new Task<DrivenFile>() {
+        driven.createAsync(parent, "File201", localFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertFalse(result.isDirectory());
 
@@ -559,14 +559,14 @@ public class DropboxTest extends AndroidTestCase {
          */
 
         int counter = 0;
-        for(DrivenFile drivenFile : driven.list()){
-            if(counter == 0) assertEquals("Folder100", drivenFile.getName());
-            else if(counter == 1) assertEquals("File101", drivenFile.getName());
-            else if(counter == 2) assertEquals("File102", drivenFile.getName());
-            else if(counter == 3) assertEquals("File103", drivenFile.getName());
-            else if(counter == 4) assertEquals("File001", drivenFile.getName());
-            else if(counter == 5) assertEquals("File002", drivenFile.getName());
-            else if(counter == 6) assertEquals("File003", drivenFile.getName());
+        for(RemoteFile remoteFile : driven.list()){
+            if(counter == 0) assertEquals("Folder100", remoteFile.getName());
+            else if(counter == 1) assertEquals("File101", remoteFile.getName());
+            else if(counter == 2) assertEquals("File102", remoteFile.getName());
+            else if(counter == 3) assertEquals("File103", remoteFile.getName());
+            else if(counter == 4) assertEquals("File001", remoteFile.getName());
+            else if(counter == 5) assertEquals("File002", remoteFile.getName());
+            else if(counter == 6) assertEquals("File003", remoteFile.getName());
 
             counter++;
         }
@@ -577,18 +577,18 @@ public class DropboxTest extends AndroidTestCase {
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(new Task<List<DrivenFile>>() {
+        driven.listAsync(new Task<List<RemoteFile>>() {
             @Override
-            public void onCompleted(List<DrivenFile> result) {
+            public void onCompleted(List<RemoteFile> result) {
                 int counter = 0;
-                for(DrivenFile drivenFile : driven.list()){
-                    if(counter == 0) assertEquals("Folder100", drivenFile.getName());
-                    else if(counter == 1) assertEquals("File101", drivenFile.getName());
-                    else if(counter == 2) assertEquals("File102", drivenFile.getName());
-                    else if(counter == 3) assertEquals("File103", drivenFile.getName());
-                    else if(counter == 4) assertEquals("File001", drivenFile.getName());
-                    else if(counter == 5) assertEquals("File002", drivenFile.getName());
-                    else if(counter == 6) assertEquals("File003", drivenFile.getName());
+                for(RemoteFile remoteFile : driven.list()){
+                    if(counter == 0) assertEquals("Folder100", remoteFile.getName());
+                    else if(counter == 1) assertEquals("File101", remoteFile.getName());
+                    else if(counter == 2) assertEquals("File102", remoteFile.getName());
+                    else if(counter == 3) assertEquals("File103", remoteFile.getName());
+                    else if(counter == 4) assertEquals("File001", remoteFile.getName());
+                    else if(counter == 5) assertEquals("File002", remoteFile.getName());
+                    else if(counter == 6) assertEquals("File003", remoteFile.getName());
 
                     counter++;
                 }
@@ -604,15 +604,15 @@ public class DropboxTest extends AndroidTestCase {
     public void test_list_Parent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.get("Folder100");
+        RemoteFile parent = driven.get("Folder100");
         driven.create(parent, "Folder110");
         driven.create(parent, "Folder120");
         driven.create(parent, "Folder130");
 
         int counter = 1;
-        for(DrivenFile drivenFile : driven.list(parent)){
-            if(drivenFile.getName().startsWith("Folder1")) {
-                assertEquals("Folder1" + counter + "0", drivenFile.getName());
+        for(RemoteFile remoteFile : driven.list(parent)){
+            if(remoteFile.getName().startsWith("Folder1")) {
+                assertEquals("Folder1" + counter + "0", remoteFile.getName());
                 counter++;
             }
         }
@@ -622,19 +622,19 @@ public class DropboxTest extends AndroidTestCase {
     public void test_listAsync_Parent() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile parent = driven.get("Folder100");
+        RemoteFile parent = driven.get("Folder100");
         driven.create(parent, "Folder110");
         driven.create(parent, "Folder120");
         driven.create(parent, "Folder130");
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.listAsync(parent, new Task.WithErrorReporting<List<DrivenFile>>() {
+        driven.listAsync(parent, new Task.WithErrorReporting<List<RemoteFile>>() {
             @Override
-            public void onCompleted(List<DrivenFile> result) {
+            public void onCompleted(List<RemoteFile> result) {
                 int counter = 1;
-                for (DrivenFile drivenFile : result) {
-                    if(drivenFile.getName().startsWith("Folder1")){
-                        assertEquals("Folder1" + counter + "0", drivenFile.getName());
+                for (RemoteFile remoteFile : result) {
+                    if(remoteFile.getName().startsWith("Folder1")){
+                        assertEquals("Folder1" + counter + "0", remoteFile.getName());
                         counter++;
                     }
                 }
@@ -655,24 +655,24 @@ public class DropboxTest extends AndroidTestCase {
     public void test_getDetails() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("File001");
-        assertTrue(drivenFile.hasDetails());
+        RemoteFile remoteFile = driven.id("File001");
+        assertTrue(remoteFile.hasDetails());
 
-        drivenFile = driven.getDetails(drivenFile);
-        assertNotNull(drivenFile);
-        assertTrue(drivenFile.hasDetails());
+        remoteFile = driven.getDetails(remoteFile);
+        assertNotNull(remoteFile);
+        assertTrue(remoteFile.hasDetails());
     }
 
     public void test_getDetailsAsync() throws Exception {
         driven.authenticate(credential);
 
-        DrivenFile drivenFile = driven.id("File001");
-        assertTrue(drivenFile.hasDetails());
+        RemoteFile remoteFile = driven.id("File001");
+        assertTrue(remoteFile.hasDetails());
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.getDetailsAsync(drivenFile, new Task<DrivenFile>() {
+        driven.getDetailsAsync(remoteFile, new Task<RemoteFile>() {
             @Override
-            public void onCompleted(DrivenFile result) {
+            public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
                 assertTrue(result.hasDetails());
 

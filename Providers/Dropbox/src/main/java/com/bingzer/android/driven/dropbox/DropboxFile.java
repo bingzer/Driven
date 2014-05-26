@@ -1,29 +1,28 @@
 package com.bingzer.android.driven.dropbox;
 
-import com.bingzer.android.driven.Driven;
-import com.bingzer.android.driven.DrivenContent;
-import com.bingzer.android.driven.DrivenFile;
-import com.bingzer.android.driven.api.Path;
+import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.RemoteFile;
+import com.bingzer.android.driven.StorageProvider;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.utils.Path;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.exception.DropboxException;
 
-import java.io.File;
 import java.util.List;
 
 import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
-class DropboxFile implements DrivenFile {
+class DropboxFile implements RemoteFile {
 
-    protected static Driven driven;
-    protected static void setDriven(Driven driven){
-        DropboxFile.driven = driven;
+    protected static StorageProvider storageProvider;
+    protected static void setStorageProvider(StorageProvider storageProvider){
+        DropboxFile.storageProvider = storageProvider;
     }
-    protected static Driven getDriven(){
-        if(driven == null)
-            driven = new Dropbox();
-        return driven;
+    protected static StorageProvider getStorageProvider(){
+        if(storageProvider == null)
+            storageProvider = new Dropbox();
+        return storageProvider;
     }
 
     private String id;
@@ -89,58 +88,58 @@ class DropboxFile implements DrivenFile {
     }
 
     @Override
-    public List<DrivenFile> list() {
-        return getDriven().list(this);
+    public List<RemoteFile> list() {
+        return getStorageProvider().list(this);
     }
 
     @Override
-    public void listAsync(Task<List<DrivenFile>> result) {
-        doAsync(result, new Delegate<List<DrivenFile>>() {
+    public void listAsync(Task<List<RemoteFile>> result) {
+        doAsync(result, new Delegate<List<RemoteFile>>() {
             @Override
-            public List<DrivenFile> invoke() {
+            public List<RemoteFile> invoke() {
                 return list();
             }
         });
     }
 
     @Override
-    public DrivenContent download(File local) {
-        return getDriven().download(this, local);
+    public boolean download(LocalFile local) {
+        return getStorageProvider().download(this, local);
     }
 
     @Override
-    public void downloadAsync(final File local, Task<DrivenContent> result) {
-        doAsync(result, new Delegate<DrivenContent>() {
+    public void downloadAsync(final LocalFile local, Task<Boolean> result) {
+        doAsync(result, new Delegate<Boolean>() {
             @Override
-            public DrivenContent invoke() {
+            public Boolean invoke() {
                 return download(local);
             }
         });
     }
 
     @Override
-    public boolean upload(String mimeType, File content) {
-        return consume(getDriven().update(this, new DrivenContent(mimeType, content)));
+    public boolean upload(LocalFile local) {
+        return consume(getStorageProvider().update(this, local));
     }
 
     @Override
-    public void uploadAsync(final String mimeType, final File content, Task<Boolean> result) {
+    public void uploadAsync(final LocalFile local, Task<Boolean> result) {
         doAsync(result, new Delegate<Boolean>() {
             @Override
             public Boolean invoke() {
-                return upload(mimeType, content);
+                return upload(local);
             }
         });
     }
 
     @Override
     public String share(String user) {
-        return getDriven().getSharing().share(this, user);
+        return getStorageProvider().getSharing().share(this, user);
     }
 
     @Override
     public String share(String user, int kind) {
-        return getDriven().getSharing().share(this, user, kind);
+        return getStorageProvider().getSharing().share(this, user, kind);
     }
 
     @Override
@@ -164,7 +163,7 @@ class DropboxFile implements DrivenFile {
 
     @Override
     public boolean delete() {
-        return getDriven().delete(id);
+        return getStorageProvider().delete(id);
     }
 
     @Override
@@ -181,7 +180,7 @@ class DropboxFile implements DrivenFile {
     public boolean rename(String name) {
         try {
             String newPath = Path.combine(getParentDirectory(), name);
-            DropboxAPI.Entry entry = ((Dropbox) getDriven()).getDropboxApi().move(id, newPath);
+            DropboxAPI.Entry entry = ((Dropbox) getStorageProvider()).getDropboxApi().move(id, newPath);
             return init(entry);
         }
         catch (DropboxException e){
@@ -215,10 +214,10 @@ class DropboxFile implements DrivenFile {
         return true;
     }
 
-    private boolean consume(DrivenFile drivenFile){
-        if(!(drivenFile instanceof DropboxFile))
+    private boolean consume(RemoteFile remoteFile){
+        if(!(remoteFile instanceof DropboxFile))
             return false;
-        DropboxFile other = (DropboxFile) drivenFile;
+        DropboxFile other = (DropboxFile) remoteFile;
         return init(other.model);
     }
 }

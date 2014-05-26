@@ -32,7 +32,7 @@ import static com.bingzer.android.driven.utils.IOUtils.safeClose;
  * Represents a user credential used to authenticate
  * the API to the provider.
  */
-public class DrivenCredential {
+public class Credential {
 
     private static final String TAG = "DrivenCredential";
 
@@ -42,19 +42,19 @@ public class DrivenCredential {
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    public DrivenCredential(Context context){
+    public Credential(Context context){
         this(context, (String) null);
     }
 
-    public DrivenCredential(Context context, String accountName){
+    public Credential(Context context, String accountName){
         this(context, accountName, null);
     }
 
-    public DrivenCredential(Context context, Token token){
+    public Credential(Context context, Token token){
         this(context, null, token);
     }
 
-    public DrivenCredential(Context context, String accountName, Token token){
+    public Credential(Context context, String accountName, Token token){
         this.context = context.getApplicationContext();
         this.accountName = accountName;
         this.token = token;

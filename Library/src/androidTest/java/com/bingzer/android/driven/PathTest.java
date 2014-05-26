@@ -2,7 +2,7 @@ package com.bingzer.android.driven;
 
 import android.test.AndroidTestCase;
 
-import com.bingzer.android.driven.api.Path;
+import com.bingzer.android.driven.utils.Path;
 
 public class PathTest extends AndroidTestCase{
 

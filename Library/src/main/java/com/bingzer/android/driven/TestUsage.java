@@ -22,8 +22,8 @@ package com.bingzer.android.driven;
 class TestUsage {
 
     void test(){
-        Driven driven = null;
+        StorageProvider storageProvider = null;
 
-        boolean supportsSharedWithMe = driven.getShared().isSupported();
+        boolean supportsSharedWithMe = storageProvider.getShared().isSupported();
     }
 }

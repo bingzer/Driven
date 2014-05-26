@@ -17,13 +17,12 @@ package com.bingzer.android.driven;
 
 import android.content.Context;
 
-import com.bingzer.android.driven.contracts.Result;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
 import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.contracts.Trashed;
 
-import java.io.File;
+import java.util.List;
 
 /**
  * Driven is an effort to unify API calls for different cloud storage
@@ -38,12 +37,12 @@ import java.io.File;
  * {@code Driven} will try to address this by unifying all the
  * common calls using this interface.
  */
-public interface Driven {
+public interface StorageProvider {
 
     /**
      * Returns the driven user.
      */
-    DrivenUser getDrivenUser();
+    UserInfo getDrivenUser();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,24 +61,24 @@ public interface Driven {
      * Credential (if successful) will be saved automatically
      * for future use
      */
-    Result<DrivenException> authenticate(DrivenCredential credential);
+    Result<DrivenException> authenticate(Credential credential);
 
     /**
      * Try to authenticate with specified {@code credential}.
      * if {@code saveCredential} is {@code true} then the {@code credential}
      * will be saved for future use
      */
-    Result<DrivenException> authenticate(DrivenCredential credential, boolean saveCredential);
+    Result<DrivenException> authenticate(Credential credential, boolean saveCredential);
 
     /**
-     * Async call for {@link #authenticate(com.bingzer.android.driven.DrivenCredential)}
+     * Async call for {@link #authenticate(Credential)}
      */
-    void authenticateAsync(DrivenCredential credential, Task<Result<DrivenException>> result);
+    void authenticateAsync(Credential credential, Task<Result<DrivenException>> task);
 
     /**
-     * Async call for {@link #authenticate(com.bingzer.android.driven.DrivenCredential, boolean)}
+     * Async call for {@link #authenticate(Credential, boolean)}
      */
-    void authenticateAsync(DrivenCredential credential, boolean saveCredential, Task<Result<DrivenException>> result);
+    void authenticateAsync(Credential credential, boolean saveCredential, Task<Result<DrivenException>> task);
 
     /**
      * Clear authentication. This will credential cache if any
@@ -89,7 +88,7 @@ public interface Driven {
     /**
      * Async call for {@link #clearAuthentication(android.content.Context)}
      */
-    void clearAuthenticationAsync(Context context, Task<Result<DrivenException>> result);
+    void clearAuthenticationAsync(Context context, Task<Result<DrivenException>> task);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,135 +102,135 @@ public interface Driven {
      * if {@code parent} is null, then it should check the root directory
      * for the file
      */
-    boolean exists(DrivenFile parent, String name);
+    boolean exists(RemoteFile parent, String name);
 
     /**
      * Async API for {@link #exists(String)}
      */
-    void existsAsync(String title, Task<Boolean> result);
+    void existsAsync(String title, Task<Boolean> task);
 
     /**
-     * Async call for {@link #exists(com.bingzer.android.driven.DrivenFile, String)}
+     * Async call for {@link #exists(RemoteFile, String)}
      */
-    void existsAsync(DrivenFile parent, String title, Task<Boolean> result);
+    void existsAsync(RemoteFile parent, String title, Task<Boolean> task);
 
     /**
-     * Returns {@link com.bingzer.android.driven.DrivenFile} if found by its name
+     * Returns {@link RemoteFile} if found by its name
      * in a specified {@code parent}
      */
-    DrivenFile get(DrivenFile parent, String name);
+    RemoteFile get(RemoteFile parent, String name);
 
     /**
-     * Returns {@link com.bingzer.android.driven.DrivenFile} (if found) by its name
+     * Returns {@link RemoteFile} (if found) by its name
      */
-    DrivenFile get(String name);
+    RemoteFile get(String name);
 
     /**
-     * Async call for {@link #get(com.bingzer.android.driven.DrivenFile, String)}
+     * Async call for {@link #get(RemoteFile, String)}
      */
-    void getAsync(DrivenFile parent, String title, Task<DrivenFile> result);
+    void getAsync(RemoteFile parent, String title, Task<RemoteFile> task);
 
     /**
      * Async call fro {@link #get(String)}
      */
-    void getAsync(String title, Task<DrivenFile> result);
+    void getAsync(String title, Task<RemoteFile> task);
 
     /**
-     * Returns {@link com.bingzer.android.driven.DrivenFile} by its Id (if found)
+     * Returns {@link RemoteFile} by its Id (if found)
      */
-    DrivenFile id(String id);
+    RemoteFile id(String id);
 
     /**
      * Async call for {@link #id(String)}
      */
-    void idAsync(String id, Task<DrivenFile> result);
+    void idAsync(String id, Task<RemoteFile> task);
 
     /**
-     * Returns the details for {@link com.bingzer.android.driven.DrivenFile}
+     * Returns the details for {@link RemoteFile}
      */
-    DrivenFile getDetails(DrivenFile drivenFile);
+    RemoteFile getDetails(RemoteFile remoteFile);
 
     /**
-     * Async call for {@link #getDetails(com.bingzer.android.driven.DrivenFile)}
+     * Async call for {@link #getDetails(RemoteFile)}
      */
-    void getDetailsAsync(DrivenFile drivenFile, Task<DrivenFile> result);
+    void getDetailsAsync(RemoteFile remoteFile, Task<RemoteFile> task);
 
     /**
-     * Returns a collection of {@link com.bingzer.android.driven.DrivenFile}s found
+     * Returns a collection of {@link RemoteFile}s found
      * in the root directory
      */
-    java.util.List<DrivenFile> list();
+    List<RemoteFile> list();
 
     /**
-     * Returns a collection of {@link com.bingzer.android.driven.DrivenFile}s found
+     * Returns a collection of {@link RemoteFile}s found
      * in a specified directory ({@code parent})
      */
-    java.util.List<DrivenFile> list(DrivenFile parent);
+    List<RemoteFile> list(RemoteFile parent);
 
     /**
-     * Async call for {@link #list(com.bingzer.android.driven.DrivenFile)}
+     * Async call for {@link #list(RemoteFile)}
      */
-    void listAsync(DrivenFile folder, Task<java.util.List<DrivenFile>> result);
+    void listAsync(RemoteFile folder, Task<List<RemoteFile>> task);
 
     /**
      * Async call for {@link #list()}
      */
-    void listAsync(Task<java.util.List<DrivenFile>> result);
+    void listAsync(Task<List<RemoteFile>> task);
 
     /**
      * Creates a directory with its name in the root directory
      */
-    DrivenFile create(String name);
+    RemoteFile create(String name);
 
     /**
      * Creates a file with its name in the root directory
      */
-    DrivenFile create(String name, DrivenContent content);
+    RemoteFile create(String name, LocalFile content);
 
     /**
      * Creates a directory (with its name) in the {@code parent} directory
      */
-    DrivenFile create(DrivenFile parent, String name);
+    RemoteFile create(RemoteFile parent, String name);
 
     /**
      * Creates a file in a directory (with its name) in the {@code parent} directory
      */
-    DrivenFile create(DrivenFile parent, String name, DrivenContent content);
+    RemoteFile create(RemoteFile parent, String name, LocalFile content);
 
     /**
-     * Async call for {@link #create(com.bingzer.android.driven.DrivenFile, String, com.bingzer.android.driven.DrivenContent)}
+     * Async call for {@link #create(RemoteFile, String, LocalFile)}
      */
-    void createAsync(DrivenFile parent, String name, DrivenContent content, Task<DrivenFile> result);
+    void createAsync(RemoteFile parent, String name, LocalFile content, Task<RemoteFile> task);
 
     /**
-     * Async call for {@link #create(com.bingzer.android.driven.DrivenFile, String)}
+     * Async call for {@link #create(RemoteFile, String)}
      */
-    void createAsync(DrivenFile parent, String name, Task<DrivenFile> result);
+    void createAsync(RemoteFile parent, String name, Task<RemoteFile> task);
 
     /**
-     * Async call for {@link #create(String, com.bingzer.android.driven.DrivenContent)}
+     * Async call for {@link #create(String, LocalFile)}
      */
-    void createAsync(String name, DrivenContent content, Task<DrivenFile> result);
+    void createAsync(String name, LocalFile content, Task<RemoteFile> task);
 
     /**
      * Async call for {@link #create(String)}
      */
-    void createAsync(String name, Task<DrivenFile> result);
+    void createAsync(String name, Task<RemoteFile> task);
 
     /**
-     * Update a file. Content of file is specified by {@link com.bingzer.android.driven.DrivenContent}
+     * Update a file. Content of file is specified by {@link LocalFile}
      */
-    DrivenFile update(DrivenFile drivenFile, DrivenContent content);
+    RemoteFile update(RemoteFile remoteFile, LocalFile content);
 
     /**
-     * Async call for {@link #update(com.bingzer.android.driven.DrivenFile, com.bingzer.android.driven.DrivenContent)}
+     * Async call for {@link #update(RemoteFile, LocalFile)}
      */
-    void updateAsync(DrivenFile drivenFile, DrivenContent content, Task<DrivenFile> result);
+    void updateAsync(RemoteFile remoteFile, LocalFile content, Task<RemoteFile> task);
 
     /**
      * Deletes a file specified by its Id.
-     * Most of the time you probably want to get the {@link com.bingzer.android.driven.DrivenFile}
-     * first then called {@link com.bingzer.android.driven.DrivenFile#delete()}.
+     * Most of the time you probably want to get the {@link RemoteFile}
+     * first then called {@link RemoteFile#delete()}.
      * <p/>
      * Note that {@code id} is required to be a valid id
      */
@@ -240,42 +239,42 @@ public interface Driven {
     /**
      * Async call for {@link #delete(String)}
      */
-    void deleteAsync(String id, Task<Boolean> result);
+    void deleteAsync(String id, Task<Boolean> task);
 
     /**
-     * Returns the first {@link com.bingzer.android.driven.DrivenFile} found in the query.
+     * Returns the first {@link RemoteFile} found in the query.
      * Query is provider-dependent. Check with provider's documentation and implementation.
      */
-    DrivenFile first(String query);
+    RemoteFile first(String query);
 
     /**
      * Async call for {@link #first(String)}
      */
-    void firstAsync(String query, Task<DrivenFile> result);
+    void firstAsync(String query, Task<RemoteFile> task);
 
     /**
-     * Search for a {@code query} and returns all {@link com.bingzer.android.driven.DrivenFile}
+     * Search for a {@code query} and returns all {@link RemoteFile}
      * that matches the criteria of the specified {@code query}.
      * Query is provider-dependent. Check with provider's documentation and implementation.
      */
-    java.util.List<DrivenFile> query(String query);
+    List<RemoteFile> query(String query);
 
     /**
      * Async call for {@link #query(String)}
      */
-    void queryAsync(String query, Task<java.util.List<DrivenFile>> result);
+    void queryAsync(String query, Task<List<RemoteFile>> task);
 
     /**
      * Download remote file to {@code local}. Most of the time
-     * you would use {@link com.bingzer.android.driven.DrivenFile#download(java.io.File)}
+     * you would use {@link RemoteFile#download(LocalFile)}
      * rather than calling this method
      */
-    DrivenContent download(DrivenFile drivenFile, File local);
+    boolean download(RemoteFile remoteFile, LocalFile local);
 
     /**
-     * Async all for {@link #download(com.bingzer.android.driven.DrivenFile, java.io.File)}
+     * Async all for {@link #download(RemoteFile, LocalFile)}
      */
-    void downloadAsync(DrivenFile drivenFile, File local, Task<DrivenContent> result);
+    void downloadAsync(RemoteFile remoteFile, LocalFile local, Task<Boolean> task);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
