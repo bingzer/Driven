@@ -86,6 +86,35 @@ public class DropboxFileTest extends AndroidTestCase {
         signal.await();
     }
 
+    public void test_get() throws Exception {
+        remoteFile = driven.create("Folder88");
+        assertNotNull(driven.create(remoteFile, "File11"));
+        assertNotNull(driven.create(remoteFile, "File12"));
+
+        RemoteFile child = remoteFile.get("File11");
+        assertNotNull(child);
+        assertEquals("File11", child.getName());
+    }
+
+    public void test_getAsync() throws Exception {
+        remoteFile = driven.create("Folder88");
+        assertNotNull(driven.create(remoteFile, "File11"));
+        assertNotNull(driven.create(remoteFile, "File12"));
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        remoteFile.getAsync("File11", new Task<RemoteFile>() {
+            @Override
+            public void onCompleted(RemoteFile result) {
+                assertNotNull(result);
+                assertEquals("File11", result.getName());
+
+                signal.countDown();
+            }
+        });
+
+        signal.await();
+    }
+
     public void test_list() throws Exception {
         remoteFile = driven.create("Folder88");
         assertNotNull(driven.create(remoteFile, "File11"));
@@ -98,7 +127,7 @@ public class DropboxFileTest extends AndroidTestCase {
             counter++;
         }
 
-        assertTrue(counter > 0);
+        assertTrue(counter > 1);
     }
 
     public void test_listAsync() throws Exception {

@@ -74,6 +74,19 @@ public interface RemoteFile {
      */
     public void fetchDetailsAsync(Task<Boolean> task);
 
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * If this file is {@link #isDirectory()} then this
+     * method should return a single children the specified {@code name}
+     */
+    public RemoteFile get(String name);
+
+    /**
+     * Async for {@link #get(String)}
+     */
+    public void getAsync(String name, Task<RemoteFile> task);
+
     /**
      * If this file is {@link #isDirectory()} then this
      * method should return all children within.
