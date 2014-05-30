@@ -87,6 +87,39 @@ class DropboxFile implements RemoteFile {
         });
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public RemoteFile create(String name) {
+        return getStorageProvider().create(this, name);
+    }
+
+    @Override
+    public RemoteFile create(String name, LocalFile content) {
+        return getStorageProvider().create(name, content);
+    }
+
+    @Override
+    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
+        doAsync(task, new Delegate<RemoteFile>() {
+            @Override
+            public RemoteFile invoke() {
+                return create(name, content);
+            }
+        });
+    }
+
+    @Override
+    public void createAsync(final String name, Task<RemoteFile> task) {
+        doAsync(task, new Delegate<RemoteFile>() {
+            @Override
+            public RemoteFile invoke() {
+                return create(name);
+            }
+        });
+    }
+
     @Override
     public RemoteFile get(String name) {
         return getStorageProvider().get(this, name);

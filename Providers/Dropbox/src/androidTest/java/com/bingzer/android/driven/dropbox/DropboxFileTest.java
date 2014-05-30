@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 import dagger.ObjectGraph;
 
+@SuppressWarnings("ALL")
 public class DropboxFileTest extends AndroidTestCase {
 
     private Dropbox driven;
@@ -79,6 +80,67 @@ public class DropboxFileTest extends AndroidTestCase {
             public void onCompleted(Boolean result) {
                 assertTrue(result);
                 assertNull(driven.get(remoteFile.getName()));
+                signal.countDown();
+            }
+        });
+
+        signal.await();
+    }
+
+
+    public void test_create() throws Exception {
+        assertNull(driven.get(remoteFile, "Test"));
+
+        RemoteFile child = remoteFile.create("Test");
+
+        child = driven.get(remoteFile, "Test");
+        assertTrue(child.isDirectory());
+        assertNotNull(child);
+        assertNotNull("Test", child.getName());
+    }
+
+    public void test_createAsync() throws Exception {
+        assertNull(driven.get(remoteFile, "Test"));
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        remoteFile.createAsync("Test", new Task<RemoteFile>() {
+            @Override
+            public void onCompleted(RemoteFile result) {
+                assertNotNull(result);
+
+                RemoteFile child = driven.get(remoteFile, "Test");
+                assertTrue(child.isDirectory());
+                assertNotNull(child);
+                assertNotNull("Test", child.getName());
+
+                signal.countDown();
+            }
+        });
+
+        signal.await();
+    }
+
+    public void test_create_localFile() throws Exception {
+        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        assertNull(driven.get(remoteFile, "TestFile"));
+
+        RemoteFile child = remoteFile.create("TestFile", localFile);
+
+        assertFalse(child.isDirectory());
+        assertNotNull(child);
+        assertNotNull("TestFile", child.getName());
+    }
+
+    public void test_createAsync_localFile() throws Exception {
+        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        assertNull(driven.get(remoteFile, "TestFile"));
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        remoteFile.createAsync("TestFile", localFile, new Task<RemoteFile>() {
+            @Override
+            public void onCompleted(RemoteFile result) {
+                assertNotNull(result);
+
                 signal.countDown();
             }
         });

@@ -30,22 +30,22 @@ public interface RemoteFile {
     /**
      * The unique identifier.
      */
-    public String getId();
+    String getId();
 
     /**
      * True if this file is a directory
      */
-    public boolean isDirectory();
+    boolean isDirectory();
 
     /**
      * The name of this file
      */
-    public String getName();
+    String getName();
 
     /**
      * The MIME type of this file
      */
-    public String getType();
+    String getType();
 
     /**
      * The public downloadable URL.
@@ -54,113 +54,135 @@ public interface RemoteFile {
      * It may or may not use authenticate scheme
      * by the provider.
      */
-    public String getDownloadUrl();
+    String getDownloadUrl();
 
     /**
      * True if this file has "all" the details (metadata)
      * provided by the provider.
      */
-    public boolean hasDetails();
+    boolean hasDetails();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Fetch this file's complete metadata
      */
-    public boolean fetchDetails();
+    boolean fetchDetails();
 
     /**
      * Async for {@link #fetchDetails()}
      */
-    public void fetchDetailsAsync(Task<Boolean> task);
+    void fetchDetailsAsync(Task<Boolean> task);
 
     //////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * If this file is {@link #isDirectory()} then
+     * create a directory under this directory
+     */
+    RemoteFile create(String name);
+
+    /**
+     * If this file is {@link #isDirectory()} then
+     * creates a file with under this directory
+     */
+    RemoteFile create(String name, LocalFile content);
+
+    /**
+     * Async call for {@link #create(String, LocalFile)}
+     */
+    void createAsync(String name, LocalFile content, Task<RemoteFile> task);
+
+    /**
+     * Async call for {@link #create(String)}
+     */
+    void createAsync(String name, Task<RemoteFile> task);
 
     /**
      * If this file is {@link #isDirectory()} then this
      * method should return a single children the specified {@code name}
      */
-    public RemoteFile get(String name);
+    RemoteFile get(String name);
 
     /**
      * Async for {@link #get(String)}
      */
-    public void getAsync(String name, Task<RemoteFile> task);
+    void getAsync(String name, Task<RemoteFile> task);
 
     /**
      * If this file is {@link #isDirectory()} then this
      * method should return all children within.
      */
-    public List<RemoteFile> list();
+    List<RemoteFile> list();
 
     /**
      * Async for {@link #list()}
      */
-    public void listAsync(Task<List<RemoteFile>> task);
+    void listAsync(Task<List<RemoteFile>> task);
 
     /**
      * Download and keep this file to the local.
      * There should be no local-to-remote mapping.
      */
-    public boolean download(LocalFile local);
+    boolean download(LocalFile local);
 
     /**
      * Async for {@link #download(LocalFile)}
      */
-    public void downloadAsync(LocalFile local, Task<Boolean> task);
+    void downloadAsync(LocalFile local, Task<Boolean> task);
 
     /**
      * Upload/Save a file to this file. The remote content file
      * will be overwritten by the {@code content}
      */
-    public boolean upload(LocalFile local);
+    boolean upload(LocalFile local);
 
     /**
      * Async for {@link #upload(com.bingzer.android.driven.LocalFile)}
      */
-    public void uploadAsync(LocalFile local, Task<Boolean> task);
+    void uploadAsync(LocalFile local, Task<Boolean> task);
 
     /**
      * Share this file to other user. "Sharing" is generic and you should
      * refer to the Provider's documentation
      */
-    public String share(String user);
+    String share(String user);
 
     /**
      * Share this file to other user. "Sharing" is generic and you should
      * refer to the Provider's documentation
      */
-    public String share(String user, int kind);
+    String share(String user, int kind);
 
     /**
      * Async for {@link #share(String)}
      */
-    public void shareAsync(String user, Task<String> task);
+    void shareAsync(String user, Task<String> task);
 
     /**
      * Async for {@link #share(String, int)}
      */
-    public void shareAsync(String user, int kind, Task<String> task);
+    void shareAsync(String user, int kind, Task<String> task);
 
     /**
      * Delete or removes this file from remote provider.
      */
-    public boolean delete();
+    boolean delete();
 
     /**
      * Async for {@link #delete()}
      */
-    public void deleteAsync(Task<Boolean> task);
+    void deleteAsync(Task<Boolean> task);
 
     /**
      * Rename the name of this file. True if successful,
      * false otherwise
      */
-    public boolean rename(String name);
+    boolean rename(String name);
 
     /**
      * Async call for {@link #rename(String)}
      */
-    public void renameAsync(String name, Task<Boolean> task);
+    void renameAsync(String name, Task<Boolean> task);
 
 }
