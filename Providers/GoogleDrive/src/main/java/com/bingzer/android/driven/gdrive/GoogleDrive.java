@@ -203,19 +203,19 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void existsAsync(final String title, Task<Boolean> task) {
+    public void existsAsync(final String name, Task<Boolean> task) {
         doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
-                return exists(title);
+                return exists(name);
             }
         });
     }
 
     @Override
-    public void existsAsync(final RemoteFile parent, final String title, Task<Boolean> task) {
+    public void existsAsync(final RemoteFile parent, final String name, Task<Boolean> task) {
         doAsync(task, new Delegate<Boolean>() {
             @Override public Boolean invoke() {
-                return exists(parent, title);
+                return exists(parent, name);
             }
         });
     }
@@ -245,10 +245,10 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void getAsync(final String title, Task<RemoteFile> task) {
+    public void getAsync(final String name, Task<RemoteFile> task) {
         doAsync(task, new Delegate<RemoteFile>() {
             @Override public RemoteFile invoke() {
-                return get(title);
+                return get(name);
             }
         });
     }
@@ -259,10 +259,10 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void getAsync(final RemoteFile parent, final String title, Task<RemoteFile> task) {
+    public void getAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
         doAsync(task, new Delegate<RemoteFile>() {
             @Override public RemoteFile invoke() {
-                return get(parent, title);
+                return get(parent, name);
             }
         });
     }

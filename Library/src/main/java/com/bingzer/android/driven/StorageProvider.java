@@ -107,12 +107,12 @@ public interface StorageProvider {
     /**
      * Async API for {@link #exists(String)}
      */
-    void existsAsync(String title, Task<Boolean> task);
+    void existsAsync(String name, Task<Boolean> task);
 
     /**
      * Async call for {@link #exists(RemoteFile, String)}
      */
-    void existsAsync(RemoteFile parent, String title, Task<Boolean> task);
+    void existsAsync(RemoteFile parent, String name, Task<Boolean> task);
 
     /**
      * Returns {@link RemoteFile} if found by its name
@@ -128,12 +128,12 @@ public interface StorageProvider {
     /**
      * Async call for {@link #get(RemoteFile, String)}
      */
-    void getAsync(RemoteFile parent, String title, Task<RemoteFile> task);
+    void getAsync(RemoteFile parent, String name, Task<RemoteFile> task);
 
     /**
      * Async call fro {@link #get(String)}
      */
-    void getAsync(String title, Task<RemoteFile> task);
+    void getAsync(String name, Task<RemoteFile> task);
 
     /**
      * Returns {@link RemoteFile} by its Id (if found)
