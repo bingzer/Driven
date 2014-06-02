@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
@@ -32,6 +33,8 @@ import com.bingzer.android.driven.dropbox.Dropbox;
 import com.bingzer.android.driven.dropbox.app.DropboxActivity;
 import com.bingzer.android.driven.gdrive.GoogleDrive;
 import com.bingzer.android.driven.gdrive.app.GoogleDriveActivity;
+import com.bingzer.android.driven.local.ExternalDrive;
+import com.bingzer.android.driven.local.app.ExternalDriveActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private static final int REQUEST_PICK_FILE = 102;
     private StorageProvider gdrive = new GoogleDrive();
     private StorageProvider dropbox = new Dropbox();
+    private StorageProvider externalDrive = new ExternalDrive();
     private StorageProvider storageProvider = gdrive;
 
     private List<RemoteFile> files;
@@ -124,6 +128,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             }
             return true;
         }
+        else if(getString(R.string.external_drive).equals(provider)){
+            if(!dropbox.isAuthenticated()){
+                ExternalDriveActivity.launch(this, Environment.getExternalStorageDirectory().getAbsolutePath());
+            }
+            else{
+                storageProvider = externalDrive;
+                breadcrumbs.clear();
+                list(null);
+            }
+            return true;
+        }
 
         return false;
     }
@@ -137,6 +152,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     break;
                 case DropboxActivity.REQUEST_LOGIN:
                     storageProvider = dropbox;
+                    break;
+                case ExternalDriveActivity.REQUEST_LOGIN:
+                    storageProvider = externalDrive;
                     break;
                 case REQUEST_PICK_FILE:
                     createFile("*/*", new File(data.getData().getPath()));
@@ -175,7 +193,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         storageProvider.listAsync(parent, new Task<List<RemoteFile>>() {
             @Override
             public void onCompleted(List<RemoteFile> result) {
-                files = (List<RemoteFile>) result;
+                files = result;
                 listAdapter.notifyDataSetChanged();
             }
         });

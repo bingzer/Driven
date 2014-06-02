@@ -36,6 +36,7 @@ dependencies {
     compile project(':Library')
     compile project(':Providers:Dropbox')
     compile project(':Providers:GoogleDrive')
+    compile project(':Providers:ExternalDrive')
 }
 
 def getDropboxAppKey(){

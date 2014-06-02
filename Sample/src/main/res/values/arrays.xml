@@ -3,8 +3,10 @@
     <array name="driven_providers">
         <item>@string/google_drive</item>
         <item>@string/dropbox</item>
+        <item>@string/external_drive</item>
     </array>
 
     <string name="google_drive">Google Drive</string>
     <string name="dropbox">Dropbox</string>
+    <string name="external_drive">External Drive</string>
 </resources>
