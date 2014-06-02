@@ -47,7 +47,7 @@ public final class IOUtils {
 
     public static void safeCreateDir(File dir){
         if(dir.exists()) return;
-        dir.mkdir();
+        dir.mkdirs();
     }
 
     public static void copyFile(File sourceFile, File destFile) throws IOException {

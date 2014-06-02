@@ -104,7 +104,7 @@ public final class AsyncUtils {
 
     private static void throwError(Throwable any){
         Log.e("AsyncUtils", "Error occurred:", any);
-        throw new DrivenException(any);
+        throw new RuntimeException(any);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
