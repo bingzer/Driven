@@ -4,11 +4,11 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.DrivenException;
+import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.StorageProvider;
-import com.bingzer.android.driven.LocalFile;
-import com.bingzer.android.driven.DrivenException;
-import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.UserInfo;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.SharedWithMe;
@@ -21,7 +21,6 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
