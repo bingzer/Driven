@@ -29,11 +29,11 @@ public class ExternalDriveFileTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", dexCache);
 
 
-        rootFile = new File(Environment.getExternalStorageDirectory(), "driven-extdrive");
+        rootFile = new File(Environment.getExternalStorageDirectory(), "driven-extdrive-test");
         FileGenerator.generate(rootFile);
 
-        driven = new ExternalDrive(rootFile.getAbsolutePath());
-        Credential credential = new Credential(getContext());
+        driven = new ExternalDrive();
+        Credential credential = new Credential(getContext(), rootFile.getAbsolutePath());
 
         ExternalDriveFile.setStorageProvider(driven);
 
@@ -52,9 +52,9 @@ public class ExternalDriveFileTest extends AndroidTestCase {
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     public void test_property() throws Exception {
-        assertEquals(Environment.getExternalStorageDirectory() + "/driven-extdrive/Folder100", remoteDir.getId());
+        assertEquals(Environment.getExternalStorageDirectory() + "/driven-extdrive-test/Folder100", remoteDir.getId());
         assertEquals("Folder100", remoteDir.getName());
-        assertEquals(Environment.getExternalStorageDirectory() + "/driven-extdrive/Folder100", remoteDir.getDownloadUrl());
+        assertEquals(Environment.getExternalStorageDirectory() + "/driven-extdrive-test/Folder100", remoteDir.getDownloadUrl());
         assertTrue(remoteDir.hasDetails());
     }
 

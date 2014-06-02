@@ -19,7 +19,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DrivenException;
+import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.StorageProvider;
 import com.bingzer.android.driven.local.ExternalDrive;
 
@@ -27,7 +29,7 @@ public class ExternalDriveActivity extends Activity {
     public static final String BUNDLE_KEY_LOGIN = "com.bingzer.android.driven.local.app.login";
     public static final String BUNDLE_KEY_ROOT = "com.bingzer.android.driven.local.app.rootPath";
 
-    public static final int REQUEST_LOGIN = 100;
+    public static final int REQUEST_LOGIN = 300;
     public static final int REQUEST_ACCOUNT_PICKER = 1;
     public static final int REQUEST_AUTHORIZATION = 2;
 
@@ -40,9 +42,15 @@ public class ExternalDriveActivity extends Activity {
         if (getIntent() != null){
             String rootPath = getIntent().getStringExtra(BUNDLE_KEY_ROOT);
             if(rootPath != null){
-                storageProvider = new ExternalDrive(rootPath);
-                successfullyAuthenticated();
-                return;
+                storageProvider = new ExternalDrive();
+                Result<DrivenException> result = storageProvider.authenticate(new Credential(this, rootPath));
+                if(result.isSuccess()) {
+                    successfullyAuthenticated();
+                    return;
+                }
+                else{
+                    throw new DrivenException(result.getException());
+                }
             }
         }
 

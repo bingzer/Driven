@@ -31,10 +31,8 @@ public class ExternalDriveTest extends AndroidTestCase {
         rootFile = new File(Environment.getExternalStorageDirectory(), "driven-extdrive-test");
         FileGenerator.generate(rootFile);
 
-        driven = new ExternalDrive(rootFile.getAbsolutePath());
-        credential = new Credential(getContext());
-
-        FileGenerator.generate(rootFile);
+        driven = new ExternalDrive();
+        credential = new Credential(getContext(), rootFile.getAbsolutePath());
     }
 
     @Override
@@ -364,6 +362,8 @@ public class ExternalDriveTest extends AndroidTestCase {
     }
 
     public void test_create_file() throws Exception {
+        driven.authenticate(credential);
+
         RemoteFile remoteFile = driven.get("File001");
         LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
 
@@ -377,6 +377,8 @@ public class ExternalDriveTest extends AndroidTestCase {
     }
 
     public void test_createAsync_file() throws Exception {
+        driven.authenticate(credential);
+
         RemoteFile remoteFile = driven.get("File001");
         LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
 
@@ -432,6 +434,8 @@ public class ExternalDriveTest extends AndroidTestCase {
     }
 
     public void test_create_fileInParent() throws Exception {
+        driven.authenticate(credential);
+
         RemoteFile remoteFile = driven.get("File001");
         LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
         // we're going to create a file within a parent
@@ -447,6 +451,8 @@ public class ExternalDriveTest extends AndroidTestCase {
     }
 
     public void test_createAsync_fileInParent() throws Exception {
+        driven.authenticate(credential);
+
         RemoteFile remoteFile = driven.get("File001");
         LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
         // we're going to create a file within a parent

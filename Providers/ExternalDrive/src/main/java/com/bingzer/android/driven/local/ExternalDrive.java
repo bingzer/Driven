@@ -47,35 +47,35 @@ import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 public final class ExternalDrive implements StorageProvider {
 
     private static final String TAG = "ExternalDrive";
-    private final File root;
-    private UserInfo userInfo = new ExternalDriveUserInfo();
+    private static File root;
+    private static UserInfo userInfo;
 
-    /**
-     * Creates an external drive with path root
-     * @param path the root
-     */
-    public ExternalDrive(String path){
-        root = new File(path);
-        IOUtils.safeCreateDir(root);
-
+    public ExternalDrive(){
         ExternalDriveFile.setStorageProvider(this);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
 
+    public File getRoot(){
+        if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
+        return root;
+    }
+
     @Override
     public UserInfo getDrivenUser() {
+        if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return userInfo;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return true;
+        return root != null && userInfo != null;
     }
 
     @Override
     public boolean hasSavedCredentials(Context context) {
-        return true;
+        Credential credential = new Credential(context);
+        return credential.hasSavedCredential(TAG);
     }
 
     @Override
@@ -85,7 +85,33 @@ public final class ExternalDrive implements StorageProvider {
 
     @Override
     public Result<DrivenException> authenticate(Credential credential, boolean saveCredential) {
-        return new Result<DrivenException>();
+        Log.i(TAG, "Driven API is authenticating with ExternalDrive Service");
+        Result<DrivenException> result = new Result<DrivenException>(false);
+        try {
+            if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
+
+            if(credential.hasSavedCredential(TAG)){
+                credential.read(TAG);
+            }
+
+            root = new File(credential.getAccountName());
+            IOUtils.safeCreateDir(root);
+
+            userInfo = new ExternalDriveUserInfo();
+
+            result.setSuccess(true);
+            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + userInfo);
+
+            if(saveCredential)
+                credential.save(TAG);
+        }
+        catch (Exception e) {
+            Log.i(TAG, "Driven API failed to authenticate");
+            Log.e(TAG, "Exception:", e);
+            result.setException(new DrivenException(e));
+        }
+
+        return result;
     }
 
     @Override
@@ -125,7 +151,7 @@ public final class ExternalDrive implements StorageProvider {
 
     @Override
     public boolean exists(String name) {
-        return new File(root, name).exists();
+        return new File(getRoot(), name).exists();
     }
 
     @Override
@@ -164,7 +190,7 @@ public final class ExternalDrive implements StorageProvider {
 
     @Override
     public RemoteFile get(String name) {
-        return get(new ExternalDriveFile(root.getAbsolutePath()), name);
+        return get(new ExternalDriveFile(getRoot().getAbsolutePath()), name);
     }
 
     @Override
@@ -219,15 +245,20 @@ public final class ExternalDrive implements StorageProvider {
 
     @Override
     public List<RemoteFile> list() {
-        return list(new ExternalDriveFile(root.getAbsolutePath()));
+        return list(new ExternalDriveFile(getRoot().getAbsolutePath()));
     }
 
     @Override
     public List<RemoteFile> list(RemoteFile parent) {
+        if(parent == null) return list();
+
         File file = new File(parent.getId());
         List<RemoteFile> list = new ArrayList<RemoteFile>();
-        for(String absolutePath : file.list()){
-            list.add(new ExternalDriveFile(absolutePath));
+        File[] children = file.listFiles();
+        if(children != null){
+            for(File f : children){
+                list.add(new ExternalDriveFile(f.getAbsolutePath()));
+            }
         }
         return list;
     }
@@ -254,12 +285,12 @@ public final class ExternalDrive implements StorageProvider {
 
     @Override
     public RemoteFile create(String name) {
-        return create(new ExternalDriveFile(root.getAbsolutePath()), name);
+        return create(new ExternalDriveFile(getRoot().getAbsolutePath()), name);
     }
 
     @Override
     public RemoteFile create(String name, LocalFile content) {
-        return create(new ExternalDriveFile(root.getAbsolutePath()), name, content);
+        return create(new ExternalDriveFile(getRoot().getAbsolutePath()), name, content);
     }
 
     @Override
