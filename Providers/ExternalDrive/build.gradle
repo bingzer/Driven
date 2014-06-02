@@ -1,4 +1,4 @@
-project.ext.set("archivesBaseName", "driven-local");
+project.ext.set("archivesBaseName", "driven-ext-drive");
 
 apply plugin: 'android-library'
 
