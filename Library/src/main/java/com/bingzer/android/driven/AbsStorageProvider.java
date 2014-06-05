@@ -124,6 +124,19 @@ public abstract class AbsStorageProvider implements StorageProvider {
     }
 
     /**
+     * Async call for {@link #getPermission(RemoteFile)}
+     */
+    @Override
+    public void getPermissionAsync(final RemoteFile remoteFile, Task<Permission> task) {
+        doAsync(task, new Delegate<Permission>() {
+            @Override
+            public Permission invoke() {
+                return getPermission(remoteFile);
+            }
+        });
+    }
+
+    /**
      * Async call for {@link #get(RemoteFile, String)}
      */
     @Override

@@ -102,9 +102,9 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_getDrivenUser() throws Exception{
         driven.authenticate(credential);
 
-        assertEquals("Name", driven.getDrivenUser().getName());
-        assertEquals("DisplayName", driven.getDrivenUser().getDisplayName());
-        assertEquals("EmailAddress", driven.getDrivenUser().getEmailAddress());
+        assertEquals("Name", driven.getUserInfo().getName());
+        assertEquals("DisplayName", driven.getUserInfo().getDisplayName());
+        assertEquals("EmailAddress", driven.getUserInfo().getEmailAddress());
     }
 
     public void test_getDrivenService(){

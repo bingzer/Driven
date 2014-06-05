@@ -98,10 +98,10 @@ public class DropboxTest extends AndroidTestCase {
     public void test_getDrivenUser() throws Exception{
         driven.authenticate(credential);
 
-        assertEquals("DisplayName", driven.getDrivenUser().getName());
-        assertEquals("DisplayName", driven.getDrivenUser().getDisplayName());
+        assertEquals("DisplayName", driven.getUserInfo().getName());
+        assertEquals("DisplayName", driven.getUserInfo().getDisplayName());
         // we don't have email address
-        //assertEquals("EmailAddress", driven.getDrivenUser().getEmailAddress());
+        //assertEquals("EmailAddress", driven.getUserInfo().getEmailAddress());
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////

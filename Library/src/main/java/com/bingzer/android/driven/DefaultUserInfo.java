@@ -44,4 +44,17 @@ public class DefaultUserInfo implements UserInfo{
                 ", name='" + name + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof UserInfo){
+            if(name != null && name.equalsIgnoreCase(((UserInfo) o).getName()))
+                return true;
+            if(displayName != null && displayName.equalsIgnoreCase(((UserInfo) o).getDisplayName()))
+                return true;
+            if(emailAddress != null && emailAddress.equalsIgnoreCase(((UserInfo) o).getEmailAddress()))
+                return true;
+        }
+        return false;
+    }
 }

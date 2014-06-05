@@ -23,21 +23,6 @@ import com.bingzer.android.driven.RemoteFile;
 public interface Sharing extends Feature {
 
     /**
-     * Default permission
-     */
-    int PERMISSION_DEFAULT = -1;
-
-    /**
-     * Read-only permission
-     */
-    int PERMISSION_READ = 0;
-
-    /**
-     * Full permission
-     */
-    int PERMISSION_FULL = 1;
-
-    /**
      * True if Provider's implementation support "Sharing"
      */
     boolean isSupported();
@@ -53,6 +38,10 @@ public interface Sharing extends Feature {
      * Share {@link com.bingzer.android.driven.RemoteFile} to other user.
      * The term "user" is generic. Most of the time it is an email address.
      * Check with provider's implementation.
+     *
+     * @see com.bingzer.android.driven.Permission#PERMISSION_OWNER
+     * @see com.bingzer.android.driven.Permission#PERMISSION_READ
+     * @see com.bingzer.android.driven.Permission#PERMISSION_FULL
      */
     String share(RemoteFile remoteFile, String user, int kind);
 

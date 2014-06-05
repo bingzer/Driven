@@ -18,6 +18,7 @@ package com.bingzer.android.driven.local;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsPermission;
 import com.bingzer.android.driven.AbsSearch;
 import com.bingzer.android.driven.AbsSharedWithMe;
 import com.bingzer.android.driven.AbsSharing;
@@ -27,9 +28,11 @@ import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.Permission;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.UserInfo;
+import com.bingzer.android.driven.UserRole;
 import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
@@ -40,6 +43,7 @@ import com.bingzer.android.driven.utils.Path;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,7 +63,7 @@ public final class ExternalDrive extends AbsStorageProvider {
     }
 
     @Override
-    public UserInfo getDrivenUser() {
+    public UserInfo getUserInfo() {
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return userInfo;
     }
@@ -112,6 +116,16 @@ public final class ExternalDrive extends AbsStorageProvider {
     @Override
     public boolean exists(RemoteFile parent, String name) {
         return new File(parent.getId(), name).exists();
+    }
+
+    @Override
+    public Permission getPermission(RemoteFile remoteFile) {
+        return new AbsPermission() {
+            @Override
+            public List<UserRole> getRoles() {
+                return Arrays.asList(new UserRole(getUserInfo(), PERMISSION_OWNER));
+            }
+        };
     }
 
     @Override
@@ -300,7 +314,7 @@ public final class ExternalDrive extends AbsStorageProvider {
 
         @Override
         public String share(RemoteFile remoteFile, String user) {
-            throw new UnsupportedOperationException();
+            return share(remoteFile, user, Permission.PERMISSION_FULL);
         }
 
         @Override

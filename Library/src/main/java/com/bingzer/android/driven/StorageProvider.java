@@ -43,7 +43,7 @@ public interface StorageProvider {
     /**
      * Returns the driven user.
      */
-    UserInfo getDrivenUser();
+    UserInfo getUserInfo();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -126,6 +126,22 @@ public interface StorageProvider {
      * Async call for {@link #exists(RemoteFile, String)}
      */
     void existsAsync(RemoteFile parent, String name, Task<Boolean> task);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the role that {@link #getUserInfo()} has for the
+     * specified {@code remoteFile}.
+     *
+     * @see com.bingzer.android.driven.Permission
+     * @see com.bingzer.android.driven.UserRole
+     */
+    Permission getPermission(RemoteFile remoteFile);
+
+    /**
+     * Async call for {@link #getPermission(RemoteFile)}
+     */
+    void getPermissionAsync(RemoteFile remoteFile, Task<Permission> task);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 

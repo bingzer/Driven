@@ -3,6 +3,7 @@ package com.bingzer.android.driven.dropbox;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsPermission;
 import com.bingzer.android.driven.AbsSearch;
 import com.bingzer.android.driven.AbsSharedWithMe;
 import com.bingzer.android.driven.AbsSharing;
@@ -12,9 +13,11 @@ import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.Permission;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.UserInfo;
+import com.bingzer.android.driven.UserRole;
 import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
@@ -28,6 +31,7 @@ import com.dropbox.client2.session.AppKeyPair;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -56,7 +60,7 @@ public class Dropbox extends AbsStorageProvider {
     }
 
     @Override
-    public UserInfo getDrivenUser() {
+    public UserInfo getUserInfo() {
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return userInfo;
     }
@@ -207,6 +211,20 @@ public class Dropbox extends AbsStorageProvider {
         return get(parent, name) != null;
     }
 
+    /**
+     * Returns the role that {@link #getUserInfo()} has for the
+     * specified {@code remoteFile}.
+     */
+    @Override
+    public Permission getPermission(RemoteFile remoteFile) {
+        return new AbsPermission() {
+            @Override
+            public List<UserRole> getRoles() {
+                return Arrays.asList(new UserRole(getUserInfo(), PERMISSION_OWNER));
+            }
+        };
+    }
+
     @Override
     public RemoteFile get(RemoteFile parent, String name) {
         try {
@@ -350,7 +368,7 @@ public class Dropbox extends AbsStorageProvider {
 
         @Override
         public boolean isSupported() {
-            return false;
+            return true;
         }
     }
 
@@ -413,7 +431,7 @@ public class Dropbox extends AbsStorageProvider {
 
         @Override
         public String share(RemoteFile remoteFile, String user) {
-            return share(remoteFile, user, PERMISSION_DEFAULT);
+            return share(remoteFile, user, Permission.PERMISSION_FULL);
         }
 
         @Override

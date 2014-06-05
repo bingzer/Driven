@@ -18,6 +18,7 @@ package com.bingzer.android.driven.gdrive;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsPermission;
 import com.bingzer.android.driven.AbsSearch;
 import com.bingzer.android.driven.AbsSharedWithMe;
 import com.bingzer.android.driven.AbsSharing;
@@ -30,6 +31,7 @@ import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.UserInfo;
+import com.bingzer.android.driven.UserRole;
 import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
@@ -44,6 +46,7 @@ import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.drive.model.Permission;
+import com.google.api.services.drive.model.PermissionList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,7 +78,7 @@ public final class GoogleDrive extends AbsStorageProvider {
     }
 
     @Override
-    public UserInfo getDrivenUser() throws DrivenException {
+    public UserInfo getUserInfo() throws DrivenException {
         if(!isAuthenticated()) throw new DrivenException("Driven API is not yet authenticated. Call authenticate() first");
         return userInfo;
     }
@@ -163,6 +166,17 @@ public final class GoogleDrive extends AbsStorageProvider {
             return exists("'" + parent.getId() + "' in parents AND title = '" + name + "'", "id", false);
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @Override
+    public com.bingzer.android.driven.Permission getPermission(RemoteFile remoteFile) {
+        try{
+            PermissionList permissionList = getGoogleDriveApi().permissions().list(remoteFile.getId()).execute();
+            return new GoogleDrivePermission(permissionList);
+        }
+        catch (Exception e) {
+            return null;
         }
     }
 
@@ -435,7 +449,7 @@ public final class GoogleDrive extends AbsStorageProvider {
 
         @Override
         public String share(RemoteFile remoteFile, String user) {
-            return share(remoteFile, user, PERMISSION_DEFAULT);
+            return share(remoteFile, user, com.bingzer.android.driven.Permission.PERMISSION_FULL);
         }
 
         @Override
@@ -445,21 +459,13 @@ public final class GoogleDrive extends AbsStorageProvider {
 
                 permission.setValue(user);
                 permission.setType("user");
-                permission.setRole(getPermission(kind));
+                permission.setRole(getPermissionName(kind));
 
                 permission = getGoogleDriveApi().permissions().insert(remoteFile.getId(), permission).execute();
                 return permission.getSelfLink();
             }
             catch (IOException e){
                 return null;
-            }
-        }
-
-        private String getPermission(int kind){
-            switch (kind){
-                default: return "writer";
-                case PERMISSION_READ: return "read";
-                case PERMISSION_FULL: return "writer";
             }
         }
     }
@@ -542,6 +548,52 @@ public final class GoogleDrive extends AbsStorageProvider {
             displayName = about.getUser().getDisplayName();
             emailAddress = about.getUser().getEmailAddress();
         }
+
+        protected GoogleDriveUser(String name, String displayName, String emailAddress){
+            this.name = name;
+            this.displayName = displayName;
+            this.emailAddress = emailAddress;
+        }
+    }
+
+    class GoogleDrivePermission extends AbsPermission {
+
+        List<UserRole> userRoles = new ArrayList<UserRole>();
+
+        protected GoogleDrivePermission(PermissionList permissionList){
+            for(int i = 0; i < permissionList.getItems().size(); i++){
+                Permission p = permissionList.getItems().get(i);
+
+                UserInfo u = new GoogleDriveUser(p.getName(), p.getName(), p.getEmailAddress());
+                int role = getPermissionValue(p.getRole());
+
+                userRoles.add(new UserRole(u, role));
+            }
+        }
+
+        @Override
+        public List<UserRole> getRoles() {
+            return userRoles;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    static String getPermissionName(int kind){
+        switch (kind){
+            default: return "writer";
+            case com.bingzer.android.driven.Permission.PERMISSION_OWNER: return "owner";
+            case com.bingzer.android.driven.Permission.PERMISSION_READ: return "read";
+            case com.bingzer.android.driven.Permission.PERMISSION_FULL: return "writer";
+        }
+    }
+
+    static int getPermissionValue(String role){
+        if("owner".equalsIgnoreCase(role))
+            return com.bingzer.android.driven.Permission.PERMISSION_OWNER;
+        if("read".equalsIgnoreCase(role))
+            return com.bingzer.android.driven.Permission.PERMISSION_READ;
+        return com.bingzer.android.driven.Permission.PERMISSION_FULL;
     }
 
 }
