@@ -30,8 +30,6 @@ public class DropboxFileTest extends AndroidTestCase {
         Credential credential = new Credential(getContext(), "Test-User");
         credential.setToken(new Credential.Token("appKey", "appSecret"));
 
-        DropboxFile.setStorageProvider(driven);
-
         driven.authenticate(credential);
         remoteFile = driven.get("/Folder100/File101");
     }
@@ -121,10 +119,10 @@ public class DropboxFileTest extends AndroidTestCase {
     }
 
     public void test_create_localFile() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File("TestFile"),"MimeTypeEdited01");
         assertNull(driven.get(remoteFile, "TestFile"));
 
-        RemoteFile child = remoteFile.create("TestFile", localFile);
+        RemoteFile child = remoteFile.create(localFile);
 
         assertFalse(child.isDirectory());
         assertNotNull(child);
@@ -132,11 +130,11 @@ public class DropboxFileTest extends AndroidTestCase {
     }
 
     public void test_createAsync_localFile() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File("TestFile"),"MimeTypeEdited01");
         assertNull(driven.get(remoteFile, "TestFile"));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        remoteFile.createAsync("TestFile", localFile, new Task<RemoteFile>() {
+        remoteFile.createAsync(localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
@@ -237,7 +235,7 @@ public class DropboxFileTest extends AndroidTestCase {
     */
 
     public void test_upload() throws Exception {
-        LocalFile local = new LocalFile("MimeType101", new java.io.File(""));
+        LocalFile local = new LocalFile(new java.io.File(""), "MimeType101");
         assertTrue(remoteFile.upload(local));
 
         assertNotNull(remoteFile);
@@ -249,7 +247,7 @@ public class DropboxFileTest extends AndroidTestCase {
     }
 
     public void test_uploadAsync() throws Exception {
-        LocalFile local = new LocalFile("MimeType101", new java.io.File(""));
+        LocalFile local = new LocalFile(new java.io.File(""), "MimeType101");
         final CountDownLatch signal = new CountDownLatch(1);
         remoteFile.uploadAsync(local, new Task<Boolean>() {
             @Override

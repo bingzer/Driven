@@ -37,7 +37,7 @@ public interface Trashed extends Feature {
     /**
      * Async call for {@link #exists(String)}
      */
-    void existsAsync(String name, Task<Boolean> result);
+    void existsAsync(String name, Task<Boolean> task);
 
     /**
      * Returns {@link com.bingzer.android.driven.RemoteFile} (if found) by its name
@@ -47,7 +47,7 @@ public interface Trashed extends Feature {
     /**
      * Async call fro {@link #get(String)}
      */
-    void getAsync(String name, Task<RemoteFile> result);
+    void getAsync(String name, Task<RemoteFile> task);
 
     /**
      * Returns a collection of {@link com.bingzer.android.driven.RemoteFile}s found
@@ -58,6 +58,6 @@ public interface Trashed extends Feature {
     /**
      * Async call for {@link #list()}
      */
-    void listAsync(Task<List<RemoteFile>> result);
+    void listAsync(Task<List<RemoteFile>> task);
 
 }

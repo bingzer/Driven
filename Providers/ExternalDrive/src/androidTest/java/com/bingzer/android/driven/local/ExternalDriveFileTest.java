@@ -35,8 +35,6 @@ public class ExternalDriveFileTest extends AndroidTestCase {
         driven = new ExternalDrive();
         Credential credential = new Credential(getContext(), rootFile.getAbsolutePath());
 
-        ExternalDriveFile.setStorageProvider(driven);
-
         driven.authenticate(credential);
         remoteDir = driven.get("Folder100");
         remoteFile = driven.get(remoteDir, "File101");
@@ -140,10 +138,15 @@ public class ExternalDriveFileTest extends AndroidTestCase {
     }
 
     public void test_create_localFile() throws Exception {
-        LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
+        File target = new File(new File(remoteFile.getId()).getParentFile(), "TestFile");
+        target.delete();
+
         assertNull(driven.get(remoteDir, "TestFile"));
 
-        RemoteFile child = remoteDir.create("TestFile", localFile);
+        LocalFile localFile = new LocalFile(target);
+        localFile.getFile().createNewFile();
+
+        RemoteFile child = remoteDir.create(localFile);
 
         assertFalse(child.isDirectory());
         assertNotNull(child);
@@ -151,14 +154,21 @@ public class ExternalDriveFileTest extends AndroidTestCase {
     }
 
     public void test_createAsync_localFile() throws Exception {
-        LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
+        File target = new File(new File(remoteFile.getId()).getParentFile(), "TestFile");
+        target.delete();
+
         assertNull(driven.get(remoteDir, "TestFile"));
 
+        LocalFile localFile = new LocalFile(target);
+        localFile.getFile().createNewFile();
+
         final CountDownLatch signal = new CountDownLatch(1);
-        remoteDir.createAsync("TestFile", localFile, new Task<RemoteFile>() {
+        remoteDir.createAsync(localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
+                assertFalse(result.isDirectory());
                 assertNotNull(result);
+                assertNotNull("TestFile", result.getName());
 
                 signal.countDown();
             }

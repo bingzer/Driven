@@ -59,11 +59,11 @@ public interface Sharing extends Feature {
     /**
      * Async call for {@link #share(com.bingzer.android.driven.RemoteFile, String)}
      */
-    void shareAsync(RemoteFile remoteFile, String user, Task<String> result);
+    void shareAsync(RemoteFile remoteFile, String user, Task<String> task);
 
     /**
      * Async call for {@link #share(com.bingzer.android.driven.RemoteFile, String, int)}
      */
-    void shareAsync(RemoteFile remoteFile, String user, int kind, Task<String> result);
+    void shareAsync(RemoteFile remoteFile, String user, int kind, Task<String> task);
 
 }

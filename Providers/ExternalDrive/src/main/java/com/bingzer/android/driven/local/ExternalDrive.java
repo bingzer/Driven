@@ -18,17 +18,21 @@ package com.bingzer.android.driven.local;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsSearch;
+import com.bingzer.android.driven.AbsSharedWithMe;
+import com.bingzer.android.driven.AbsSharing;
+import com.bingzer.android.driven.AbsStorageProvider;
+import com.bingzer.android.driven.AbsTrashed;
 import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
-import com.bingzer.android.driven.StorageProvider;
 import com.bingzer.android.driven.UserInfo;
-import com.bingzer.android.driven.contracts.Delegate;
+import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
-import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.contracts.Trashed;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.bingzer.android.driven.utils.Path;
@@ -38,21 +42,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
-
 /**
  * Driven
  */
 @SuppressWarnings("unused")
-public final class ExternalDrive implements StorageProvider {
+public final class ExternalDrive extends AbsStorageProvider {
 
-    private static final String TAG = "ExternalDrive";
     private static File root;
     private static UserInfo userInfo;
-
-    public ExternalDrive(){
-        ExternalDriveFile.setStorageProvider(this);
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -73,41 +70,29 @@ public final class ExternalDrive implements StorageProvider {
     }
 
     @Override
-    public boolean hasSavedCredentials(Context context) {
-        Credential credential = new Credential(context);
-        return credential.hasSavedCredential(TAG);
-    }
-
-    @Override
     public Result<DrivenException> authenticate(Credential credential) {
-        return authenticate(credential, true);
-    }
-
-    @Override
-    public Result<DrivenException> authenticate(Credential credential, boolean saveCredential) {
-        Log.i(TAG, "Driven API is authenticating with ExternalDrive Service");
+        Log.i(getName(), "Driven API is authenticating with ExternalDrive Service");
         Result<DrivenException> result = new Result<DrivenException>(false);
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
-            if(credential.hasSavedCredential(TAG)){
-                credential.read(TAG);
+            if(credential.hasSavedCredential(getName())){
+                credential.read(getName());
             }
 
             root = new File(credential.getAccountName());
             IOUtils.safeCreateDir(root);
 
-            userInfo = new ExternalDriveUserInfo();
+            userInfo = new DefaultUserInfo();
 
             result.setSuccess(true);
-            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + userInfo);
+            Log.i(getName(), "Driven API successfully authenticated by DriveUser: " + userInfo);
 
-            if(saveCredential)
-                credential.save(TAG);
+            credential.save(getName());
         }
         catch (Exception e) {
-            Log.i(TAG, "Driven API failed to authenticate");
-            Log.e(TAG, "Exception:", e);
+            Log.i(getName(), "Driven API failed to authenticate");
+            Log.e(getName(), "Exception:", e);
             result.setException(new DrivenException(e));
         }
 
@@ -115,38 +100,8 @@ public final class ExternalDrive implements StorageProvider {
     }
 
     @Override
-    public void authenticateAsync(final Credential credential, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return authenticate(credential);
-            }
-        });
-    }
-
-    @Override
-    public void authenticateAsync(final Credential credential, final boolean saveCredential, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return authenticate(credential, saveCredential);
-            }
-        });
-    }
-
-    @Override
-    public Result<DrivenException> clearAuthentication(Context context) {
+    public Result<DrivenException> clearSavedCredential(Context context) {
         return new Result<DrivenException>();
-    }
-
-    @Override
-    public void clearAuthenticationAsync(final Context context, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return clearAuthentication(context);
-            }
-        });
     }
 
     @Override
@@ -160,92 +115,32 @@ public final class ExternalDrive implements StorageProvider {
     }
 
     @Override
-    public void existsAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return exists(name);
-            }
-        });
-    }
-
-    @Override
-    public void existsAsync(final RemoteFile parent, final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return exists(parent, name);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile get(RemoteFile parent, String name) {
         File f = new File(Path.combine(parent, name));
         if(f.exists()){
-            return new ExternalDriveFile(f.getAbsolutePath());
+            return new ExternalDriveFile(this, f.getAbsolutePath());
         }
         return null;
     }
 
     @Override
     public RemoteFile get(String name) {
-        return get(new ExternalDriveFile(getRoot().getAbsolutePath()), name);
-    }
-
-    @Override
-    public void getAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(parent, name);
-            }
-        });
-    }
-
-    @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(name);
-            }
-        });
+        return get(new ExternalDriveFile(this, getRoot().getAbsolutePath()), name);
     }
 
     @Override
     public RemoteFile id(String id) {
-        return new ExternalDriveFile(id);
-    }
-
-    @Override
-    public void idAsync(final String id, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return id(id);
-            }
-        });
+        return new ExternalDriveFile(this, id);
     }
 
     @Override
     public RemoteFile getDetails(RemoteFile remoteFile) {
-        return new ExternalDriveFile(remoteFile.getId());
-    }
-
-    @Override
-    public void getDetailsAsync(final RemoteFile remoteFile, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return getDetails(remoteFile);
-            }
-        });
+        return new ExternalDriveFile(this, remoteFile.getId());
     }
 
     @Override
     public List<RemoteFile> list() {
-        return list(new ExternalDriveFile(getRoot().getAbsolutePath()));
+        return list(new ExternalDriveFile(this, getRoot().getAbsolutePath()));
     }
 
     @Override
@@ -257,99 +152,39 @@ public final class ExternalDrive implements StorageProvider {
         File[] children = file.listFiles();
         if(children != null){
             for(File f : children){
-                list.add(new ExternalDriveFile(f.getAbsolutePath()));
+                list.add(new ExternalDriveFile(this, f.getAbsolutePath()));
             }
         }
         return list;
     }
 
     @Override
-    public void listAsync(final RemoteFile folder, Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list(folder);
-            }
-        });
-    }
-
-    @Override
-    public void listAsync(Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list();
-            }
-        });
-    }
-
-    @Override
     public RemoteFile create(String name) {
-        return create(new ExternalDriveFile(getRoot().getAbsolutePath()), name);
+        return create(new ExternalDriveFile(this, getRoot().getAbsolutePath()), name);
     }
 
     @Override
-    public RemoteFile create(String name, LocalFile content) {
-        return create(new ExternalDriveFile(getRoot().getAbsolutePath()), name, content);
+    public RemoteFile create(LocalFile local) {
+        return create(new ExternalDriveFile(this, getRoot().getAbsolutePath()), local);
     }
 
     @Override
     public RemoteFile create(RemoteFile parent, String name) {
         File f = new File(Path.combine(parent, name));
         IOUtils.safeCreateDir(f);
-        return new ExternalDriveFile(f.getAbsolutePath());
+        return new ExternalDriveFile(this, f.getAbsolutePath());
     }
 
     @Override
-    public RemoteFile create(RemoteFile parent, String name, LocalFile content) {
-        File f = new File(Path.combine(parent, name));
+    public RemoteFile create(RemoteFile parent, LocalFile local) {
+        File f = new File(Path.combine(parent, local.getName()));
         try {
-            IOUtils.copyFile(content.getFile(), f);
-            return new ExternalDriveFile(f.getAbsolutePath());
+            IOUtils.copyFile(local.getFile(), f);
+            return new ExternalDriveFile(this, f.getAbsolutePath());
         } catch (IOException e) {
-            Log.e(TAG, "Create()", e);
+            Log.e(getName(), "Create()", e);
             return null;
         }
-    }
-
-    @Override
-    public void createAsync(final RemoteFile parent, final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(parent, name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(parent, name);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name);
-            }
-        });
     }
 
     @Override
@@ -359,7 +194,7 @@ public final class ExternalDrive implements StorageProvider {
             // rename
             File from = new File(remoteFile.getId());
             File to = new File(from.getAbsolutePath(), content.getFile().getName());
-            remoteFile = new ExternalDriveFile(to.getAbsolutePath());
+            remoteFile = new ExternalDriveFile(this, to.getAbsolutePath());
         }
 
         // copy content
@@ -368,19 +203,9 @@ public final class ExternalDrive implements StorageProvider {
             return remoteFile;
         }
         catch (IOException e) {
-            Log.e(TAG, "update()", e);
+            Log.e(getName(), "update()", e);
             return null;
         }
-    }
-
-    @Override
-    public void updateAsync(final RemoteFile remoteFile, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return update(remoteFile, content);
-            }
-        });
     }
 
     @Override
@@ -394,75 +219,56 @@ public final class ExternalDrive implements StorageProvider {
     }
 
     @Override
-    public void deleteAsync(final String id, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return delete(id);
-            }
-        });
-    }
-
-    @Override
-    public RemoteFile first(String query) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void firstAsync(String query, Task<RemoteFile> task) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<RemoteFile> query(String query) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void queryAsync(String query, Task<List<RemoteFile>> task) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean download(RemoteFile remoteFile, LocalFile local) {
         File from = new File(remoteFile.getId());
         try {
             IOUtils.copyFile(from, local.getFile());
             return true;
         } catch (IOException e) {
-            Log.e(TAG, "download()", e);
+            Log.e(getName(), "download()", e);
             return false;
         }
     }
 
     @Override
-    public void downloadAsync(final RemoteFile remoteFile, final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return download(remoteFile, local);
-            }
-        });
+    public Search getSearch() {
+        if (search == null)
+            search = new SearchImpl();
+        return search;
     }
 
     @Override
     public SharedWithMe getShared() {
-        return new SharedWithMeImpl();
+        if (sharedWithMe == null)
+            sharedWithMe = new SharedWithMeImpl();
+        return sharedWithMe;
     }
 
     @Override
     public Sharing getSharing() {
-        return new SharingImpl();
+        if (sharing == null)
+            sharing = new SharingImpl();
+        return sharing;
     }
 
     @Override
     public Trashed getTrashed() {
-        return new TrashedImpl();
+        if (trashed == null)
+            trashed = new TrashedImpl();
+        return trashed;
+    }
+
+    /**
+     * Returns the name of this provider
+     */
+    @Override
+    public String getName() {
+        return "ExternalDrive";
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    class SharedWithMeImpl implements SharedWithMe {
+    class SharedWithMeImpl extends AbsSharedWithMe {
 
         @Override
         public boolean isSupported() {
@@ -475,17 +281,7 @@ public final class ExternalDrive implements StorageProvider {
         }
 
         @Override
-        public void existsAsync(String name, Task<Boolean> result) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public RemoteFile get(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void getAsync(String name, Task<RemoteFile> result) {
             throw new UnsupportedOperationException();
         }
 
@@ -493,14 +289,9 @@ public final class ExternalDrive implements StorageProvider {
         public List<RemoteFile> list() {
             throw new UnsupportedOperationException();
         }
-
-        @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
-            throw new UnsupportedOperationException();
-        }
     }
 
-    class SharingImpl implements Sharing {
+    class SharingImpl extends AbsSharing {
 
         @Override
         public boolean isSupported() {
@@ -517,18 +308,9 @@ public final class ExternalDrive implements StorageProvider {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public void shareAsync(RemoteFile remoteFile, String user, Task<String> result) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void shareAsync(RemoteFile remoteFile, String user, int kind, Task<String> result) {
-            throw new UnsupportedOperationException();
-        }
     }
 
-    class TrashedImpl implements Trashed {
+    class TrashedImpl extends AbsTrashed {
 
         @Override
         public boolean isSupported() {
@@ -541,17 +323,7 @@ public final class ExternalDrive implements StorageProvider {
         }
 
         @Override
-        public void existsAsync(String name, Task<Boolean> result) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public RemoteFile get(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void getAsync(String name, Task<RemoteFile> result) {
             throw new UnsupportedOperationException();
         }
 
@@ -559,10 +331,23 @@ public final class ExternalDrive implements StorageProvider {
         public List<RemoteFile> list() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    class SearchImpl extends AbsSearch {
 
         @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
+        public RemoteFile first(String query) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<RemoteFile> query(String query) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isSupported() {
+            return false;
         }
     }
 

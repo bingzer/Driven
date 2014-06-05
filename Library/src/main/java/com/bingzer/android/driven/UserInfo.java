@@ -19,6 +19,7 @@ package com.bingzer.android.driven;
  * Represents the authenticated user
  */
 public interface UserInfo {
+
     /**
      * Returns the name of this user
      */

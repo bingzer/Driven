@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bingzer.android.driven.gdrive;
-
-import com.bingzer.android.driven.UserInfo;
-import com.google.api.services.drive.model.About;
+package com.bingzer.android.driven;
 
 /**
- * Simple wrapper for user that has authenticate
- * DrivenAPI to their GoogleDrive API
+ * Default {@link com.bingzer.android.driven.UserInfo} implementation
  */
-class GoogleDriveUserInfo implements UserInfo {
-    private String name;
-    private String displayName;
-    private String emailAddress;
+public class DefaultUserInfo implements UserInfo{
 
-    protected GoogleDriveUserInfo(About about){
-        name = about.getName();
-        displayName = about.getUser().getDisplayName();
-        emailAddress = about.getUser().getEmailAddress();
-    }
+    protected String name;
+    protected String displayName;
+    protected String emailAddress;
 
     public String getName() {
         return name;
@@ -47,10 +38,10 @@ class GoogleDriveUserInfo implements UserInfo {
 
     @Override
     public String toString() {
-        return "GoogleDriveUser{" +
-                "name='" + name + '\'' +
+        return "DefaultUserInfo{" +
+                "emailAddress='" + emailAddress + '\'' +
                 ", displayName='" + displayName + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 }

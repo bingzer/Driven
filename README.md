@@ -51,7 +51,7 @@ repositories {
 }
 
 dependencies {
-    compile (group:'com.bingzer.android.driven', name: 'driven', version:'0.3.0-SNAPSHOT', changing: true)
+    compile (group:'com.bingzer.android.driven', name: 'driven', version:'0.7.0-SNAPSHOT', changing: true)
 }
 ```
 

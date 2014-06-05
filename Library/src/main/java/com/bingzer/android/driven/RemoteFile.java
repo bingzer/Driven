@@ -83,20 +83,20 @@ public interface RemoteFile {
     RemoteFile create(String name);
 
     /**
-     * If this file is {@link #isDirectory()} then
-     * creates a file with under this directory
-     */
-    RemoteFile create(String name, LocalFile content);
-
-    /**
-     * Async call for {@link #create(String, LocalFile)}
-     */
-    void createAsync(String name, LocalFile content, Task<RemoteFile> task);
-
-    /**
      * Async call for {@link #create(String)}
      */
     void createAsync(String name, Task<RemoteFile> task);
+
+    /**
+     * If this file is {@link #isDirectory()} then
+     * creates a file with under this directory
+     */
+    RemoteFile create(LocalFile content);
+
+    /**
+     * Async call for {@link #create(LocalFile)}
+     */
+    void createAsync(LocalFile content, Task<RemoteFile> task);
 
     /**
      * If this file is {@link #isDirectory()} then this

@@ -49,7 +49,7 @@ public class GoogleDriveActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         googleAccount = createGoogleAccountCredential(this);
-        if (!storageProvider.hasSavedCredentials(this))
+        if (!storageProvider.hasSavedCredential(this))
             showAccountChooser();
         else
             authenticate();

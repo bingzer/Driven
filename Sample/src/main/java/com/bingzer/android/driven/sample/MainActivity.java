@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,12 +36,14 @@ import com.bingzer.android.driven.local.ExternalDrive;
 import com.bingzer.android.driven.local.app.ExternalDriveActivity;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * This is a quick sample activity which shows different providers.
+ * The code is messy :D
+ */
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener{
 
     private static final String TAG = "MainActivity";
@@ -129,7 +130,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             return true;
         }
         else if(getString(R.string.external_drive).equals(provider)){
-            if(!dropbox.isAuthenticated()){
+            if(!externalDrive.isAuthenticated()){
                 ExternalDriveActivity.launch(this, Environment.getExternalStorageDirectory().getAbsolutePath());
             }
             else{
@@ -232,7 +233,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
     private void createFile(String type, File local){
         if(local != null && local.exists()){
-            storageProvider.createAsync(parent, local.getName(), new LocalFile(type, local), new Task<RemoteFile>() {
+            storageProvider.createAsync(parent, new LocalFile(local, type), new Task<RemoteFile>() {
                 @Override
                 public void onCompleted(RemoteFile result) {
                     list(parent);
@@ -269,8 +270,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     }
 
     private boolean clearCredentials(){
-        gdrive.clearAuthentication(this);
-        dropbox.clearAuthentication(this);
+        gdrive.clearSavedCredential(this);
+        dropbox.clearSavedCredential(this);
         return true;
     }
 

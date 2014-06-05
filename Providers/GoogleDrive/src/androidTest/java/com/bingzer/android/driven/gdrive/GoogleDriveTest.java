@@ -35,7 +35,7 @@ public class GoogleDriveTest extends AndroidTestCase{
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        driven.clearAuthentication(getContext());
+        driven.clearSavedCredential(getContext());
     }
 
     public void test_getProxyCreator(){
@@ -71,7 +71,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
         assertTrue(driven.isAuthenticated());
 
-        driven.clearAuthentication(getContext());
+        driven.clearSavedCredential(getContext());
         assertFalse(driven.isAuthenticated());
     }
 
@@ -81,7 +81,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         assertTrue(driven.isAuthenticated());
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.clearAuthenticationAsync(getContext(), new Task<Result<DrivenException>>() {
+        driven.clearSavedCredentialAsync(getContext(), new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 assertFalse(driven.isAuthenticated());
@@ -92,7 +92,7 @@ public class GoogleDriveTest extends AndroidTestCase{
     }
 
     public void test_authenticate_NoSave(){
-        Result<DrivenException> result = driven.authenticate(credential, false);
+        Result<DrivenException> result = driven.authenticate(credential);
 
         assertTrue(driven.isAuthenticated());
         assertTrue(result.isSuccess());
@@ -311,7 +311,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         RemoteFile remoteFile = driven.id("Id01");
         assertNotNull(remoteFile);
 
-        driven.update(remoteFile, new LocalFile("MimeTypeEdited01", new File("")));
+        driven.update(remoteFile, new LocalFile(new File(""), "MimeTypeEdited01"));
         remoteFile = driven.id("Id01");
 
         assertNotNull(remoteFile);
@@ -333,7 +333,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         RemoteFile remoteFile = driven.id("Id03");
         assertNotNull(remoteFile);
 
-        final LocalFile localFile = new LocalFile("MimeTypeEdited03", new File(""));
+        final LocalFile localFile = new LocalFile(new File(""), "MimeTypeEdited03");
         final CountDownLatch signal = new CountDownLatch(1);
         driven.updateAsync(remoteFile, localFile, new Task.WithErrorReporting<RemoteFile>() {
             @Override
@@ -388,7 +388,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_first() throws Exception {
         driven.authenticate(credential);
-        RemoteFile remoteFile = driven.first("title = 'Title01'");
+        RemoteFile remoteFile = driven.getSearch().first("title = 'Title01'");
         assertNotNull(remoteFile);
 
         assertEquals("Id01", remoteFile.getId());
@@ -402,7 +402,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.firstAsync("title = 'Title01'", new Task<RemoteFile>() {
+        driven.getSearch().firstAsync("title = 'Title01'", new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
@@ -421,7 +421,7 @@ public class GoogleDriveTest extends AndroidTestCase{
 
     public void test_query() throws Exception {
         driven.authenticate(credential);
-        java.util.List<RemoteFile> remoteFiles = driven.query("title = 'Title01'");
+        java.util.List<RemoteFile> remoteFiles = driven.getSearch().query("title = 'Title01'");
         for(RemoteFile remoteFile : remoteFiles){
             assertNotNull(remoteFile);
 
@@ -437,7 +437,7 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.queryAsync("title = 'Title01'", new Task<java.util.List<RemoteFile>>() {
+        driven.getSearch().queryAsync("title = 'Title01'", new Task<java.util.List<RemoteFile>>() {
             @Override
             public void onCompleted(java.util.List<RemoteFile> result) {
                 for (RemoteFile remoteFile : result) {
@@ -490,8 +490,8 @@ public class GoogleDriveTest extends AndroidTestCase{
     public void test_create_file() throws Exception {
         driven.authenticate(credential);
 
-        LocalFile localFile = new LocalFile("MimeType101", new File(""));
-        RemoteFile remoteFile = driven.create("File101", localFile);
+        LocalFile localFile = new LocalFile(new File("File101"),"MimeType101");
+        RemoteFile remoteFile = driven.create(localFile);
         assertNotNull(remoteFile);
         assertFalse(remoteFile.isDirectory());
         assertEquals("MimeType101", remoteFile.getType());
@@ -506,8 +506,8 @@ public class GoogleDriveTest extends AndroidTestCase{
         driven.authenticate(credential);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        LocalFile localFile = new LocalFile("MimeType101", new File(""));
-        driven.createAsync("File101", localFile, new Task<RemoteFile>() {
+        LocalFile localFile = new LocalFile(new File("File101"), "MimeType101");
+        driven.createAsync(localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
@@ -578,8 +578,8 @@ public class GoogleDriveTest extends AndroidTestCase{
         RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
-        LocalFile localFile = new LocalFile("MimeType101", new File(""));
-        RemoteFile remoteFile = driven.create(parent, "File101", localFile);
+        LocalFile localFile = new LocalFile(new File(""),"MimeType101");
+        RemoteFile remoteFile = driven.create(parent, localFile);
 
         assertNotNull(remoteFile);
         assertFalse(remoteFile.isDirectory());
@@ -594,9 +594,9 @@ public class GoogleDriveTest extends AndroidTestCase{
         RemoteFile parent = driven.create("Folder100");
         assertNotNull(parent);
 
-        LocalFile localFile = new LocalFile("MimeType101", new File(""));
+        LocalFile localFile = new LocalFile(new File(""),"MimeType101");
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "File101", localFile, new Task<RemoteFile>() {
+        driven.createAsync(parent, localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);

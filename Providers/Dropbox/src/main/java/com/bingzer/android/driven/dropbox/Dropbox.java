@@ -3,17 +3,21 @@ package com.bingzer.android.driven.dropbox;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsSearch;
+import com.bingzer.android.driven.AbsSharedWithMe;
+import com.bingzer.android.driven.AbsSharing;
+import com.bingzer.android.driven.AbsStorageProvider;
+import com.bingzer.android.driven.AbsTrashed;
 import com.bingzer.android.driven.Credential;
+import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.Result;
-import com.bingzer.android.driven.StorageProvider;
 import com.bingzer.android.driven.UserInfo;
-import com.bingzer.android.driven.contracts.Delegate;
+import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
-import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.contracts.Trashed;
 import com.bingzer.android.driven.utils.Path;
 import com.dropbox.client2.DropboxAPI;
@@ -28,18 +32,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 import static com.bingzer.android.driven.utils.IOUtils.safeClose;
 
-public class Dropbox implements StorageProvider {
-    private static final String TAG = "Dropbox";
-
+public class Dropbox extends AbsStorageProvider {
     @Inject DropboxApiFactory apiFactory;
     private static DropboxAPI<AndroidAuthSession> dropboxApi;
     private static UserInfo userInfo;
-    private SharedWithMe sharedWithMe;
-    private Sharing sharing;
-    private Trashed trashed;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +61,16 @@ public class Dropbox implements StorageProvider {
         return userInfo;
     }
 
+    /**
+     * Returns the "Search" interface
+     */
+    @Override
+    public Search getSearch() {
+        if(search == null)
+            search = new SearchImpl();
+        return search;
+    }
+
     @Override
     public SharedWithMe getShared() {
         if(sharedWithMe == null)
@@ -77,6 +85,14 @@ public class Dropbox implements StorageProvider {
         return trashed;
     }
 
+    /**
+     * Returns the name of this provider
+     */
+    @Override
+    public String getName() {
+        return "Dropbox";
+    }
+
     public Sharing getSharing(){
         if(sharing == null)
             sharing = new SharingImpl();
@@ -89,27 +105,21 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public boolean hasSavedCredentials(Context context) {
-        Credential credential = new Credential(context);
-        return credential.hasSavedCredential(TAG);
-    }
-
-    @Override
-    public Result<DrivenException> authenticate(Credential credential) {
-        return authenticate(credential, true);
+    public Result<DrivenException> authenticate(Context context) {
+        return authenticate(getSavedCredential(context));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Result<DrivenException> authenticate(Credential credential, boolean saveCredential) {
-        Log.i(TAG, "Driven API is authenticating with Dropbox Service");
+    public Result<DrivenException> authenticate(Credential credential) {
+        Log.i(getName(), "Driven API is authenticating with Dropbox Service");
         Result<DrivenException> result = new Result<DrivenException>(false);
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
-            if(credential.hasSavedCredential(TAG)){
-                credential.read(TAG);
+            if(credential.hasSavedCredential(getName())){
+                credential.read(getName());
             }
 
             // And later in some initialization function:
@@ -125,14 +135,13 @@ public class Dropbox implements StorageProvider {
             userInfo = new DropboxUserInfo(dropboxApi.accountInfo());
 
             result.setSuccess(true);
-            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + userInfo);
+            Log.i(getName(), "Driven API successfully authenticated by DriveUser: " + userInfo);
 
-            if(saveCredential)
-                credential.save(TAG);
+            credential.save(getName());
         }
         catch (Exception e) {
-            Log.i(TAG, "Driven API failed to authenticate");
-            Log.e(TAG, "Exception:", e);
+            Log.i(getName(), "Driven API failed to authenticate");
+            Log.e(getName(), "Exception:", e);
             result.setException(new DrivenException(e));
         }
 
@@ -140,60 +149,20 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void authenticateAsync(final Credential credential, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return authenticate(credential);
-            }
-        });
-    }
-
-    @Override
-    public void authenticateAsync(final Credential credential, final boolean saveCredential, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return authenticate(credential, saveCredential);
-            }
-        });
-    }
-
-    @Override
-    public Result<DrivenException> clearAuthentication(Context context) {
+    public Result<DrivenException> clearSavedCredential(Context context) {
         Result<DrivenException> result = new Result<DrivenException>(false);
         dropboxApi = null;
         userInfo = null;
 
         Credential credential = new Credential(context);
-        credential.clear(TAG);
+        credential.clear(getName());
 
         return result;
     }
 
     @Override
-    public void clearAuthenticationAsync(final Context context, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return clearAuthentication(context);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile id(String id) {
         return get(id);
-    }
-
-    @Override
-    public void idAsync(final String id, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return id(id);
-            }
-        });
     }
 
     @Override
@@ -208,28 +177,8 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void deleteAsync(final String id, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return delete(id);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile getDetails(RemoteFile remoteFile) {
         return remoteFile;
-    }
-
-    @Override
-    public void getDetailsAsync(final RemoteFile remoteFile, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return remoteFile;
-            }
-        });
     }
 
     @Override
@@ -249,16 +198,6 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void downloadAsync(final RemoteFile remoteFile, final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return download(remoteFile, local);
-            }
-        });
-    }
-
-    @Override
     public boolean exists(String name) {
         return get(name) != null;
     }
@@ -269,30 +208,10 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void existsAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return exists(name);
-            }
-        });
-    }
-
-    @Override
-    public void existsAsync(final RemoteFile parent, final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return exists(parent, name);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile get(RemoteFile parent, String name) {
         try {
             DropboxAPI.Entry entry = getDropboxApi().metadata(Path.combine(parent, name), 1, null, false, null);
-            if(entry != null) return new DropboxFile(entry);
+            if(entry != null) return new DropboxFile(this, entry);
             return null;
         }
         catch (DropboxException e) {
@@ -306,26 +225,6 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void getAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(parent, name);
-            }
-        });
-    }
-
-    @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(name);
-            }
-        });
-    }
-
-    @Override
     public List<RemoteFile> list() {
         try {
             DropboxAPI.Entry entry = getDropboxApi().metadata(Path.ROOT, 0, null, true, null);
@@ -333,7 +232,7 @@ public class Dropbox implements StorageProvider {
             List<RemoteFile> list = new ArrayList<RemoteFile>();
             if(entry != null && entry.contents != null){
                 for(DropboxAPI.Entry children : entry.contents){
-                    list.add(new DropboxFile(children));
+                    list.add(new DropboxFile(this, children));
                 }
             }
 
@@ -354,7 +253,7 @@ public class Dropbox implements StorageProvider {
             List<RemoteFile> list = new ArrayList<RemoteFile>();
             if(entry != null && entry.contents != null){
                 for(DropboxAPI.Entry children : entry.contents){
-                    list.add(new DropboxFile(children));
+                    list.add(new DropboxFile(this, children));
                 }
             }
             return list;
@@ -365,43 +264,10 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
-    public void listAsync(final RemoteFile folder, Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list(folder);
-            }
-        });
-    }
-
-    @Override
-    public void listAsync(Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list();
-            }
-        });
-    }
-
-    @Override
     public RemoteFile create(String name) {
-        return create(name, null);
-    }
-
-    @Override
-    public RemoteFile create(String name, LocalFile content) {
         try {
-            boolean isDirectory = content == null || content.getFile().isDirectory();
-            if (isDirectory) {
-                getDropboxApi().createFolder(Path.clean(name));
-            }
-
-            else{
-                InputStream input = getApiFactory().createInputStream(content.getFile());
-                getDropboxApi().putFile(Path.clean(name), input, content.getFile().length(), null, null);
-                safeClose(input);
-            }
+            if(name == null) throw new NullPointerException("name");
+            getDropboxApi().createFolder(Path.clean(name));
 
             return get(name);
         }
@@ -411,53 +277,29 @@ public class Dropbox implements StorageProvider {
     }
 
     @Override
+    public RemoteFile create(LocalFile local) {
+        try {
+            if(local.getName() == null) throw new NullPointerException("LocalFile.getName()");
+
+            InputStream input = getApiFactory().createInputStream(local.getFile());
+            getDropboxApi().putFile(Path.clean(local.getName()), input, local.getFile().length(), null, null);
+            safeClose(input);
+
+            return get(local.getName());
+        }
+        catch (Exception e){
+            return null;
+        }
+    }
+
+    @Override
     public RemoteFile create(RemoteFile parent, String name) {
-        return create(parent, name, null);
+        return create(Path.combine(parent, name));
     }
 
     @Override
-    public RemoteFile create(RemoteFile parent, String name, LocalFile content) {
-        return create(Path.combine(parent, name), content);
-    }
-
-    @Override
-    public void createAsync(final RemoteFile parent, final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(parent, name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(parent, name);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
+    public RemoteFile create(RemoteFile parent, LocalFile local) {
+        return create(local);
     }
 
     @Override
@@ -475,66 +317,46 @@ public class Dropbox implements StorageProvider {
         return null;
     }
 
-    @Override
-    public void updateAsync(final RemoteFile remoteFile, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return update(remoteFile, content);
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    class SearchImpl extends AbsSearch {
+
+        @Override
+        public RemoteFile first(String query) {
+            try {
+                List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 1, true);
+                return new DropboxFile(Dropbox.this, entryList.get(0));
             }
-        });
-    }
-
-    @Override
-    public RemoteFile first(String query) {
-        try {
-            List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 1, true);
-            return new DropboxFile(entryList.get(0));
-        }
-        catch (Exception e){
-            return null;
-        }
-    }
-
-    @Override
-    public void firstAsync(final String query, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return first(query);
+            catch (Exception e){
+                return null;
             }
-        });
-    }
-
-    @Override
-    public List<RemoteFile> query(String query) {
-        try {
-            List<RemoteFile> list = new ArrayList<RemoteFile>();
-            List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 0, true);
-            for(DropboxAPI.Entry entry : entryList){
-                list.add(new DropboxFile(entry));
-            }
-
-            return list;
         }
-        catch (Exception e){
-            return null;
-        }
-    }
 
-    @Override
-    public void queryAsync(final String query, Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return query(query);
+        @Override
+        public List<RemoteFile> query(String query) {
+            try {
+                List<RemoteFile> list = new ArrayList<RemoteFile>();
+                List<DropboxAPI.Entry> entryList = getDropboxApi().search(Path.ROOT, query, 0, true);
+                for(DropboxAPI.Entry entry : entryList){
+                    list.add(new DropboxFile(Dropbox.this, entry));
+                }
+
+                return list;
             }
-        });
+            catch (Exception e){
+                return null;
+            }
+        }
+
+        @Override
+        public boolean isSupported() {
+            return false;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    class SharedWithMeImpl implements SharedWithMe {
+    class SharedWithMeImpl extends AbsSharedWithMe {
 
         @Override
         public boolean isSupported() {
@@ -547,28 +369,8 @@ public class Dropbox implements StorageProvider {
         }
 
         @Override
-        public void existsAsync(final String name, Task<Boolean> result) {
-            doAsync(result, new Delegate<Boolean>() {
-                @Override
-                public Boolean invoke() {
-                    return exists(name);
-                }
-            });
-        }
-
-        @Override
         public RemoteFile get(String name) {
             throw new DrivenException(new UnsupportedOperationException("Not supported"));
-        }
-
-        @Override
-        public void getAsync(final String name, Task<RemoteFile> result) {
-            doAsync(result, new Delegate<RemoteFile>() {
-                @Override
-                public RemoteFile invoke() {
-                    return get(name);
-                }
-            });
         }
 
         @Override
@@ -576,18 +378,9 @@ public class Dropbox implements StorageProvider {
             throw new DrivenException(new UnsupportedOperationException("Not supported"));
         }
 
-        @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
-            doAsync(result, new Delegate<List<RemoteFile>>() {
-                @Override
-                public List<RemoteFile> invoke() {
-                    return list();
-                }
-            });
-        }
     }
 
-    class TrashedImpl implements Trashed {
+    class TrashedImpl extends AbsTrashed {
 
         @Override
         public boolean isSupported() {
@@ -600,26 +393,8 @@ public class Dropbox implements StorageProvider {
         }
 
         @Override
-        public void existsAsync(final String name, Task<Boolean> result) {
-            doAsync(result, new Delegate<Boolean>() {
-                @Override public Boolean invoke() {
-                    return exists(name);
-                }
-            });
-        }
-
-        @Override
         public RemoteFile get(String name) {
             throw new DrivenException(new UnsupportedOperationException("Not supported"));
-        }
-
-        @Override
-        public void getAsync(final String name, Task<RemoteFile> result) {
-            doAsync(result, new Delegate<RemoteFile>() {
-                @Override public RemoteFile invoke() {
-                    return get(name);
-                }
-            });
         }
 
         @Override
@@ -627,17 +402,9 @@ public class Dropbox implements StorageProvider {
             throw new DrivenException(new UnsupportedOperationException("Not supported"));
         }
 
-        @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
-            doAsync(result, new Delegate<List<RemoteFile>>() {
-                @Override public List<RemoteFile> invoke() {
-                    return list();
-                }
-            });
-        }
     }
 
-    class SharingImpl implements Sharing {
+    class SharingImpl extends AbsSharing {
 
         @Override
         public boolean isSupported() {
@@ -660,22 +427,14 @@ public class Dropbox implements StorageProvider {
             }
         }
 
-        @Override
-        public void shareAsync(final RemoteFile remoteFile, final String user, Task<String> result) {
-            doAsync(result, new Delegate<String>() {
-                @Override public String invoke() {
-                    return share(remoteFile, user);
-                }
-            });
+    }
+
+    class DropboxUserInfo extends DefaultUserInfo {
+
+        DropboxUserInfo(DropboxAPI.Account account){
+            name = account.displayName;
+            displayName = account.displayName;
         }
 
-        @Override
-        public void shareAsync(final RemoteFile remoteFile, final String user, final int kind, Task<String> result) {
-            doAsync(result, new Delegate<String>() {
-                @Override public String invoke() {
-                    return share(remoteFile, user, kind);
-                }
-            });
-        }
     }
 }

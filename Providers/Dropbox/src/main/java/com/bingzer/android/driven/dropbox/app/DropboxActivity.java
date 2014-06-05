@@ -25,7 +25,7 @@ public class DropboxActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         credential = new Credential(this);
-        if(!driven.hasSavedCredentials(this)){
+        if(!driven.hasSavedCredential(this)){
             showAccountChooser();
         }
         else{

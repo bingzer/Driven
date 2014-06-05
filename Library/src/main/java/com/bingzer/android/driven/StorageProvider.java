@@ -17,6 +17,7 @@ package com.bingzer.android.driven;
 
 import android.content.Context;
 
+import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
 import com.bingzer.android.driven.contracts.Task;
@@ -47,14 +48,43 @@ public interface StorageProvider {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Check to see if authenticated
+     * Check to see if authenticated.
+     * @see #authenticate(android.content.Context)
+     * @see #hasSavedCredential(android.content.Context)
      */
     boolean isAuthenticated();
 
     /**
-     * Check to see if we
+     * Check to see if we have a saved credential.
+     *
+     * @see #getSavedCredential(android.content.Context)
      */
-    boolean hasSavedCredentials(Context context);
+    boolean hasSavedCredential(Context context);
+
+    /**
+     * Returns the saved credential.
+     * Returns null if {@link #hasSavedCredential(android.content.Context)} is false.
+     *
+     * @see #hasSavedCredential(android.content.Context)
+     */
+    Credential getSavedCredential(Context context);
+
+    /**
+     * Clear authentication. This will credential cache if any
+     */
+    Result<DrivenException> clearSavedCredential(Context context);
+
+    /**
+     * Async call for {@link #clearSavedCredential(android.content.Context)}
+     */
+    void clearSavedCredentialAsync(Context context, Task<Result<DrivenException>> task);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Try to authenticate with saved credential.
+     */
+    Result<DrivenException> authenticate(Context context);
 
     /**
      * Try to authenticate with specified {@code credential}.
@@ -64,36 +94,19 @@ public interface StorageProvider {
     Result<DrivenException> authenticate(Credential credential);
 
     /**
-     * Try to authenticate with specified {@code credential}.
-     * if {@code saveCredential} is {@code true} then the {@code credential}
-     * will be saved for future use
+     * Async call for {@link #authenticate(android.content.Context)}
      */
-    Result<DrivenException> authenticate(Credential credential, boolean saveCredential);
+    void authenticateAsync(Context context, Task<Result<DrivenException>> task);
 
     /**
      * Async call for {@link #authenticate(Credential)}
      */
     void authenticateAsync(Credential credential, Task<Result<DrivenException>> task);
 
-    /**
-     * Async call for {@link #authenticate(Credential, boolean)}
-     */
-    void authenticateAsync(Credential credential, boolean saveCredential, Task<Result<DrivenException>> task);
-
-    /**
-     * Clear authentication. This will credential cache if any
-     */
-    Result<DrivenException> clearAuthentication(Context context);
-
-    /**
-     * Async call for {@link #clearAuthentication(android.content.Context)}
-     */
-    void clearAuthenticationAsync(Context context, Task<Result<DrivenException>> task);
-
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Check to see if a file exists
+     * Check to see if a file or directory exists
      */
     boolean exists(String name);
 
@@ -113,6 +126,8 @@ public interface StorageProvider {
      * Async call for {@link #exists(RemoteFile, String)}
      */
     void existsAsync(RemoteFile parent, String name, Task<Boolean> task);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns {@link RemoteFile} if found by its name
@@ -134,6 +149,8 @@ public interface StorageProvider {
      * Async call fro {@link #get(String)}
      */
     void getAsync(String name, Task<RemoteFile> task);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns {@link RemoteFile} by its Id (if found)
@@ -185,7 +202,7 @@ public interface StorageProvider {
     /**
      * Creates a file with its name in the root directory
      */
-    RemoteFile create(String name, LocalFile content);
+    RemoteFile create(LocalFile local);
 
     /**
      * Creates a directory (with its name) in the {@code parent} directory
@@ -193,14 +210,14 @@ public interface StorageProvider {
     RemoteFile create(RemoteFile parent, String name);
 
     /**
-     * Creates a file in a directory (with its name) in the {@code parent} directory
+     * Creates a file in a directory in the {@code parent} directory
      */
-    RemoteFile create(RemoteFile parent, String name, LocalFile content);
+    RemoteFile create(RemoteFile parent, LocalFile local);
 
     /**
-     * Async call for {@link #create(RemoteFile, String, LocalFile)}
+     * Async call for {@link #create(RemoteFile, LocalFile)}
      */
-    void createAsync(RemoteFile parent, String name, LocalFile content, Task<RemoteFile> task);
+    void createAsync(RemoteFile parent, LocalFile local, Task<RemoteFile> task);
 
     /**
      * Async call for {@link #create(RemoteFile, String)}
@@ -208,9 +225,9 @@ public interface StorageProvider {
     void createAsync(RemoteFile parent, String name, Task<RemoteFile> task);
 
     /**
-     * Async call for {@link #create(String, LocalFile)}
+     * Async call for {@link #create(LocalFile)}
      */
-    void createAsync(String name, LocalFile content, Task<RemoteFile> task);
+    void createAsync(LocalFile content, Task<RemoteFile> task);
 
     /**
      * Async call for {@link #create(String)}
@@ -242,29 +259,6 @@ public interface StorageProvider {
     void deleteAsync(String id, Task<Boolean> task);
 
     /**
-     * Returns the first {@link RemoteFile} found in the query.
-     * Query is provider-dependent. Check with provider's documentation and implementation.
-     */
-    RemoteFile first(String query);
-
-    /**
-     * Async call for {@link #first(String)}
-     */
-    void firstAsync(String query, Task<RemoteFile> task);
-
-    /**
-     * Search for a {@code query} and returns all {@link RemoteFile}
-     * that matches the criteria of the specified {@code query}.
-     * Query is provider-dependent. Check with provider's documentation and implementation.
-     */
-    List<RemoteFile> query(String query);
-
-    /**
-     * Async call for {@link #query(String)}
-     */
-    void queryAsync(String query, Task<List<RemoteFile>> task);
-
-    /**
      * Download remote file to {@code local}. Most of the time
      * you would use {@link RemoteFile#download(LocalFile)}
      * rather than calling this method
@@ -277,6 +271,11 @@ public interface StorageProvider {
     void downloadAsync(RemoteFile remoteFile, LocalFile local, Task<Boolean> task);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the "Search" interface
+     */
+    Search getSearch();
 
     /**
      * Returns the "SharedWithMe" interface
@@ -292,5 +291,12 @@ public interface StorageProvider {
      * Returns the "Trashed" interface
      */
     Trashed getTrashed();
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the name of this provider
+     */
+    String getName();
 
 }

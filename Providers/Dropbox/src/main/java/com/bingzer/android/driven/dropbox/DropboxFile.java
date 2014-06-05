@@ -1,29 +1,16 @@
 package com.bingzer.android.driven.dropbox;
 
+import com.bingzer.android.driven.AbsRemoteFile;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.StorageProvider;
-import com.bingzer.android.driven.contracts.Delegate;
-import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.Path;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.exception.DropboxException;
 
 import java.util.List;
 
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
-
-class DropboxFile implements RemoteFile {
-
-    protected static StorageProvider storageProvider;
-    protected static void setStorageProvider(StorageProvider storageProvider){
-        DropboxFile.storageProvider = storageProvider;
-    }
-    protected static StorageProvider getStorageProvider(){
-        if(storageProvider == null)
-            storageProvider = new Dropbox();
-        return storageProvider;
-    }
+class DropboxFile extends AbsRemoteFile {
 
     private String id;
     private String title;
@@ -32,7 +19,8 @@ class DropboxFile implements RemoteFile {
     private boolean isDirectory;
     private DropboxAPI.Entry model;
 
-    DropboxFile(DropboxAPI.Entry model){
+    DropboxFile(StorageProvider provider, DropboxAPI.Entry model){
+        super(provider);
         init(model);
     }
 
@@ -77,16 +65,6 @@ class DropboxFile implements RemoteFile {
         return hasDetails();
     }
 
-    @Override
-    public void fetchDetailsAsync(Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return fetchDetails();
-            }
-        });
-    }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,28 +74,8 @@ class DropboxFile implements RemoteFile {
     }
 
     @Override
-    public RemoteFile create(String name, LocalFile content) {
-        return getStorageProvider().create(name, content);
-    }
-
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name);
-            }
-        });
+    public RemoteFile create(LocalFile content) {
+        return getStorageProvider().create(this, content);
     }
 
     @Override
@@ -126,28 +84,8 @@ class DropboxFile implements RemoteFile {
     }
 
     @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(name);
-            }
-        });
-    }
-
-    @Override
     public List<RemoteFile> list() {
         return getStorageProvider().list(this);
-    }
-
-    @Override
-    public void listAsync(Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list();
-            }
-        });
     }
 
     @Override
@@ -156,28 +94,8 @@ class DropboxFile implements RemoteFile {
     }
 
     @Override
-    public void downloadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return download(local);
-            }
-        });
-    }
-
-    @Override
     public boolean upload(LocalFile local) {
         return consume(getStorageProvider().update(this, local));
-    }
-
-    @Override
-    public void uploadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return upload(local);
-            }
-        });
     }
 
     @Override
@@ -191,37 +109,8 @@ class DropboxFile implements RemoteFile {
     }
 
     @Override
-    public void shareAsync(final String user, Task<String> task) {
-        doAsync(task, new Delegate<String>() {
-            @Override
-            public String invoke() {
-                return share(user);
-            }
-        });
-    }
-
-    @Override
-    public void shareAsync(final String user, final int kind, Task<String> task) {
-        doAsync(task, new Delegate<String>() {
-            @Override public String invoke() {
-                return share(user, kind);
-            }
-        });
-    }
-
-    @Override
     public boolean delete() {
         return getStorageProvider().delete(id);
-    }
-
-    @Override
-    public void deleteAsync(Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return delete();
-            }
-        });
     }
 
     @Override
@@ -234,15 +123,6 @@ class DropboxFile implements RemoteFile {
         catch (DropboxException e){
             return false;
         }
-    }
-
-    @Override
-    public void renameAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return rename(name);
-            }
-        });
     }
 
     @Override
@@ -268,4 +148,5 @@ class DropboxFile implements RemoteFile {
         DropboxFile other = (DropboxFile) remoteFile;
         return init(other.model);
     }
+
 }

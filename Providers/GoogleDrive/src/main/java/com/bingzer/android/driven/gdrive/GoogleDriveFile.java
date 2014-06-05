@@ -15,36 +15,21 @@
  */
 package com.bingzer.android.driven.gdrive;
 
-import com.bingzer.android.driven.StorageProvider;
+import com.bingzer.android.driven.AbsRemoteFile;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
-import com.bingzer.android.driven.contracts.Delegate;
-import com.bingzer.android.driven.contracts.Task;
+import com.bingzer.android.driven.StorageProvider;
 import com.google.api.services.drive.model.File;
 
 import java.util.List;
-
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
 
 /**
  * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
-class GoogleDriveFile implements RemoteFile {
+class GoogleDriveFile extends AbsRemoteFile {
     public static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
 
-    protected static StorageProvider storageProvider;
-    protected static void setStorageProvider(StorageProvider storageProvider){
-        GoogleDriveFile.storageProvider = storageProvider;
-    }
-
-    protected static StorageProvider getStorageProvider(){
-        if(storageProvider == null)
-            storageProvider = new GoogleDrive();
-        return storageProvider;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
     private String id;
     private String title;
     private String type;
@@ -53,7 +38,8 @@ class GoogleDriveFile implements RemoteFile {
     private boolean hasDetails;
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    protected GoogleDriveFile(File file, boolean hasDetails){
+    protected GoogleDriveFile(StorageProvider provider, File file, boolean hasDetails){
+        super(provider);
         init(file, hasDetails);
     }
 
@@ -99,15 +85,6 @@ class GoogleDriveFile implements RemoteFile {
         return true;
     }
 
-    @Override
-    public void fetchDetailsAsync(Task<Boolean> task){
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return fetchDetails();
-            }
-        });
-    }
-
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -116,28 +93,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public RemoteFile create(String name, LocalFile content) {
-        return getStorageProvider().create(name, content);
-    }
-
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name);
-            }
-        });
+    public RemoteFile create(LocalFile content) {
+        return getStorageProvider().create(this, content);
     }
 
     @Override
@@ -146,27 +103,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(name);
-            }
-        });
-    }
-
-    @Override
     public List<RemoteFile> list() {
         return getStorageProvider().list(this);
-    }
-
-    @Override
-    public void listAsync(Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override public List<RemoteFile> invoke() {
-                return list();
-            }
-        });
     }
 
     @Override
@@ -175,26 +113,8 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void downloadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return download(local);
-            }
-        });
-    }
-
-    @Override
     public boolean upload(LocalFile local) {
         return consume(getStorageProvider().update(this, local));
-    }
-
-    @Override
-    public void uploadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return upload(local);
-            }
-        });
     }
 
     @Override
@@ -208,50 +128,14 @@ class GoogleDriveFile implements RemoteFile {
     }
 
     @Override
-    public void shareAsync(final String user, Task<String> task){
-        doAsync(task, new Delegate<String>() {
-            @Override public String invoke() {
-                return share(user);
-            }
-        });
-    }
-
-    @Override
-    public void shareAsync(final String user, final int kind, Task<String> task) {
-        doAsync(task, new Delegate<String>() {
-            @Override public String invoke() {
-                return share(user, kind);
-            }
-        });
-    }
-
-    @Override
     public boolean delete(){
         return getStorageProvider().delete(getId());
-    }
-
-    @Override
-    public void deleteAsync(Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return delete();
-            }
-        });
     }
 
     @Override
     public boolean rename(String name) {
         fileModel.setTitle(name);
         return consume(getStorageProvider().update(this, null));
-    }
-
-    @Override
-    public void renameAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return rename(name);
-            }
-        });
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

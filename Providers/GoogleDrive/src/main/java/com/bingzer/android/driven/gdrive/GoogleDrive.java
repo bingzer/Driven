@@ -18,17 +18,21 @@ package com.bingzer.android.driven.gdrive;
 import android.content.Context;
 import android.util.Log;
 
+import com.bingzer.android.driven.AbsSearch;
+import com.bingzer.android.driven.AbsSharedWithMe;
+import com.bingzer.android.driven.AbsSharing;
+import com.bingzer.android.driven.AbsStorageProvider;
+import com.bingzer.android.driven.AbsTrashed;
 import com.bingzer.android.driven.Credential;
-import com.bingzer.android.driven.Result;
-import com.bingzer.android.driven.StorageProvider;
-import com.bingzer.android.driven.LocalFile;
+import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
+import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
+import com.bingzer.android.driven.Result;
 import com.bingzer.android.driven.UserInfo;
-import com.bingzer.android.driven.contracts.Delegate;
+import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
-import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.contracts.Trashed;
 import com.bingzer.android.driven.utils.IOUtils;
 import com.google.api.client.http.GenericUrl;
@@ -36,11 +40,11 @@ import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.google.api.services.drive.model.Permission;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,38 +52,26 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
-
 /**
  * Driven
  */
 @SuppressWarnings("unused")
-public final class GoogleDrive implements StorageProvider {
+public final class GoogleDrive extends AbsStorageProvider {
 
     private static final String defaultFields      = "id,mimeType,title,downloadUrl";
     private static final String defaultFieldsItems = "items(" + defaultFields + ")";
-    private static final String TAG = "GoogleDrive";
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject GoogleDriveApi.Factory googleDriveApiFactory;
     private static GoogleDriveApi googleDriveApi;
     private static UserInfo userInfo;
-    private SharedWithMe sharedWithMe;
-    private Sharing sharing;
-    private Trashed trashed;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public boolean isAuthenticated(){
         return googleDriveApi != null && userInfo != null;
-    }
-
-    @Override
-    public boolean hasSavedCredentials(Context context) {
-        Credential credential = new Credential(context);
-        return credential.hasSavedCredential(TAG);
     }
 
     @Override
@@ -105,13 +97,13 @@ public final class GoogleDrive implements StorageProvider {
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Result<DrivenException> authenticate(Credential credential)  {
-        return authenticate(credential, true);
+    public Result<DrivenException> authenticate(Context context)  {
+        return authenticate(getSavedCredential(context));
     }
 
     @Override
-    public Result<DrivenException> authenticate(Credential credential, boolean saveCredential) {
-        Log.i(TAG, "Driven API is authenticating with GoogleDrive Service");
+    public Result<DrivenException> authenticate(Credential credential) {
+        Log.i(getName(), "Driven API is authenticating with GoogleDrive Service");
         googleDriveApi = null;
         userInfo = null;
 
@@ -119,23 +111,23 @@ public final class GoogleDrive implements StorageProvider {
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
-            if(credential.hasSavedCredential(TAG)){
-                credential.read(TAG);
+            if(credential.hasSavedCredential(getName())){
+                credential.read(getName());
             }
 
             googleDriveApi = getGoogleDriveApiFactory().createApi(credential);
-            userInfo = new GoogleDriveUserInfo(googleDriveApi.about().get().setFields("name,user").execute());
+            userInfo = new GoogleDriveUser(googleDriveApi.about().get().setFields("name,user").execute());
 
             result.setSuccess(true);
-            Log.i(TAG, "Driven API successfully authenticated by DriveUser: " + userInfo);
+            Log.i(getName(), "Driven API successfully authenticated by DriveUser: " + userInfo);
 
             // only save when it's not null
-            if(saveCredential && credential.getAccountName() != null)
-                credential.save(TAG);
+            if(credential.getAccountName() != null)
+                credential.save(getName());
         }
         catch (IOException e){
-            Log.i(TAG, "Driven API failed to authenticate");
-            Log.e(TAG, "Exception:", e);
+            Log.i(getName(), "Driven API failed to authenticate");
+            Log.e(getName(), "Exception:", e);
             result.setException(new DrivenException(e));
         }
 
@@ -143,43 +135,15 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void authenticateAsync(final Credential credential, Task<Result<DrivenException>> task){
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override public Result<DrivenException> invoke() {
-                return authenticate(credential);
-            }
-        });
-    }
-
-    @Override
-    public void authenticateAsync(final Credential credential, final boolean saveCredential, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override public Result<DrivenException> invoke() {
-                return authenticate(credential, saveCredential);
-            }
-        });
-    }
-
-    @Override
-    public Result<DrivenException> clearAuthentication(Context context) {
+    public Result<DrivenException> clearSavedCredential(Context context) {
         Result<DrivenException> result = new Result<DrivenException>(false);
         googleDriveApi = null;
         userInfo = null;
 
         Credential credential = new Credential(context);
-        credential.clear(TAG);
+        credential.clear(getName());
 
         return result;
-    }
-
-    @Override
-    public void clearAuthenticationAsync(final Context context, Task<Result<DrivenException>> task) {
-        doAsync(task, new Delegate<Result<DrivenException>>() {
-            @Override
-            public Result<DrivenException> invoke() {
-                return clearAuthentication(context);
-            }
-        });
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,27 +167,9 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void existsAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return exists(name);
-            }
-        });
-    }
-
-    @Override
-    public void existsAsync(final RemoteFile parent, final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return exists(parent, name);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile id(String id) {
         try{
-            return new GoogleDriveFile(getGoogleDriveApi().files().get(id).setFields(defaultFields).execute(), false);
+            return new GoogleDriveFile(this, getGoogleDriveApi().files().get(id).setFields(defaultFields).execute(), false);
         }
         catch (IOException e){
             return null;
@@ -231,40 +177,13 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void idAsync(final String id, final Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return id(id);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile get(String name) {
-        return first("title = '" + name + "'");
-    }
-
-    @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return get(name);
-            }
-        });
+        return getSearch().first("title = '" + name + "'");
     }
 
     @Override
     public RemoteFile get(RemoteFile parent, String name) {
-        return first("'" + parent.getId() + "' in parents AND title = '" + name + "'");
-    }
-
-    @Override
-    public void getAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return get(parent, name);
-            }
-        });
+        return getSearch().first("'" + parent.getId() + "' in parents AND title = '" + name + "'");
     }
 
     @Override
@@ -284,20 +203,11 @@ public final class GoogleDrive implements StorageProvider {
                         .update(driveFile.getId(), driveFile.getModel(), new com.google.api.client.http.FileContent(content.getType(), content.getFile()))
                         .execute();
             }
-            return new GoogleDriveFile(file, remoteFile.hasDetails());
+            return new GoogleDriveFile(this, file, remoteFile.hasDetails());
         }
         catch (IOException e){
             return null;
         }
-    }
-
-    @Override
-    public void updateAsync(final RemoteFile remoteFile, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return update(remoteFile, content);
-            }
-        });
     }
 
     @Override
@@ -312,87 +222,27 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void deleteAsync(final String id, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return delete(id);
-            }
-        });
-    }
-
-    @Override
-    public RemoteFile first(String query) {
-        try{
-            return first(query, defaultFieldsItems, true);
-        }
-        catch (IOException e){
-            return null;
-        }
-        catch (IndexOutOfBoundsException e){
-            // not found
-            return null;
-        }
-    }
-
-    @Override
-    public void firstAsync(final String query, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return first(query);
-            }
-        });
-    }
-
-    @Override
-    public java.util.List<RemoteFile> query(String query) {
-        try{
-            return list(query, defaultFieldsItems, true);
-        }
-        catch (IOException e){
-            return null;
-        }
-    }
-
-    @Override
-    public void queryAsync(final String query, Task<java.util.List<RemoteFile>> task) {
-        doAsync(task, new Delegate<java.util.List<RemoteFile>>() {
-            @Override public java.util.List<RemoteFile> invoke() {
-                return query(query);
-            }
-        });
-    }
-
-    @Override
     public RemoteFile create(String name) {
-        return create(name, null);
+        return create(null, name);
     }
 
     @Override
-    public RemoteFile create(String name, LocalFile content) {
-        return create(null, name, content);
+    public RemoteFile create(LocalFile local) {
+        return create(null, local);
     }
 
     @Override
     public RemoteFile create(RemoteFile parent, String name) {
-        return create(parent, name, null);
-    }
-
-    @Override
-    public RemoteFile create(RemoteFile parent, String name, LocalFile content) {
         try{
             com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
             file.setTitle(name);
+            file.setMimeType(GoogleDriveFile.MIME_TYPE_FOLDER);
 
-            if (content == null)
-                file.setMimeType(GoogleDriveFile.MIME_TYPE_FOLDER);
             if (parent != null)
                 file.setParents(Arrays.asList(new ParentReference().setId(parent.getId())));
 
             /////////////////////////////////////
-            if(content != null)
-                file = getGoogleDriveApi().files().insert(file, new com.google.api.client.http.FileContent(content.getType(), content.getFile())).execute();
-            else
-                file = getGoogleDriveApi().files().insert(file).execute();
+            file = getGoogleDriveApi().files().insert(file).execute();
 
             return id(file.getId());
         }
@@ -402,39 +252,22 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void createAsync(final RemoteFile parent, final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>(){
-            @Override public RemoteFile invoke() {
-                return create(parent, name, content);
-            }
-        });
-    }
+    public RemoteFile create(RemoteFile parent, LocalFile local) {
+        try{
+            com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
+            file.setTitle(local.getName());
 
-    @Override
-    public void createAsync(final RemoteFile parent, final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return create(parent, name);
-            }
-        });
-    }
+            if (parent != null)
+                file.setParents(Arrays.asList(new ParentReference().setId(parent.getId())));
 
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return create(name);
-            }
-        });
-    }
+            /////////////////////////////////////
+            file = getGoogleDriveApi().files().insert(file, new com.google.api.client.http.FileContent(local.getType(), local.getFile())).execute();
 
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
+            return id(file.getId());
+        }
+        catch (IOException e){
+            return null;
+        }
     }
 
     @Override
@@ -460,40 +293,13 @@ public final class GoogleDrive implements StorageProvider {
     }
 
     @Override
-    public void listAsync(final RemoteFile folder, Task<java.util.List<RemoteFile>> task) {
-        doAsync(task, new Delegate<java.util.List<RemoteFile>>() {
-            @Override public java.util.List<RemoteFile> invoke() {
-                return list(folder);
-            }
-        });
-    }
-
-    @Override
-    public void listAsync(Task<java.util.List<RemoteFile>> task) {
-        doAsync(task, new Delegate<java.util.List<RemoteFile>>() {
-            @Override public java.util.List<RemoteFile> invoke() {
-                return list();
-            }
-        });
-    }
-
-    @Override
     public RemoteFile getDetails(RemoteFile remoteFile) {
         try{
-            return new GoogleDriveFile(getGoogleDriveApi().files().get(remoteFile.getId()).execute(), true);
+            return new GoogleDriveFile(this, getGoogleDriveApi().files().get(remoteFile.getId()).execute(), true);
         }
         catch (IOException e){
             return null;
         }
-    }
-
-    @Override
-    public void getDetailsAsync(final RemoteFile remoteFile, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override public RemoteFile invoke() {
-                return getDetails(remoteFile);
-            }
-        });
     }
 
     @Override
@@ -513,13 +319,14 @@ public final class GoogleDrive implements StorageProvider {
         }
     }
 
+    /**
+     * Returns the "Search" interface
+     */
     @Override
-    public void downloadAsync(final RemoteFile remoteFile, final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override public Boolean invoke() {
-                return download(remoteFile, local);
-            }
-        });
+    public Search getSearch() {
+        if(search == null)
+            search = new SearchImpl();
+        return search;
     }
 
     @Override
@@ -540,6 +347,14 @@ public final class GoogleDrive implements StorageProvider {
         if(sharing == null)
             sharing = new SharingImpl();
         return sharing;
+    }
+
+    /**
+     * Returns the name of this provider
+     */
+    @Override
+    public String getName() {
+        return "GoogleDrive";
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -571,7 +386,7 @@ public final class GoogleDrive implements StorageProvider {
 
         List<RemoteFile> list = new ArrayList<RemoteFile>();
         for(int i = 0; i < fileList.getItems().size(); i++){
-            list.add(new GoogleDriveFile(fileList.getItems().get(i), false));
+            list.add(new GoogleDriveFile(this, fileList.getItems().get(i), false));
         }
 
         return list;
@@ -579,7 +394,39 @@ public final class GoogleDrive implements StorageProvider {
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    class SharingImpl implements Sharing {
+    class SearchImpl extends AbsSearch {
+
+        @Override
+        public RemoteFile first(String query) {
+            try{
+                return GoogleDrive.this.first(query, defaultFieldsItems, true);
+            }
+            catch (IOException e){
+                return null;
+            }
+            catch (IndexOutOfBoundsException e){
+                // not found
+                return null;
+            }
+        }
+
+        @Override
+        public java.util.List<RemoteFile> query(String query) {
+            try{
+                return list(query, defaultFieldsItems, true);
+            }
+            catch (IOException e){
+                return null;
+            }
+        }
+
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+    }
+
+    class SharingImpl extends AbsSharing {
 
         @Override
         public boolean isSupported() {
@@ -608,24 +455,6 @@ public final class GoogleDrive implements StorageProvider {
             }
         }
 
-        @Override
-        public void shareAsync(final RemoteFile remoteFile, final String user, Task<String> result) {
-            doAsync(result, new Delegate<String>() {
-                @Override public String invoke() {
-                    return share(remoteFile, user);
-                }
-            });
-        }
-
-        @Override
-        public void shareAsync(final RemoteFile remoteFile, final String user, final int kind, Task<String> result) {
-            doAsync(result, new Delegate<String>() {
-                @Override public String invoke() {
-                    return share(remoteFile, user, kind);
-                }
-            });
-        }
-
         private String getPermission(int kind){
             switch (kind){
                 default: return "writer";
@@ -635,7 +464,7 @@ public final class GoogleDrive implements StorageProvider {
         }
     }
 
-    class SharedWithMeImpl implements SharedWithMe {
+    class SharedWithMeImpl extends AbsSharedWithMe {
 
         @Override
         public boolean isSupported() {
@@ -644,16 +473,7 @@ public final class GoogleDrive implements StorageProvider {
 
         @Override
         public boolean exists(String name) {
-            return first("title = '" + name + "' AND sharedWithMe") != null;
-        }
-
-        @Override
-        public void existsAsync(final String name, Task<Boolean> result) {
-            doAsync(result, new Delegate<Boolean>() {
-                @Override public Boolean invoke() {
-                    return exists(name);
-                }
-            });
+            return getSearch().first("title = '" + name + "' AND sharedWithMe") != null;
         }
 
         @Override
@@ -667,16 +487,6 @@ public final class GoogleDrive implements StorageProvider {
         }
 
         @Override
-        public void getAsync(final String name, Task<RemoteFile> result) {
-            doAsync(result, new Delegate<RemoteFile>() {
-                @Override
-                public RemoteFile invoke() {
-                    return get(name);
-                }
-            });
-        }
-
-        @Override
         public List<RemoteFile> list() {
             try{
                 return GoogleDrive.this.list("sharedWithMe", defaultFieldsItems, false);
@@ -685,18 +495,9 @@ public final class GoogleDrive implements StorageProvider {
                 return null;
             }
         }
-
-        @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
-            doAsync(result, new Delegate<List<RemoteFile>>() {
-                @Override public List<RemoteFile> invoke() {
-                    return list();
-                }
-            });
-        }
     }
 
-    class TrashedImpl implements Trashed {
+    class TrashedImpl extends AbsTrashed {
 
         @Override
         public boolean isSupported() {
@@ -714,15 +515,6 @@ public final class GoogleDrive implements StorageProvider {
         }
 
         @Override
-        public void existsAsync(final String name, Task<Boolean> result) {
-            doAsync(result, new Delegate<Boolean>() {
-                @Override public Boolean invoke() {
-                    return exists(name);
-                }
-            });
-        }
-
-        @Override
         public RemoteFile get(String name) {
             try {
                 return GoogleDrive.this.first("'title' = " + name + "'", "id", true);
@@ -730,15 +522,6 @@ public final class GoogleDrive implements StorageProvider {
             catch (IOException e){
                 return null;
             }
-        }
-
-        @Override
-        public void getAsync(final String name, Task<RemoteFile> result) {
-            doAsync(result, new Delegate<RemoteFile>() {
-                @Override public RemoteFile invoke() {
-                    return get(name);
-                }
-            });
         }
 
         @Override
@@ -750,14 +533,14 @@ public final class GoogleDrive implements StorageProvider {
                 return null;
             }
         }
+    }
 
-        @Override
-        public void listAsync(Task<List<RemoteFile>> result) {
-            doAsync(result, new Delegate<List<RemoteFile>>() {
-                @Override public List<RemoteFile> invoke() {
-                    return list();
-                }
-            });
+    class GoogleDriveUser extends DefaultUserInfo {
+
+        protected GoogleDriveUser(About about){
+            name = about.getName();
+            displayName = about.getUser().getDisplayName();
+            emailAddress = about.getUser().getEmailAddress();
         }
     }
 

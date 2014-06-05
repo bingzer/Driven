@@ -17,38 +17,25 @@ package com.bingzer.android.driven.local;
 
 import android.webkit.MimeTypeMap;
 
+import com.bingzer.android.driven.AbsRemoteFile;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.StorageProvider;
-import com.bingzer.android.driven.contracts.Delegate;
-import com.bingzer.android.driven.contracts.Task;
 import com.bingzer.android.driven.utils.IOUtils;
 
 import java.io.File;
 import java.util.List;
 
-import static com.bingzer.android.driven.utils.AsyncUtils.doAsync;
-
 /**
  * A wrapper for "File" in GoogleDrive side
  */
 @SuppressWarnings("unused")
-class ExternalDriveFile implements RemoteFile {
-
-    private static final String TAG = "ExternalDriveFile";
-    protected static StorageProvider storageProvider;
-    protected static void setStorageProvider(StorageProvider storageProvider){
-        ExternalDriveFile.storageProvider = storageProvider;
-    }
-    protected static StorageProvider getStorageProvider(){
-        return storageProvider;
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////
+class ExternalDriveFile extends AbsRemoteFile {
 
     private File file;
 
-    protected ExternalDriveFile(String path){
+    protected ExternalDriveFile(StorageProvider provider, String path){
+        super(provider);
         file = new File(path);
     }
 
@@ -89,43 +76,13 @@ class ExternalDriveFile implements RemoteFile {
     }
 
     @Override
-    public void fetchDetailsAsync(Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return fetchDetails();
-            }
-        });
-    }
-
-    @Override
     public RemoteFile create(String name) {
         return getStorageProvider().create(this, name);
     }
 
     @Override
-    public RemoteFile create(String name, LocalFile content) {
-        return getStorageProvider().create(this, name, content);
-    }
-
-    @Override
-    public void createAsync(final String name, final LocalFile content, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name, content);
-            }
-        });
-    }
-
-    @Override
-    public void createAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return create(name);
-            }
-        });
+    public RemoteFile create(LocalFile content) {
+        return getStorageProvider().create(this, content);
     }
 
     @Override
@@ -134,43 +91,13 @@ class ExternalDriveFile implements RemoteFile {
     }
 
     @Override
-    public void getAsync(final String name, Task<RemoteFile> task) {
-        doAsync(task, new Delegate<RemoteFile>() {
-            @Override
-            public RemoteFile invoke() {
-                return get(name);
-            }
-        });
-    }
-
-    @Override
     public List<RemoteFile> list() {
         return getStorageProvider().list(this);
     }
 
     @Override
-    public void listAsync(Task<List<RemoteFile>> task) {
-        doAsync(task, new Delegate<List<RemoteFile>>() {
-            @Override
-            public List<RemoteFile> invoke() {
-                return list();
-            }
-        });
-    }
-
-    @Override
     public boolean download(LocalFile local) {
         return getStorageProvider().download(this, local);
-    }
-
-    @Override
-    public void downloadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return download(local);
-            }
-        });
     }
 
     @Override
@@ -184,16 +111,6 @@ class ExternalDriveFile implements RemoteFile {
     }
 
     @Override
-    public void uploadAsync(final LocalFile local, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return upload(local);
-            }
-        });
-    }
-
-    @Override
     public String share(String user) {
         return getStorageProvider().getSharing().share(this, user);
     }
@@ -204,38 +121,8 @@ class ExternalDriveFile implements RemoteFile {
     }
 
     @Override
-    public void shareAsync(final String user, Task<String> task) {
-        doAsync(task, new Delegate<String>() {
-            @Override
-            public String invoke() {
-                return share(user);
-            }
-        });
-    }
-
-    @Override
-    public void shareAsync(final String user, final int kind, Task<String> task) {
-        doAsync(task, new Delegate<String>() {
-            @Override
-            public String invoke() {
-                return share(user, kind);
-            }
-        });
-    }
-
-    @Override
     public boolean delete() {
         return getStorageProvider().delete(getId());
-    }
-
-    @Override
-    public void deleteAsync(Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return delete();
-            }
-        });
     }
 
     @Override
@@ -246,13 +133,4 @@ class ExternalDriveFile implements RemoteFile {
         return renamed;
     }
 
-    @Override
-    public void renameAsync(final String name, Task<Boolean> task) {
-        doAsync(task, new Delegate<Boolean>() {
-            @Override
-            public Boolean invoke() {
-                return rename(name);
-            }
-        });
-    }
 }

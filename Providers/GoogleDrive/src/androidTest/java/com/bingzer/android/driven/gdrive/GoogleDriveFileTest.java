@@ -28,8 +28,6 @@ public class GoogleDriveFileTest extends AndroidTestCase {
         driven = ObjectGraph.create(StubModule.class).get(GoogleDrive.class);
         Credential credential = new Credential(getContext(), "Test-User");
 
-        GoogleDriveFile.setStorageProvider(driven);
-
         driven.authenticate(credential);
         remoteFile = driven.get("Title01");
     }
@@ -123,10 +121,10 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_create_localFile() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File("TestFile"),"MimeTypeEdited01");
         assertNull(driven.get(remoteFile, "TestFile"));
 
-        RemoteFile child = remoteFile.create("TestFile", localFile);
+        RemoteFile child = remoteFile.create(localFile);
 
         assertFalse(child.isDirectory());
         assertNotNull(child);
@@ -134,11 +132,11 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_createAsync_localFile() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File("TestFile"),"MimeTypeEdited01");
         assertNull(driven.get(remoteFile, "TestFile"));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        remoteFile.createAsync("TestFile", localFile, new Task<RemoteFile>() {
+        remoteFile.createAsync(localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
@@ -236,7 +234,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_upload() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File(""),"MimeTypeEdited01");
         assertTrue(remoteFile.upload(localFile));
 
         assertNotNull(remoteFile);
@@ -254,7 +252,7 @@ public class GoogleDriveFileTest extends AndroidTestCase {
     }
 
     public void test_uploadAsync() throws Exception {
-        LocalFile localFile = new LocalFile("MimeTypeEdited01", new java.io.File(""));
+        LocalFile localFile = new LocalFile(new java.io.File(""),"MimeTypeEdited01");
         final CountDownLatch signal = new CountDownLatch(1);
         remoteFile.uploadAsync(localFile, new Task<Boolean>() {
             @Override

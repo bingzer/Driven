@@ -24,6 +24,7 @@ public class LocalFile {
 
     private File file;
     private String type;
+    private String name;
 
     /**
      * Creates an instance of {@linkplain com.bingzer.android.driven.LocalFile}
@@ -32,7 +33,7 @@ public class LocalFile {
      * @param file the File (type of {@link java.io.File})
      */
     public LocalFile(File file){
-        this.file = file;
+        this(file, null);
     }
 
     /**
@@ -40,9 +41,24 @@ public class LocalFile {
      * @param type the MIME type of this file.
      * @param file the File (type of {@link java.io.File})
      */
-    public LocalFile(String type, File file){
-        this.type = type;
+    public LocalFile(File file, String type){
+        this(file, type, null);
+    }
+
+    /**
+     * Creates an instance of {@linkplain com.bingzer.android.driven.LocalFile}
+     * with specific type and name
+     * @param file the File (type of {@link java.io.File})
+     * @param type the MIME type of this file.
+     * @param name the custom name. If {@code name is null}, name will be taken from
+     *             {@link java.io.File#getName()}
+     */
+    public LocalFile(File file, String type, String name){
         this.file = file;
+        this.type = type;
+        this.name = name;
+        if(name == null)
+            this.name = file.getName();
     }
 
     /**
@@ -73,4 +89,19 @@ public class LocalFile {
         this.type = type;
     }
 
+    /**
+     * Returns the name of this local file
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the name of this local file
+     */
+    public void setName(String name) {
+        if(name == null)
+            name = file.getName();
+        this.name = name;
+    }
 }

@@ -38,7 +38,7 @@ public class ExternalDriveTest extends AndroidTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        driven.clearAuthentication(getContext());
+        driven.clearSavedCredential(getContext());
 
         FileGenerator.clean(rootFile);
     }
@@ -78,7 +78,7 @@ public class ExternalDriveTest extends AndroidTestCase {
         driven.authenticate(credential);
         assertTrue(driven.isAuthenticated());
 
-        driven.clearAuthentication(getContext());
+        driven.clearSavedCredential(getContext());
         assertTrue(driven.isAuthenticated());
     }
 
@@ -88,7 +88,7 @@ public class ExternalDriveTest extends AndroidTestCase {
         assertTrue(driven.isAuthenticated());
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.clearAuthenticationAsync(getContext(), new Task<Result<DrivenException>>() {
+        driven.clearSavedCredentialAsync(getContext(), new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 assertTrue(driven.isAuthenticated());
@@ -99,7 +99,7 @@ public class ExternalDriveTest extends AndroidTestCase {
     }
 
     public void test_authenticate_NoSave(){
-        Result<DrivenException> result = driven.authenticate(credential, false);
+        Result<DrivenException> result = driven.authenticate(credential);
 
         assertTrue(driven.isAuthenticated());
         assertTrue(result.isSuccess());
@@ -309,7 +309,7 @@ public class ExternalDriveTest extends AndroidTestCase {
     public void test_first() throws Exception {
         try {
             driven.authenticate(credential);
-            RemoteFile remoteFile = driven.first("File101");
+            RemoteFile remoteFile = driven.getSearch().first("File101");
             fail("Should throw unsupported exception");
         }
         catch (UnsupportedOperationException e){
@@ -321,7 +321,7 @@ public class ExternalDriveTest extends AndroidTestCase {
     public void test_query() throws Exception {
         try {
             driven.authenticate(credential);
-            List<RemoteFile> remoteFiles = driven.query("title = 'Title01'");
+            List<RemoteFile> remoteFiles = driven.getSearch().query("title = 'Title01'");
             fail("Should throw exception");
         }
         catch (UnsupportedOperationException e){
@@ -367,7 +367,7 @@ public class ExternalDriveTest extends AndroidTestCase {
         RemoteFile remoteFile = driven.get("File001");
         LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
 
-        remoteFile = driven.create("File004", localFile);
+        remoteFile = driven.create(localFile);
         assertNotNull(remoteFile);
         assertFalse(remoteFile.isDirectory());
 
@@ -380,10 +380,10 @@ public class ExternalDriveTest extends AndroidTestCase {
         driven.authenticate(credential);
 
         RemoteFile remoteFile = driven.get("File001");
-        LocalFile localFile = new LocalFile(new File(remoteFile.getId()));
+        LocalFile localFile = new LocalFile(new File(new File(remoteFile.getId()).getParentFile(), "File004"));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync("File004", localFile, new Task<RemoteFile>() {
+        driven.createAsync(localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
@@ -444,7 +444,7 @@ public class ExternalDriveTest extends AndroidTestCase {
         RemoteFile parent = driven.create("Folder200");
         assertNotNull(parent);
 
-        remoteFile = driven.create(parent, "File201", localFile);
+        remoteFile = driven.create(parent, localFile);
 
         assertNotNull(remoteFile);
         assertFalse(remoteFile.isDirectory());
@@ -462,7 +462,7 @@ public class ExternalDriveTest extends AndroidTestCase {
         assertNotNull(parent);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        driven.createAsync(parent, "File201", localFile, new Task<RemoteFile>() {
+        driven.createAsync(parent, localFile, new Task<RemoteFile>() {
             @Override
             public void onCompleted(RemoteFile result) {
                 assertNotNull(result);
