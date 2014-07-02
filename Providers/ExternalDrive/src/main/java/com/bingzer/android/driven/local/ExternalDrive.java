@@ -105,6 +105,8 @@ public final class ExternalDrive extends AbsStorageProvider {
 
     @Override
     public Result<DrivenException> clearSavedCredential(Context context) {
+        root = null;
+        userInfo = null;
         return new Result<DrivenException>();
     }
 

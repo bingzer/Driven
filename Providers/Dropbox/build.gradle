@@ -1,6 +1,6 @@
 project.ext.set("archivesBaseName", "driven-dropbox");
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion Integer.parseInt(project.VERSION_SDK)
@@ -28,4 +28,4 @@ dependencies {
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
 }
 
-apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+apply from: 'https://raw.github.com/bingzer/gradle-mvn-push/master/gradle-mvn-push.gradle'

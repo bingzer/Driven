@@ -485,7 +485,7 @@ public final class GoogleDrive extends AbsStorageProvider {
         @Override
         public RemoteFile get(String name) {
             try {
-                return GoogleDrive.this.first("title = '" + name + "' AND sharedWithMe", defaultFields, false);
+                return GoogleDrive.this.first("title = '" + name + "' AND sharedWithMe", defaultFieldsItems, false);
             }
             catch (IOException e) {
                 return null;

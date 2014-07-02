@@ -42,7 +42,6 @@ public class DropboxActivity extends Activity {
                 driven.getDropboxApi().getSession().finishAuthentication();
                 credential.getToken().setAccessToken(driven.getDropboxApi().getSession().getOAuth2AccessToken());
             }
-            authenticate();
         }
         catch (DrivenException e){
             authenticate();

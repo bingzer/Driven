@@ -1,6 +1,6 @@
 project.ext.set("archivesBaseName", "driven-sample");
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion Integer.parseInt(project.VERSION_SDK)

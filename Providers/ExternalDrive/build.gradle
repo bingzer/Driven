@@ -1,6 +1,6 @@
 project.ext.set("archivesBaseName", "driven-ext-drive");
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion Integer.parseInt(project.VERSION_SDK)
@@ -18,4 +18,4 @@ dependencies {
     compile project(':Library')
 }
 
-apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+apply from: 'https://raw.github.com/bingzer/gradle-mvn-push/master/gradle-mvn-push.gradle'
