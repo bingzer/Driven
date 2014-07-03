@@ -79,19 +79,19 @@ public class ExternalDriveTest extends AndroidTestCase {
         assertTrue(driven.isAuthenticated());
 
         driven.clearSavedCredential(getContext());
-        assertTrue(driven.isAuthenticated());
+        assertFalse(driven.isAuthenticated());
     }
 
 
     public void test_deauthenticateAsync() throws InterruptedException {
         driven.authenticate(credential);
-        assertTrue(driven.isAuthenticated());
+        assertFalse(driven.isAuthenticated());
 
         final CountDownLatch signal = new CountDownLatch(1);
         driven.clearSavedCredentialAsync(getContext(), new Task<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
-                assertTrue(driven.isAuthenticated());
+                assertFalse(driven.isAuthenticated());
                 signal.countDown();
             }
         });
