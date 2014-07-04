@@ -192,12 +192,22 @@ public final class GoogleDrive extends AbsStorageProvider {
 
     @Override
     public RemoteFile get(String name) {
-        return getSearch().first("title = '" + name + "'");
+        try {
+            return first("title = '" + name + "'", defaultFieldsItems, false);
+        }
+        catch (IOException e){
+            return null;
+        }
     }
 
     @Override
     public RemoteFile get(RemoteFile parent, String name) {
-        return getSearch().first("'" + parent.getId() + "' in parents AND title = '" + name + "'");
+        try {
+            return first("'" + parent.getId() + "' in parents AND title = '" + name + "'", defaultFieldsItems, false);
+        }
+        catch (IOException e){
+            return null;
+        }
     }
 
     @Override
@@ -479,13 +489,18 @@ public final class GoogleDrive extends AbsStorageProvider {
 
         @Override
         public boolean exists(String name) {
-            return getSearch().first("title = '" + name + "' AND sharedWithMe") != null;
+            try {
+                return first("title = '" + name + "' AND sharedWithMe", defaultFieldsItems, false) != null;
+            }
+            catch (IOException e){
+                return false;
+            }
         }
 
         @Override
         public RemoteFile get(String name) {
             try {
-                return GoogleDrive.this.first("title = '" + name + "' AND sharedWithMe", defaultFieldsItems, false);
+                return first("title = '" + name + "' AND sharedWithMe", defaultFieldsItems, false);
             }
             catch (IOException e) {
                 return null;
@@ -513,7 +528,7 @@ public final class GoogleDrive extends AbsStorageProvider {
         @Override
         public boolean exists(String name) {
             try {
-                return GoogleDrive.this.exists("'title' = " + name + "'", defaultFields, true);
+                return GoogleDrive.this.exists("'title' = " + name + "'", defaultFieldsItems, true);
             }
             catch (IOException e){
                 return false;
