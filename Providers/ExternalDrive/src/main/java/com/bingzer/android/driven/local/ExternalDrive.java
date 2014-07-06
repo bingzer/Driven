@@ -86,8 +86,7 @@ public final class ExternalDrive extends AbsStorageProvider {
 
             root = new File(credential.getAccountName());
             IOUtils.safeCreateDir(root);
-
-            userInfo = new DefaultUserInfo();
+            userInfo = new ExternalDriveUser(root);
 
             result.setSuccess(true);
             Log.i(getName(), "Driven API successfully authenticated by DriveUser: " + userInfo);
@@ -364,6 +363,14 @@ public final class ExternalDrive extends AbsStorageProvider {
         @Override
         public boolean isSupported() {
             return false;
+        }
+    }
+
+    class ExternalDriveUser extends DefaultUserInfo {
+
+        ExternalDriveUser(File root){
+            name = root.getName();
+            displayName = root.getName();
         }
     }
 
