@@ -3,6 +3,7 @@ package com.bingzer.android.driven.dropbox.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DrivenException;
@@ -42,6 +43,9 @@ public class DropboxActivity extends Activity {
                 driven.getDropboxApi().getSession().finishAuthentication();
                 credential.getToken().setAccessToken(driven.getDropboxApi().getSession().getOAuth2AccessToken());
             }
+            else{
+                finish();
+            }
         }
         catch (DrivenException e){
             authenticate();
@@ -64,7 +68,7 @@ public class DropboxActivity extends Activity {
     }
 
     private void authenticate(){
-        driven.authenticateAsync(credential, new Task<Result<DrivenException>>() {
+        driven.authenticateAsync(credential, new Task.WithErrorReporting<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
                 if(!result.isSuccess()){
@@ -74,6 +78,12 @@ public class DropboxActivity extends Activity {
                     // we're done!
                     successfullyAuthorized();
                 }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                Log.e(driven.getName(), error.getMessage(), error);
+                finish();
             }
         });
     }

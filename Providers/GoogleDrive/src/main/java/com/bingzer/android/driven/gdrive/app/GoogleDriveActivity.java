@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.Result;
@@ -84,11 +85,6 @@ public class GoogleDriveActivity extends Activity {
         }
     }
 
-    private void successfullyAuthenticated(){
-        setResult(RESULT_OK);
-        finish();
-    }
-
     private void showAccountChooser(){
         if(getIntent() != null && getIntent().getIntExtra(BUNDLE_KEY_LOGIN, 0) == REQUEST_LOGIN){
             startActivityForResult(googleAccount.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
@@ -96,22 +92,33 @@ public class GoogleDriveActivity extends Activity {
     }
 
     private void authenticate(){
-        storageProvider.authenticateAsync(new Credential(this, googleAccount.getSelectedAccountName()), new Task<Result<DrivenException>>() {
+        Credential credential = new Credential(this, googleAccount.getSelectedAccountName());
+        storageProvider.authenticateAsync(credential, new Task.WithErrorReporting<Result<DrivenException>>() {
             @Override
             public void onCompleted(Result<DrivenException> result) {
-                if(result.isSuccess())
+                if (result.isSuccess())
                     successfullyAuthenticated();
-                else{
-                    if(result.getException().getCause() instanceof UserRecoverableAuthIOException){
+                else {
+                    if (result.getException().getCause() instanceof UserRecoverableAuthIOException) {
                         UserRecoverableAuthIOException exception = (UserRecoverableAuthIOException) result.getException().getCause();
                         startActivityForResult(exception.getIntent(), REQUEST_AUTHORIZATION);
-                    }
-                    else{
-                        throw result.getException();
+                    } else {
+                        onError(result.getException());
                     }
                 }
             }
+
+            @Override
+            public void onError(Throwable error) {
+                Log.e(storageProvider.getName(), error.getMessage(), error);
+                finish();
+            }
         });
+    }
+
+    private void successfullyAuthenticated(){
+        setResult(RESULT_OK);
+        finish();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,7 @@
             android:configChanges="orientation|keyboard">
             <intent-filter>
                 <!-- Change this to be db- followed by your app key -->
-                <data android:scheme="db-r1exph3cxof2ova" />
+                <data android:scheme="db-p0ukust7fgxi3rw" />
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <category android:name="android.intent.category.DEFAULT" />
