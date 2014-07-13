@@ -317,7 +317,18 @@ public class Dropbox extends AbsStorageProvider {
 
     @Override
     public RemoteFile create(RemoteFile parent, LocalFile local) {
-        return create(local);
+        try {
+            if(local.getName() == null) throw new NullPointerException("LocalFile.getName()");
+
+            InputStream input = getApiFactory().createInputStream(local.getFile());
+            getDropboxApi().putFile(Path.combine(parent, local.getName()), input, local.getFile().length(), null, null);
+            safeClose(input);
+
+            return get(local.getName());
+        }
+        catch (Exception e){
+            return null;
+        }
     }
 
     @Override
