@@ -42,6 +42,7 @@ public class DropboxActivity extends Activity {
             if (driven.getDropboxApi().getSession().authenticationSuccessful()) {
                 driven.getDropboxApi().getSession().finishAuthentication();
                 credential.getToken().setAccessToken(driven.getDropboxApi().getSession().getOAuth2AccessToken());
+                successfullyAuthenticated();
             }
             else{
                 finish();
@@ -52,7 +53,7 @@ public class DropboxActivity extends Activity {
         }
     }
 
-    private void successfullyAuthorized(){
+    private void successfullyAuthenticated(){
         setResult(RESULT_OK);
         finish();
     }
@@ -76,7 +77,7 @@ public class DropboxActivity extends Activity {
                 }
                 else{
                     // we're done!
-                    successfullyAuthorized();
+                    successfullyAuthenticated();
                 }
             }
 
