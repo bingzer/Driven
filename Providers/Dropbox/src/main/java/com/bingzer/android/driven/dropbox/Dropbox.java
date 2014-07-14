@@ -324,7 +324,7 @@ public class Dropbox extends AbsStorageProvider {
             getDropboxApi().putFile(Path.combine(parent, local.getName()), input, local.getFile().length(), null, null);
             safeClose(input);
 
-            return get(local.getName());
+            return get(parent, local.getName());
         }
         catch (Exception e){
             return null;
