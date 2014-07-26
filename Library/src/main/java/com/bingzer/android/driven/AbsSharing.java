@@ -52,4 +52,13 @@ public abstract class AbsSharing implements Sharing {
         });
     }
 
+    @Override
+    public void removeSharingAsync(final RemoteFile remoteFile, final String user, Task<Boolean> task) {
+        doAsync(task, new Delegate<Boolean>() {
+            @Override public Boolean invoke() {
+                return removeSharing(remoteFile, user);
+            }
+        });
+    }
+
 }

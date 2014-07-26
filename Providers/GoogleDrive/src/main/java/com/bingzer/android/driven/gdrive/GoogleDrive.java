@@ -15,6 +15,7 @@
  */
 package com.bingzer.android.driven.gdrive;
 
+import android.Manifest;
 import android.content.Context;
 import android.util.Log;
 
@@ -476,6 +477,25 @@ public final class GoogleDrive extends AbsStorageProvider {
             }
             catch (IOException e){
                 return null;
+            }
+        }
+
+        @Override
+        public boolean removeSharing(RemoteFile remoteFile, String user) {
+            try{
+                String fieldId = remoteFile.getId();
+                PermissionList permissionList = getGoogleDriveApi().permissions().list(fieldId).execute();
+                for(Permission p : permissionList.getItems()){
+                    if(user.equalsIgnoreCase(p.getName()) || user.equalsIgnoreCase(p.getEmailAddress())){
+                        googleDriveApi.permissions().delete(fieldId, p.getId()).execute();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (IOException e){
+                return false;
             }
         }
     }

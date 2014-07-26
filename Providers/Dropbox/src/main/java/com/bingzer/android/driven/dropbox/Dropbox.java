@@ -456,6 +456,11 @@ public class Dropbox extends AbsStorageProvider {
             }
         }
 
+        @Override
+        public boolean removeSharing(RemoteFile remoteFile, String user) {
+            return false;
+        }
+
     }
 
     class DropboxUserInfo extends DefaultUserInfo {

@@ -323,6 +323,11 @@ public final class ExternalDrive extends AbsStorageProvider {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public boolean removeSharing(RemoteFile remoteFile, String user) {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
     class TrashedImpl extends AbsTrashed {
