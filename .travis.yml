@@ -18,5 +18,4 @@ before_script:
   - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
-  - ./wait_for_emulator
-  - gradle connectedCheck -PdisablePreDex
+  - gradle connectedAndroidTest
