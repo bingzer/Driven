@@ -15,8 +15,8 @@ StorageProvider provider = new GoogleDrive();
 provider.authenticate(credentials);
 
 // list all files in the root
-provider.listAsync(new Task<List<DrivenFile>>(){
-  public void onComplete(List<DrivenFile> files){
+provider.listAsync(new Task<List<RemoteFile>>(){
+  public void onComplete(List<RemoteFile> files){
     ...
   }
 });
@@ -29,8 +29,8 @@ StorageProvider provider = new Dropbox();
 provider.authenticate(credentials);
 
 // list all files in the root
-provider.listAsync(new Task<List<DrivenFile>>(){
-  public void onComplete(List<DrivenFile> files){
+provider.listAsync(new Task<List<RemoteFile>>(){
+  public void onComplete(List<RemoteFile> files){
     ...
   }
 });
