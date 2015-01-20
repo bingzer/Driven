@@ -37,22 +37,25 @@ provider.listAsync(new Task<List<DrivenFile>>(){
 ```
 Same interface, same method calls!
  
-Download snapshots
+Download
 ==================
-**IMPORTANT** 
-This library is still under heavy development and yet scheduled for v.1 release.
 
 ```groovy
 
-repositories {
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
+dependencies {  
+    // main library
+    compile 'com.bingzer.android.driven:driven:1.0.0'
+    
+    // Google Drive
+    compile 'com.bingzer.android.driven:driven-gdrive:1.0.0'
+    
+    // Dropbox
+    compile 'com.bingzer.android.driven:driven-dropbox:1.0.0'
+    
+    // External Drive
+    compile 'com.bingzer.android.driven:driven-ext-drive:1.0.0'
 }
 
-dependencies {
-    compile (group:'com.bingzer.android.driven', name: 'driven', version:'0.7.0-SNAPSHOT', changing: true)
-}
 ```
 
 LICENSE

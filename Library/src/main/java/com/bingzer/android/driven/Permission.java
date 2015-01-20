@@ -1,5 +1,7 @@
 package com.bingzer.android.driven;
 
+import com.bingzer.android.driven.contracts.Task;
+
 import java.util.List;
 
 /**
@@ -42,5 +44,4 @@ public interface Permission {
      * Checks to see if a user is an owner
      */
     boolean isOwner(UserInfo userInfo);
-
 }

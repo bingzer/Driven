@@ -19,7 +19,6 @@ import android.os.AsyncTask;
 import android.os.Looper;
 import android.util.Log;
 
-import com.bingzer.android.driven.DrivenException;
 import com.bingzer.android.driven.contracts.Delegate;
 import com.bingzer.android.driven.contracts.Task;
 

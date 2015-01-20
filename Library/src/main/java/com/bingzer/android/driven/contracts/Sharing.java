@@ -55,4 +55,13 @@ public interface Sharing extends Feature {
      */
     void shareAsync(RemoteFile remoteFile, String user, int kind, Task<String> task);
 
+    /**
+     * Remove specific user from their share access
+     */
+    boolean removeSharing(RemoteFile remoteFile, String user);
+
+    /**
+     * Async call for {@link #removeSharing(com.bingzer.android.driven.RemoteFile, String)} }}
+     */
+    void removeSharingAsync(RemoteFile remoteFile, String user, Task<Boolean> task);
 }
