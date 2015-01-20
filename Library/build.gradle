@@ -1,4 +1,4 @@
-project.ext.set("archivesBaseName", "cloudy");
+project.ext.set("archivesBaseName", "driven");
 
 apply plugin: 'com.android.library'
 

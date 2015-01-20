@@ -1,6 +1,6 @@
-project.ext.set("archivesBaseName", "cloudy-dropbox");
+project.ext.set("archivesBaseName", "driven-dropbox");
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion Integer.parseInt(project.VERSION_SDK)
