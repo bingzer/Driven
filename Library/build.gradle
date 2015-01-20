@@ -1,6 +1,6 @@
-project.ext.set("archivesBaseName", "driven");
+project.ext.set("archivesBaseName", "cloudy");
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion Integer.parseInt(project.VERSION_SDK)

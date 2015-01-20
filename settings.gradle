@@ -1,2 +1,3 @@
-include ':Library', ':Sample'
-include ':Providers:GoogleDrive', ':Providers:Dropbox', ':Providers:ExternalDrive'
+include ':Library'
+include ':GoogleDrive', ':Dropbox', ':ExternalDrive'
+include ':Sample'
