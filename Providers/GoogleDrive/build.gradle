@@ -1,0 +1,42 @@
+project.ext.set("archivesBaseName", "cloudy-gdrive");
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion Integer.parseInt(project.VERSION_SDK)
+    buildToolsVersion project.VERSION_TOOLS
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(project.VERSION_SDK_MIN)
+        targetSdkVersion Integer.parseInt(project.VERSION_SDK_TARGET)
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
+    }
+}
+
+dependencies {
+    compile project(':Library')
+    // --- Google Drive
+    //compile 'com.google.apis:google-api-services-drive:v2-rev123-1.18.0-rc'
+    compile(group: 'com.google.apis', name: 'google-api-services-drive', version: 'v2-rev156-1.19.1') {
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+    }
+    //compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
+    compile(group: 'com.google.api-client', name: 'google-api-client-android', version: '1.19.1') {
+        // Exclude artifacts that the Android SDK/Runtime provides.
+        exclude(group: 'xpp3', module: 'xpp3')
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+        exclude(group: 'junit', module: 'junit')
+        exclude(group: 'com.google.android', module: 'android')
+    }
+
+    // --- Dagger
+    compile 'com.squareup.dagger:dagger:1.2.1'
+    androidTestProvided 'com.squareup.dagger:dagger-compiler:1.2.1'
+    // -- Mockito
+    androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
+}
+
+apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
