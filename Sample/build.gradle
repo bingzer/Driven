@@ -34,9 +34,9 @@ dependencies {
     compile 'com.google.android.gms:play-services:6.5.87'
 
     compile project(':Library')
-    compile project(':Dropbox')
-    compile project(':GoogleDrive')
-    compile project(':ExternalDrive')
+    compile project(':Providers:Dropbox')
+    compile project(':Providers:GoogleDrive')
+    compile project(':Providers:ExternalDrive')
 }
 
 def getDropboxAppKey(){
