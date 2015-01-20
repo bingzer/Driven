@@ -2,7 +2,7 @@ language: android
 jdk: oraclejdk7
 env:
   global:
-    - ANDROID_API_LEVEL=android-19
+    - ANDROID_API_LEVEL=android-21
     - ANDROID_ABI=armeabi-v7a
 
 android:
@@ -18,4 +18,4 @@ before_script:
   - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
-  - gradlew connectedAndroidTest
+  - .\gradlew connectedAndroidTest
