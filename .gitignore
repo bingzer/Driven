@@ -1,8 +1,6 @@
 #################
 ## Android studio
 #################
-gradlew
-gradlew.bat
 *.idea
 *.iml
 gradle
