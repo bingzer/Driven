@@ -289,6 +289,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private boolean clearCredentials(){
         gdrive.clearSavedCredential(this);
         dropbox.clearSavedCredential(this);
+        gmsDrive.clearSavedCredential(this);
         return true;
     }
 
