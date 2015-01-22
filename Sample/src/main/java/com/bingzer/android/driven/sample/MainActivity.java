@@ -32,6 +32,8 @@ import com.bingzer.android.driven.dropbox.Dropbox;
 import com.bingzer.android.driven.dropbox.app.DropboxActivity;
 import com.bingzer.android.driven.gdrive.GoogleDrive;
 import com.bingzer.android.driven.gdrive.app.GoogleDriveActivity;
+import com.bingzer.android.driven.gmsdrive.GmsDrive;
+import com.bingzer.android.driven.gmsdrive.app.GmsDriveActivity;
 import com.bingzer.android.driven.local.ExternalDrive;
 import com.bingzer.android.driven.local.app.ExternalDriveActivity;
 
@@ -49,6 +51,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PICK_FILE = 102;
     private StorageProvider gdrive = new GoogleDrive();
+    private StorageProvider gmsDrive = new GmsDrive();
     private StorageProvider dropbox = new Dropbox();
     private StorageProvider externalDrive = new ExternalDrive();
     private StorageProvider storageProvider = gdrive;
@@ -118,6 +121,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             }
             return true;
         }
+        if(getString(R.string.google_drive_gms).equals(provider)){
+            if(!gmsDrive.isAuthenticated()){
+                GmsDriveActivity.launch(this);
+            }
+            else{
+                storageProvider = gmsDrive;
+                breadcrumbs.clear();
+                list(null);
+            }
+            return true;
+        }
         else if(getString(R.string.dropbox).equals(provider)){
             if(!dropbox.isAuthenticated()){
                 DropboxActivity.launch(this, BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
@@ -156,6 +170,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     break;
                 case ExternalDriveActivity.REQUEST_LOGIN:
                     storageProvider = externalDrive;
+                    break;
+                case GmsDriveActivity.REQUEST_LOGIN:
+                    storageProvider = gmsDrive;
                     break;
                 case REQUEST_PICK_FILE:
                     createFile("*/*", new File(data.getData().getPath()));
