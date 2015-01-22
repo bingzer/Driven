@@ -36,6 +36,7 @@ import com.bingzer.android.driven.gmsdrive.GmsDrive;
 import com.bingzer.android.driven.gmsdrive.app.GmsDriveActivity;
 import com.bingzer.android.driven.local.ExternalDrive;
 import com.bingzer.android.driven.local.app.ExternalDriveActivity;
+import com.bingzer.android.driven.utils.MimeTypes;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -175,7 +176,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                     storageProvider = gmsDrive;
                     break;
                 case REQUEST_PICK_FILE:
-                    createFile("*/*", new File(data.getData().getPath()));
+                    String path = Media.getPath(this, data);
+                    File file = new File(path);
+                    createFile(MimeTypes.getMimeType(file), file);
                     return;
             }
 
@@ -262,7 +265,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
     private boolean promptForFile(){
         try {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("file/*");
+            intent.setType("*/*");
             startActivityForResult(intent, REQUEST_PICK_FILE);
         }
         catch (Throwable e){
