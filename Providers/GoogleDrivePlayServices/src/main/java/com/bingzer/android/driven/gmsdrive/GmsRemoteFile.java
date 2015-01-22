@@ -4,6 +4,7 @@ import com.bingzer.android.driven.AbsRemoteFile;
 import com.bingzer.android.driven.LocalFile;
 import com.bingzer.android.driven.RemoteFile;
 import com.bingzer.android.driven.StorageProvider;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 
 import java.util.List;
@@ -55,51 +56,64 @@ class GmsRemoteFile extends AbsRemoteFile{
 
     @Override
     public RemoteFile create(String name) {
-        return null;
+        return provider.create(name);
     }
 
     @Override
     public RemoteFile create(LocalFile content) {
-        return null;
+        return provider.create(content);
     }
 
     @Override
     public RemoteFile get(String name) {
-        return null;
+        return provider.get(name);
     }
 
     @Override
     public List<RemoteFile> list() {
-        return null;
+        return provider.list(this);
     }
 
     @Override
     public boolean download(LocalFile local) {
-        return false;
+        return provider.download(this, local);
     }
 
     @Override
     public boolean upload(LocalFile local) {
-        return false;
+        return consume(provider.update(this, local));
     }
 
     @Override
     public String share(String user) {
-        return null;
+        return provider.getSharing().share(this, user);
     }
 
     @Override
     public String share(String user, int kind) {
-        return null;
+        return provider.getSharing().share(this, user, kind);
     }
 
     @Override
     public boolean delete() {
-        return false;
+        return provider.delete(getId());
     }
 
     @Override
     public boolean rename(String name) {
-        return false;
+        throw new UnsupportedOperationException("rename");
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Metadata getMetadata(){
+        return metadata;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private boolean consume(RemoteFile remoteFile){
+        this.metadata = ((GmsRemoteFile) remoteFile).metadata;
+        return true;
     }
 }

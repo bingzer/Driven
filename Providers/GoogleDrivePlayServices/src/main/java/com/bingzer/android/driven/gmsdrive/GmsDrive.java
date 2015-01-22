@@ -19,13 +19,17 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.plus.Plus;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,7 +40,8 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
     public static final int RC_SIGN_IN = 411;
 
     private static GoogleApiClient apiClient;
-    private UserInfo userInfo;
+    private static UserInfo userInfo;
+    private static DriveFolder rootFolder;
 
     @Override
     public UserInfo getUserInfo() {
@@ -50,8 +55,11 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public Result<DrivenException> clearSavedCredential(Context context) {
-        Result<DrivenException> result = new Result<DrivenException>(false);
+        Result<DrivenException> result = new Result<>(false);
+        if(apiClient != null && apiClient.isConnected())
+            apiClient.disconnect();
         apiClient = null;
+        rootFolder = null;
         userInfo = null;
 
         Credential credential = new Credential(context);
@@ -62,7 +70,7 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public Result<DrivenException> authenticate(Credential credential) {
-        Result<DrivenException> result = new Result<DrivenException>(false);
+        Result<DrivenException> result = new Result<>(false);
         try {
             if(credential == null) throw new DrivenException(new IllegalArgumentException("credential cannot be null"));
 
@@ -86,6 +94,7 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
             credential.setAccountName(Plus.AccountApi.getAccountName(apiClient));
 
             userInfo = new GoogleDriveUser(credential.getAccountName(), credential.getAccountName(), null);
+            rootFolder = Drive.DriveApi.getRootFolder(apiClient);
 
             result.setSuccess(true);
 
@@ -138,32 +147,18 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public List<RemoteFile> list() {
-        Query query = new Query.Builder()
-                .addFilter(Filters.eq(SearchableField.PARENTS, null))
-                .build();
-        Drive.DriveApi.query(apiClient, query);
-
-        return null;
+        return list(null);
     }
 
     @Override
     public List<RemoteFile> list(RemoteFile parent) {
-        List<RemoteFile> list = new ArrayList<>();
-        Query query = new Query.Builder()
-                .build();
-        DriveApi.MetadataBufferResult bufferResult = Drive.DriveApi.query(apiClient, query).await();
-        if (bufferResult.getStatus().isSuccess()){
-            for (Metadata metadata : bufferResult.getMetadataBuffer()) {
-                list.add(new GmsRemoteFile(this, metadata));
-            }
-        }
-
-        return list;
+        DriveFolder folder = getDriveFolder(parent);
+        return listRemoteFiles(folder);
     }
 
     @Override
     public RemoteFile create(String name) {
-        return null;
+        return create(null, name);
     }
 
     @Override
@@ -173,7 +168,11 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public RemoteFile create(RemoteFile parent, String name) {
-        return null;
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle(name).build();
+        DriveFolder folder = getDriveFolder(parent);
+        DriveFolder.DriveFolderResult result = folder.createFolder(apiClient, changeSet).await();
+        return new GmsRemoteFile(this, result.getDriveFolder().getMetadata(apiClient).await().getMetadata());
     }
 
     @Override
@@ -229,6 +228,23 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
                 .addApi(Plus.API)
                 .addScope(Drive.SCOPE_FILE)
                 .addScope(Drive.SCOPE_APPFOLDER);
+    }
+
+    private List<RemoteFile> listRemoteFiles(DriveFolder folder){
+        List<RemoteFile> list = new ArrayList<>();
+        DriveApi.MetadataBufferResult result = folder.listChildren(apiClient).await();
+        if (result.getStatus().isSuccess()){
+            for (Metadata metadata : result.getMetadataBuffer()) {
+                list.add(new GmsRemoteFile(this, metadata));
+            }
+        }
+        return list;
+    }
+
+    private DriveFolder getDriveFolder(RemoteFile parent){
+        if (parent == null) return rootFolder;
+
+        return Drive.DriveApi.getFolder(apiClient, ((GmsRemoteFile) parent).getMetadata().getDriveId());
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
