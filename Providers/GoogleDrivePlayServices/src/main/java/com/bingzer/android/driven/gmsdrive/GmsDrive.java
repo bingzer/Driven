@@ -1,6 +1,7 @@
 package com.bingzer.android.driven.gmsdrive;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.bingzer.android.driven.AbsStorageProvider;
 import com.bingzer.android.driven.Credential;
@@ -15,21 +16,25 @@ import com.bingzer.android.driven.contracts.Search;
 import com.bingzer.android.driven.contracts.SharedWithMe;
 import com.bingzer.android.driven.contracts.Sharing;
 import com.bingzer.android.driven.contracts.Trashed;
+import com.bingzer.android.driven.utils.IOUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.plus.Plus;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,6 +43,7 @@ import java.util.List;
 public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener */{
 
     public static final int RC_SIGN_IN = 411;
+    private static final String TAG = "GmsDrive";
 
     private static GoogleApiClient apiClient;
     private static UserInfo userInfo;
@@ -163,7 +169,7 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public RemoteFile create(LocalFile local) {
-        return null;
+        return create(null, local);
     }
 
     @Override
@@ -177,7 +183,32 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public RemoteFile create(RemoteFile parent, LocalFile local) {
-        return null;
+        MetadataChangeSet changeSet = createChangeset(local);
+        DriveFolder folder = getDriveFolder(parent);
+        DriveFolder.DriveFileResult result = folder.createFile(apiClient, changeSet, null).await();
+        DriveApi.DriveContentsResult contentsResult = result.getDriveFile().open(apiClient, DriveFile.MODE_WRITE_ONLY, new DriveFile.DownloadProgressListener() {
+            @Override public void onProgress(long bytesDownloaded, long bytesExpected) {
+                Log.i(TAG, "Downloading content: " + bytesDownloaded + " of " + bytesExpected);
+            }
+        }).await();
+        DriveContents contents = contentsResult.getDriveContents();
+
+        try{
+            InputStream source = new FileInputStream(local.getFile());
+            OutputStream dest = new BufferedOutputStream(contents.getOutputStream());
+            IOUtils.copy(source, dest);
+
+            IOUtils.safeClose(source);
+            IOUtils.safeClose(dest);
+
+            contents.commit(apiClient, null);
+        }
+        catch (IOException e){
+            Log.e(TAG, "When reading stream", e);
+            return null;
+        }
+
+        return new GmsRemoteFile(this, result.getDriveFile().getMetadata(apiClient).await().getMetadata());
     }
 
     @Override
@@ -245,6 +276,13 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
         if (parent == null) return rootFolder;
 
         return Drive.DriveApi.getFolder(apiClient, ((GmsRemoteFile) parent).getMetadata().getDriveId());
+    }
+
+    private MetadataChangeSet createChangeset(LocalFile local){
+        return new MetadataChangeSet.Builder()
+                .setTitle(local.getName())
+                .setMimeType(local.getType())
+                .build();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
