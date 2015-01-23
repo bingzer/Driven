@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bingzer.android.driven.AbsStorageProvider;
+import com.bingzer.android.driven.AbsTrashed;
 import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DefaultUserInfo;
 import com.bingzer.android.driven.DrivenException;
@@ -24,8 +25,12 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.plus.Plus;
 
 import java.io.BufferedOutputStream;
@@ -118,11 +123,16 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public boolean exists(String name) {
-        return false;
+        return exists(null, name);
     }
 
     @Override
     public boolean exists(RemoteFile parent, String name) {
+        List<RemoteFile> list = list(parent);
+        for (RemoteFile remoteFile : list){
+            if(remoteFile.getName().equalsIgnoreCase(name))
+                return true;
+        }
         return false;
     }
 
@@ -138,7 +148,7 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
 
     @Override
     public RemoteFile get(String name) {
-        return null;
+        return get(null, name);
     }
 
     @Override
@@ -262,11 +272,17 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
     }
 
     private List<RemoteFile> listRemoteFiles(DriveFolder folder){
+        return listRemoteFiles(folder, false);
+    }
+
+    private List<RemoteFile> listRemoteFiles(DriveFolder folder, boolean trashed){
         List<RemoteFile> list = new ArrayList<>();
         DriveApi.MetadataBufferResult result = folder.listChildren(apiClient).await();
         if (result.getStatus().isSuccess()){
             for (Metadata metadata : result.getMetadataBuffer()) {
-                list.add(new GmsRemoteFile(this, metadata));
+                if(metadata.isTrashed() == trashed) {
+                    list.add(new GmsRemoteFile(this, metadata));
+                }
             }
         }
         return list;
@@ -293,6 +309,29 @@ public class GmsDrive extends AbsStorageProvider /*implements GoogleApiClient.Co
             this.name = name;
             this.displayName = displayName;
             this.emailAddress = emailAddress;
+        }
+    }
+
+    class TrashedImpl extends AbsTrashed {
+
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+
+        @Override
+        public boolean exists(String name) {
+            return false;
+        }
+
+        @Override
+        public RemoteFile get(String name) {
+            return null;
+        }
+
+        @Override
+        public List<RemoteFile> list() {
+            return null;
         }
     }
 
