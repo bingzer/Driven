@@ -36,9 +36,9 @@ public class Credential {
 
     private static final String TAG = "DrivenCredential";
 
-    private Context context;
-    private String accountName;
-    private Token token;
+    protected Context context;
+    protected String accountName;
+    protected Token token;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 

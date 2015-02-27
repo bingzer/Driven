@@ -100,6 +100,15 @@ public final class IOUtils {
         buffer = null;
     }
 
+    public static void copy(InputStream source, OutputStream dest) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = source.read(buffer)) != -1) {
+            dest.write(buffer, 0, len);
+            dest.flush();
+        }
+    }
+
     public static String stripExtension(File file){
         if(file == null) return "";
         return stripExtension(file.getName());

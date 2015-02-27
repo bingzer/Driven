@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="driven_providers">
-        <item>@string/google_drive</item>
-        <item>@string/dropbox</item>
         <item>@string/external_drive</item>
+        <item>@string/google_drive</item>
+        <item>@string/google_drive_gms</item>
+        <item>@string/dropbox</item>
     </array>
 
     <string name="google_drive">Google Drive</string>
+    <string name="google_drive_gms">Google Drive (PlayServices)</string>
     <string name="dropbox">Dropbox</string>
     <string name="external_drive">External Drive</string>
 </resources>
