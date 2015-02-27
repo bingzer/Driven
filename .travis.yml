@@ -1,27 +1,39 @@
 language: android
-jdk: oraclejdk7
-env:
-  global:
-    - ANDROID_API_LEVEL=android-21
-    - ANDROID_ABI=armeabi-v7a
-
 android:
   components:
-    - build-tools-19.1.0
-  licenses:
-    - android-sdk-license-5be876d5 # new license!
-    - '.*intel.+'
+    # Uncomment the lines below if you want to
+    # use the latest revision of Android SDK Tools
+    - platform-tools
+    - tools
 
-before_install:
-  - chmod +x gradlew
+    # The BuildTools version used by your project
+    - build-tools-21.1.1
 
+    # The SDK version used to compile your project
+    - android-21
+
+    # Additional components
+    - add-on
+    - extra
+
+    # Specify at least one system image,
+    # if you need to run emulator(s) during your tests
+    - sys-img-armeabi-v7a-android-21
+
+  jdk:
+    # Check Travis JDKs http://docs.travis-ci.com/user/languages/java/#Testing-Against-Multiple-JDKs
+    # Test against one or more JDKs: 'jdk' is combined with 'env' to construct a build matrix.
+    # - openjdk7
+    - oraclejdk7
+
+
+# Emulator Management: Create, Start and Wait
 before_script:
-  # Create and start emulator
-  - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
+  - chmod +x ./gradlew
+  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
   - emulator -avd test -no-skin -no-audio -no-window &
-  - adb kill-server
-  - adb start-server
-  - adb wait-for-device
+  - chmod u+x ./wait-for-emulator
+  - ./wait-for-emulator
   - adb shell input keyevent 82 &
 
 script:
