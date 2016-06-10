@@ -2,7 +2,6 @@ package com.bingzer.android.driven.local;
 
 import android.os.Environment;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.Suppress;
 
 import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.DrivenException;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-@Suppress
 public class ExternalDriveTest extends AndroidTestCase {
 
     File rootFile;

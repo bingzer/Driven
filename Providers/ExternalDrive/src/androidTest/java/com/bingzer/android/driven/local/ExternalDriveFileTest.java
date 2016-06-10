@@ -2,7 +2,6 @@ package com.bingzer.android.driven.local;
 
 import android.os.Environment;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.Suppress;
 
 import com.bingzer.android.driven.Credential;
 import com.bingzer.android.driven.LocalFile;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @SuppressWarnings("ALL")
-@Suppress
 public class ExternalDriveFileTest extends AndroidTestCase {
 
     File rootFile;
@@ -29,6 +27,7 @@ public class ExternalDriveFileTest extends AndroidTestCase {
         // Explicitly set the Dexmaker cache, so tests that use mockito work
         final String dexCache = getContext().getCacheDir().getPath();
         System.setProperty("dexmaker.dexcache", dexCache);
+
 
         rootFile = new File(Environment.getExternalStorageDirectory(), "driven-extdrive-test");
         FileGenerator.generate(rootFile);
