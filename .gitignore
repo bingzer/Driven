@@ -2,12 +2,9 @@
 ## Android studio
 #################
 *.idea
+.gradle/
 *.iml
-gradle
 gen/
-.idea/
-.idea/*.*
-
 
 #################
 ## Eclipse
