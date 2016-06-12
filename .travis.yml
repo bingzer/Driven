@@ -23,6 +23,8 @@ before_install:
  - adb shell input keyevent 82 &
 
 script:
- - ./gradlew connectedAndroidTest
+ - ./gradlew Library:connectedAndroidTest
+ - ./gradlew Providers:Dropbox:connectedAndroidTest
+ - ./gradlew Providers:GoogleDrive:connectedAndroidTest
 
 sudo: false

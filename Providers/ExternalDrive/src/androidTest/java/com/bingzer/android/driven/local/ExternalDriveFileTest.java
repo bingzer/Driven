@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @SuppressWarnings("ALL")
-@Suppress
 public class ExternalDriveFileTest extends AndroidTestCase {
 
     File rootFile;

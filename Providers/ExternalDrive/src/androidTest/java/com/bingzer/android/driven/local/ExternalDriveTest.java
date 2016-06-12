@@ -15,7 +15,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-@Suppress
 public class ExternalDriveTest extends AndroidTestCase {
 
     File rootFile;
