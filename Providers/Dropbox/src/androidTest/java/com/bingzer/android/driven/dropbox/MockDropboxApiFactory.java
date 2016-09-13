@@ -43,7 +43,9 @@ public class MockDropboxApiFactory implements DropboxApiFactory {
             when(api.getSession()).thenReturn(session);
             when(api.accountInfo()).then(new Answer<DropboxAPI.Account>(){
                 @Override public DropboxAPI.Account answer(InvocationOnMock invocation) throws Throwable {
-                    return new MockAccount("country", "DisplayName", 1234, "referralLink", 100, 100, 100);
+                    MockAccount.NameDetails nameDetails = new MockAccount.NameDetails("Ricky", "Tobing", "Ricky");
+                    MockAccount.TeamInfo teamInfo = new MockAccount.TeamInfo("teamId", "teamName");
+                    return new MockAccount("country", "DisplayName", "email", true,  1234, "referralLink", true, "en-US", nameDetails, teamInfo, 100, 100, 100);
                 }
             });
 
